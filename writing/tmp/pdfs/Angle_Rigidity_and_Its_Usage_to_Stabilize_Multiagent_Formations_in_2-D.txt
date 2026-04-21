@@ -1,0 +1,341 @@
+Angle_Rigidity_and_Its_Usage_to_Stabilize_Multiagent_Formations_in_2-D.pdf
+
+--- PAGE 1 ---
+IEEE TRANSACTIONS ON AUTOMA TIC CONTROL, VOL. 66, NO. 8, AUGUST 2021 3667
+Angle Rigidity and Its Usage to Stabilize
+Multiagent Formations in 2-D
+Liangming Chen , Member, IEEE , Ming Cao , Senior Member, IEEE , and Chuanjiang Li
+Abstract—Motivated by the challenging formation stabi-
+lization problem for mobile robotic teams wherein no dis-
+tance or relative position measurements are available but
+each robot can only measure some of relative angles with
+respect to its neighbors in its local coordinate frame, we
+develop the notion of “angle rigidity” for a multipoint frame-
+work, named “angularity”, consisting of a set of nodes em-
+bedded in a Euclidean space, and a set of angle constraints
+among them. Different from bearings or angles deﬁned
+in a global frame, the angles we use do not rely on the
+knowledge of a global frame, and are signed according to
+the counter-clockwise direction. Here, angle rigidity refers
+to the property specifying that under proper angle con-
+straints, the angularity can only translate, rotate, or scale
+as a whole when one or more of its nodes are perturbed lo-
+cally. We ﬁrst demonstrate that this angle rigidity property,
+in sharp comparison to bearing rigidity or other reported
+rigidity related to angles of frameworks in the literature, is
+not a global property since an angle rigid angularity may
+allow ﬂex ambiguity. We then construct necessary and suf-
+ﬁcient conditions for inﬁnitesimal angle rigidity by check-
+ing the rank of an angularity’s rigidity matrix. We develop a
+combinatorial necessary condition for inﬁnitesimal minimal
+angle rigidity. Using the developed theories, a formation
+stabilization algorithm is designed for a robotic team to
+achieve an angle rigid formation, in which only angle mea-
+surements are needed. Simulation examples demonstrate
+the advantages of the proposed angle-only formation con-
+trol approach.
+Index Terms—Angle/bearing measurements, angle rigid-
+ity, formation control, angularity, multiagent systems.
+I. I NTRODUCTION
+O
+VER the past decades, distance rigidity has been inten-
+sively investigated both as a mathematical topic in graph
+Manuscript received December 17, 2019; revised July 24, 2020; ac-
+cepted September 5, 2020. Date of publication September 22, 2020;
+date of current version July 28, 2021. The work of Ming Cao was
+supported in part by the European Research Council under Grant ERC-
+CoG-771687 and in part by The Netherlands Organization for Scientiﬁc
+Research under Grant NWO-vidi-14134. The work of Chuanjiang Li was
+supported by the National Natural Science Foundation of China under
+Grant 61876050. Recommended by Associate Editor K. Cai. (Corre-
+sponding author: Liangming Chen.)
+Liangming Chen and Ming Cao are with the Faculty of Science and
+Engineering, University of Groningen, Groningen, 9747 AG, The Nether-
+lands (e-mail: liangmingchen2018@gmail.com; ming.cao@ieee.org).
+Chuanjiang Li is with the Department of Control Science and Engi-
+neering, Harbin Institute of T echnology , Harbin 150001, China (e-mail:
+lichuan@hit.edu.cn).
+Color versions of one or more of the ﬁgures in this article are available
+online at https://ieeexplore.ieee.org.
+Digital Object Identiﬁer 10.1109/T AC.2020.3025539
+theory [1], [2] and an engineering problem in applications in-
+cluding formations of multiagent systems [3], mechanical struc-
+tures [4], and biological materials [5]. Distance rigidity [6] is de-
+ﬁned using the property of distance preservation of translational
+and rotational motions of a multipoint framework. To determine
+whether a given framework is distance rigid, two methods have
+been reported. The ﬁrst is to test the rank of the distance rigidity
+matrix which is derived from the inﬁnitesimally distance rigid
+motions [7]. The second is enabled by Laman’s theorem, which
+is a combinatorial test and works only for generic frameworks.
+More recently, bearing rigidity has been investigated, in which
+the shape of a framework is prescribed by the interpoint bearings
+or directions [8], [9]. By deﬁning the bearing as a unit vector in
+a given global coordinate frame, bearing rigidity can be deﬁned
+accordingly [9], [10]. To check whether a framework is bearing
+rigid, conditions similar to those for distance rigidity have been
+discussed [9]–[12].
+Distance constraints in determining distance rigidity are in
+general quadratic in the associated end points’ positions. While
+a bearing constraint is always linear in the associated end point’s
+position, the description of bearings directly depends on the
+necessity of a global coordinate frame or a coordinate frame in
+SE(2) or SE(3) [13], [14]. Different from distance and bearing
+rigidity,1 in this study, we aim at presentingangle rigidity theory
+for multipoint frameworks accommodating angle constraints as
+either linear or quadratic constraints on the end points’ positions
+without relying on a global coordinate frame. Different from the
+usual deﬁnition for a scalar angle [15], [16], the angle deﬁned
+in this article is signed. By deﬁning the counter-clockwise
+direction to be each angle’s positive direction, angle rigidity
+is deﬁned for an angularity which consists of vertices and angle
+constraints among them. We show that the planar angle rigidity
+is a local property because of the existence of ﬂex ambiguity. To
+check whether an angularity is angle rigid, angle rigidity matrix
+is derived based on the inﬁnitesimally angle rigid motions.
+Then, the angle rigidity of an angularity can be determined by
+testing the rank of its angle rigidity matrix. Also, we develop
+a combinatorial necessary condition to test the angle rigidity
+of an angularity. We underline that the Laman’s theorem and
+Henneberg’s construction method do not apply directly to angle
+rigidity, which makes our results crucial. Using the deﬁned
+signed angles, we further propose the construction methods for
+angle rigid and globally angle rigid angularities.
+1Only refer to bearing rigidity in IR2 in the following.
+0018-9286 © 2020 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+See https://www.ieee.org/publications/rights/index.html for more information.
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:20:15 UTC from IEEE Xplore.  Restrictions apply. 
+--- PAGE 2 ---
+3668 IEEE TRANSACTIONS ON AUTOMA TIC CONTROL, VOL. 66, NO. 8, AUGUST 2021
+Besides its mathematical importance, angle rigidity is closely
+related to the application in multiagent formation control for
+robotic transportation [17], search and rescue of drones [18],
+and satellite formation ﬂying [19]. Sensors used in formation
+stabilization mainly include GPS receivers, radars, and cam-
+eras, which can acquire absolute positions, interagent relative
+positions, or angles/bearings [3], [20]. In particular, angle mea-
+surements are becoming cheaper, more reliable, and accessible
+than absolute or relative position measurements [12], [20]. Angle
+information can be easily obtained by a passive sonar, camera,
+or sensor array in its local coordinate frame [17]. Using angle
+rigidity developed in this article, we show how to stabilize a pla-
+nar formation by using only local angle measurements. Different
+from the designed bearing-based formation control algorithms
+in [9], [21] where all agents’ local coordinate frames are re-
+quired to be aligned, the proposed angle-only formation control
+algorithm does not require the alignment of agents’ coordinate
+frames since the angle described in different planar coordinate
+frames remains the same. We acknowledge that in [15], planar
+angle rigidity is established by employing the cosine of an
+angle formed by two joint edges as the angle constraint. The
+formation stabilization algorithm constructed in [15] requires
+that each agent can sense the relative positions with respect to
+its neighbors. Different from [15], in this article, the desired
+formation shape is realized using only angle measurements. In
+addition, weak rigidity with mixed distance and angle constraints
+has been investigated in [22]–[24], under which the formation
+control algorithms are also designed for agents by using the
+measurements of relative position.
+The rest of this article is organized as follows. Section II
+gives the deﬁnition of an angularity and its rigidity. Section III
+introduces inﬁnitesimal angle rigidity. In Section IV, the applica-
+tion in multiagent planar formations is investigated. Simulation
+examples are provided in Section V.
+II. A NGULARITY AND ITS ANGLE RIGIDITY
+Graphs have been used dominantly in rigidity theory for
+multipoint frameworks under distance constraints since an edge
+of a graph can be naturally used to denote the existence of a
+distance constraint between the two points corresponding to
+the vertices adjacent to this edge. However, when describing
+angles formed by rays connecting points, to use edges of a
+graph becomes inappropriate because an angle constraint always
+involves three points. For this reason, instead of using graphs
+that relate pairs of vertices as the main tool to deﬁne rigidity, we
+deﬁne a new combinatorial structure “angularity” that relates
+triples of vertices to develop the theory of angle rigidity. In all
+the following discussions, we conﬁne ourselves to the plane.
+A. Angularity
+We use the vertex set V = {1, 2,...,N } to denote the set of
+indices of the N ≥3 points of a framework in the plane. As
+shown in Fig. 1, to describe the signed angle from the ray j −i
+to ray j −k, one needs to use the ordered triplet (i,j,k ), and,
+obviously, the two angles corresponding to (i,j,k ) and (k,j,i )
+Fig. 1. Signed angle used in deﬁning angle rigidity .
+are different, and in fact are called explementary or conjugate an-
+gles. Here, following convention, the angle ∡ijk for each triplet
+(i,j,k ) is measured counter-clockwise in the range [0, 2π).
+We useA⊂V×V×V = {(i,j,k ),i,j,k ∈V,i ̸= j ̸= k} to
+denote the angle set, each element of which is an ordered triplet.
+We denote the number of elements |A| of the angle set A by
+M . Throughout this article, we assume that no pair of triplets
+in A are explementary to each other. Now consider the embed-
+ding of the vertex set V in the plane IR2 through which each
+vertex i is associated with a distinct position pi ∈IR2 and let
+p =[ pT
+1,...,p T
+N ]T ∈IR2N . We assume there is no overlapping
+points inp, i.e.,pi ̸= pj fori ̸= j andi,j ∈{1, 2,...,N }. Then,
+the combination of the vertex set V, the angle set A, and the
+position vector p is called an angularity, which we denote by
+A(V,A,p ). Actually, given nonoverlapping positionspi,pj , and
+pk, the angle ∡ijk ∈[0, 2π) can be uniquely calculated from
+∡ijk =
+{
+arccos(zT
+jizjk ) ifz⊥
+ji ·zjk ≥0
+2π−arccos(zT
+jizjk ) otherwise (1)
+where zji = pi−pj
+∥pi−pj∥ , zjk = pk−pj
+∥pk−pj∥ , z⊥
+ji = Q0zji =[
+0 −1
+10
+]
+zji is the vector obtained by rotating zji counter-
+clockwise by π
+2 , and · denotes the dot product.
+B. Angle Rigidity
+We ﬁrst deﬁne what we mean by two equivalent or congruent
+angularities.
+Deﬁnition 1 (Equivalency and congruency): We say two an-
+gularities A(V,A,p ) and A′(V,A,p′) with the same V and A
+are equivalent if
+∡ijk(pi,pj,pk)= ∡ijk(p′
+i,p′
+j,p′
+k) for all (i,j,k ) ∈A. (2)
+W es a yt h e ya r econgruent if
+∡ijk(pi,pj,pk)= ∡ijk(p′
+i,p′
+j,p′
+k) for all i,j,k ∈V. (3)
+From the equivalent and congruent relationships, it is easy to
+deﬁne global angle rigidity.
+Deﬁnition 2 (Global angle rigidity): An angularity
+A(V,A,p ) is globally angle rigid if every angularity that
+is equivalent to it is also congruent to it.
+When such a rigidity property holds only locally, one has
+angle rigidity.
+Deﬁnition 3 (Angle rigidity): An angularity A(V,A,p ) is
+angle rigid if there exists an ϵ> 0 such that every angularity
+A′(V,A,p′) that is equivalent to it and satisﬁes ∥p′ −p∥ <ϵ is
+congruent to it.
+Deﬁnition 3 implies that every conﬁguration which is sufﬁ-
+ciently close to p and satisﬁes all the angle constraints formed
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:20:15 UTC from IEEE Xplore.  Restrictions apply. 
+--- PAGE 3 ---
+CHEN et al.: ANGLE RIGIDITY AND ITS USAGE TO ST ABILIZE MUL TIAGENT FORMA TIONS IN 2-D 3669
+Fig. 2. Flex ambiguity in angle rigid angularity .
+byA has the same magnitudes of the angles formed by any three
+vertices in V as the original conﬁguration at p.
+As is clear from Deﬁnitions 2 and 3, global angle rigidity
+always implies angle rigidity. A natural question to ask is
+whether angle rigidity also implies global angle rigidity. In fact,
+for bearing rigidity, it has been shown that indeed global bearing
+rigidity and bearing rigidity are equivalent [9], [10]. However,
+this is not the case for angle rigidity.
+Theorem 1 (Nonequivalence between angle rigidity and
+global angle rigidity): An angle rigid angularity A(V,A,p ) is
+not necessarily globally angle rigid.
+We prove this theorem by providing the following example.
+Fig. 2shows an angularity withV = {1, 2, 3, 4}, and its elements
+in the set A = {(3, 2, 1), (1, 3, 2), (2, 3, 4), (1, 4, 2)} take the
+values
+∡321 = arccos
+(
+4
+√
+3−2
+2
+√
+17−4
+√
+3
+)
+≈39.07◦ (4)
+∡132 = arccos
+(
+19−8
+√
+3√
+25−12
+√
+3
+√
+17−4
+√
+3
+)
+≈37.88◦ (5)
+∡234 = 30◦ (6)
+∡142 = 45◦ (7)
+and its p is shown as in the coordinates of the vertices. We ﬁrst
+show A(V,A,p ) is angle rigid, and then show A(V,A,p ) is not
+globally angle rigid.
+Now ﬁrst look at the triangle formed by 1, 2, and 3. Since
+two of its angles ∡321 and ∡132 have been constrained, the re-
+maining ∡213 is uniquely determined to be π−∡321−∡132,
+no matter how p is locally perturbed. The constraint on ∡234
+requires 4 must lie in the ray starting from 3 and rotating from
+ray 32 counter-clockwise by30◦; at the same time, the constraint
+on ∡142 requires 4 must lie on the arc passing through 1 and
+2 such that the inscribed angle ∡142 is 45◦. No matter how
+p is locally perturbed, there is only one unique position for
+4 in the neighborhood of its current given coordinates because
+the two intersection points between the ray and the arc are not
+in the same local neighborhood. This local uniqueness implies
+that this four-vertex angularity is angle rigid (when 4’s position
+Fig. 3. Nongeneric p changes rigidity . (a) Not rigid when ∠213 = π
+3 .
+(b) Angle rigid when ∠213 = 0 . (c) Globally angle rigid when ∠213 = π.
+is uniquely determined, any angle associated with it is also
+uniquely determined).
+Now we show A(V,A,p ) is not globally angle rigid. Note
+that there is the other intersection point 4′ as shown in Fig. 2
+satisfying the angle constraints given in A, which implies that
+this angularity is not globally angle rigid because A(V,A,p′) is
+equivalent to A(V,A,p ), but they are not congruent.
+We provide the following further insight to explain this sharp
+difference between the angle rigidity that we have deﬁned and
+the bearing rigidity that has been reported in the literature. Bear-
+ing rigidity as deﬁned in [9], [10] is a global property because
+the bearing constraints always represent linear constraints in the
+end point’s position (similar to the angle constraint ∡234 = 30◦
+in the form of the ray from 3 to 4 in the above example) and
+two noncollinear rays have at most one intersection. In contrast,
+our angle constraint can be either linear constraint in p when
+it requires the corresponding vertex to be on a ray or quadratic
+in p when it restricts the corresponding vertex to be on an arc
+passing through other vertices. The possible nonlinearity in the
+angle constraints gives rise to potential ambiguity of the vertices’
+positions under the given angle constraints.
+Note that the embedding of p in the plane may affect the
+rigidity of A. Consider the 3-vertex angularity as embedded in
+three different situations in Fig. 3 when its angle set A contains
+only one element (2,1,3). Fig. 3(a) shows that 1, 2, and 3 are
+not collinear, and then this angularity is in general not rigid
+since if we perturb point 1 in an arc with 2 and 3 as the arc’s
+ending points, ∡213 can be the same while angles ∡123 and
+∡132 change. In Fig. 3(b) , 1, 2, and 3 are collinear and 1 is
+on one side; in this case, if the angle constraint happens to be
+∡213 = 0 , then one can check the angularity becomes angle
+rigid, although it is not globally rigid since the angle of ∡132
+changes by 180 degree if we swap 2 and 3. InFig. 3(c),1 ,2 ,a n d3
+are collinear and 1 is in the middle; when the constraint becomes
+∡213 = π, one can check that the angularity is not only rigid,
+but also globally rigid (swapping of 2 and 3 in this case does
+not change the resulting angles ∡132, ∡123 being zero). So the
+angularity A({1, 2, 3},{(2, 1, 3)},p ) is generically not rigid, but
+rarely rigid depending onp. To clearly describe this relationship
+between angle rigidity andp, like in standard rigidity theory, we
+deﬁne what we mean by generic positions.
+Deﬁnition 4 (Generic position): The position vector p is
+said to be generic if its components are algebraically indepen-
+dent [25]. Then, we say an angularity isgenerically (respectively
+globally) angle rigid if its p is generic and it is (respectively
+globally) angle rigid.
+An example for nongeneric positions is the case when three
+points are collinearly positioned. Note that angle rigidity for
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:20:15 UTC from IEEE Xplore.  Restrictions apply. 

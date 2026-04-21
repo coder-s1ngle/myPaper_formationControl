@@ -1,0 +1,132 @@
+{
+  "project_name": "Multi-UAV Assembly-Separation and Formation Control",
+  "version": "1.0",
+  "description": "A research project focusing on distributed formation control, uniform deployment, and assembly-separation behavior for UAVs under local coordinate constraints.",
+  
+  "system_model": {
+    "agents": 4,
+    "dynamics": "Single-integrator or velocity-controlled model. Control input is velocity in the agent's body frame.",
+    "coordinates": "Agents must operate only using local coordinate frames.",
+    "observations": {
+      "distance_left": "d(i,i-1)",
+      "distance_right": "d(i,i+1)",
+      "bearing_left": "bearing to left neighbor in local frame",
+      "bearing_right": "bearing to right neighbor in local frame",
+      "relative_velocity": "not directly measurable without communication"
+    },
+    "communication": {
+      "global_information": false,
+      "local_neighbor_exchange": true
+    }
+  },
+
+  "task_objectives": {
+    "formation_shape": "Square or general convex polygon",
+    "deployment": "Uniform deployment (agents evenly spaced)",
+    "fast_deployment": true,
+    "stability_proof_required": true,
+    "local_implementation_required": true,
+    "steady_state_error": "Should be minimized or eliminated"
+  },
+
+  "tested_methods": {
+    "angle_based_control_Li2022": {
+      "paper": "Satellite Formation Flying Control by Using Only Angle Measurements (Li et al. 2022)",
+      "suitability": "Not suitable",
+      "reasons": [
+        "Relies on orbital dynamics (Hill equations), not UAV dynamics",
+        "Angle constraints do not uniquely determine 4-agent square",
+        "Cannot guarantee uniform deployment",
+        "Steady-state error persists",
+        "Requires angle rigidity not available in UAV setting"
+      ]
+    },
+
+    "distance_potential_control": {
+      "model": "Gradient descent on distance error",
+      "advantages": ["Simple", "Distributed"],
+      "limitations": [
+        "Cannot achieve uniform deployment",
+        "Steady-state error not eliminated",
+        "Requires relative velocities"
+      ]
+    },
+
+    "test4_controller": {
+      "status": "Best performing controller so far",
+      "concept": [
+        "Constructs a virtual angle-bisector direction from left/right distances",
+        "Combines uniform deployment term + formation maintenance term"
+      ],
+      "advantages": [
+        "Local information only",
+        "Fastest deployment observed",
+        "Stable in simulation"
+      ],
+      "problems": [
+        "Non-symmetric graph makes theoretical proof difficult",
+        "Not a pure gradient field",
+        "Has steady-state bias"
+      ]
+    }
+  },
+
+  "identified_core_problems": {
+    "steady_state_error": [
+      "No integral action",
+      "Non-gradient control law",
+      "Local coordinate distortions",
+      "Missing relative velocity information"
+    ],
+    "uniqueness_issues": "Angle constraints alone cannot define quadrilateral formations",
+    "lack_of_theoretical_framework": "Need a provable Lyapunov structure for Test4 or an improved method"
+  },
+
+  "future_research_directions": {
+    "A_uniform_deployment_stable_control": {
+      "goal": "Design a provably stable controller using only local distances and bearings",
+      "ideas": [
+        "Distance-ratio consensus",
+        "Symmetric potential function",
+        "Local projection-based integral terms"
+      ]
+    },
+    "B_theoretical_upgrade_of_test4": {
+      "goal": "Make Test4 mathematically rigorous",
+      "tasks": [
+        "Derive explicit control law form",
+        "Find Lyapunov candidate",
+        "Linearize at equilibrium and analyze stability",
+        "Add steady-state compensation"
+      ]
+    },
+    "C_LQR_inner_loop": {
+      "goal": "Add stabilizing optimal control for error suppression",
+      "notes": "Useful for real robots and good for presentations"
+    },
+    "D_extension_to_defense_scenarios": {
+      "goal": "Integrate formation control with active/passive defense",
+      "domains": ["Pursuit-evasion", "Obstacle avoidance", "Tether-net collaboration"]
+    }
+  },
+
+  "requirements_for_future_AI_assistance": {
+    "input_format": {
+      "state_i": ["bearing_left", "bearing_right", "distance_left", "distance_right"],
+      "control_output": "velocity command in local frame"
+    },
+    "constraints": [
+      "No global coordinate use",
+      "Local neighbor sensing only",
+      "Must support uniform deployment",
+      "Must be theoretically provable"
+    ],
+    "preferred_outputs": [
+      "Controller design",
+      "Lyapunov proof steps",
+      "Simulation pseudocode",
+      "Comparative analysis",
+      "Mathematical derivations"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+Directed vs undirected planar-normal demo
+Sign flip time: 20.00 s
+
+Directed final normal: [ 0.  0. -1.]
+Undirected final normal: [ 0.  0. -1.]
+Directed final geometric error: 3.141593 rad
+Undirected final geometric error: 0.000000 rad
+Directed final control error magnitude: 0.000000
+Undirected final control error magnitude: 0.000000

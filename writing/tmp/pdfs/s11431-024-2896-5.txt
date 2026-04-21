@@ -1,0 +1,259 @@
+s11431-024-2896-5.pdf
+
+--- PAGE 1 ---
+SCIENCE CHINA
+T echnological Sciences
+ Print-CrossMark
+July
+2025, V ol. 68, Iss. 7, 1720402:1–1720402: 15
+https://doi.org/10.1007/s11431-024-2896-5
+c⃝ Science China Press 2025 tech.scichina.com link.springer.com
+. RESEARCH PAPER .
+Multi-agent distributed formation control using local information
+measurements
+Jianqing LI1, Liaofei CHEN 2* & Chaoyong LI 3
+1Space Information Research Institute and Zhejiang Key Laboratory of Space Information Sensing and Transmission, Hangzhou Dianzi University,
+Hangzhou 310018, China
+2College of Communication Engineering, Hangzhou Dianzi University, Hangzhou 310018, China
+3College of Electrical Engineering, Zhejiang University, Hangzhou 310027, China
+Received November 18, 2024; accepted February 8, 2025; published online May 28, 2025
+Abstract This
+paper investigates formation control in multi-agent systems to adjust deformation and scaling for obstacle avoid-
+ance using local information. A well-known issue with angle-based formation control is the existence of size ambiguity. In-
+troducing additional controlled variables can potentially mitigate this problem. Therefore, unlike purely angle-based formation
+control methods that can only adjust deformation, our approach can also control scaling by introducing distance measurements.
+Speciﬁcally, all agents use their local coordinate systems and sense neighboring agents to obtain angle measurements, with only
+one agent measuring the distance to its neighbor. In the proposed formation control scheme, angle measurements are used to
+control the desired shape, while distance measurements regulate the formation scaling. Di ﬀerent formation control strategies for
+triangular and polygonal conﬁgurations are discussed, utilizing angle rigidity to ensure the stability of the ﬁnal shape in polygonal
+conﬁgurations with only one distance measurement used for formation scaling. Additionally, by relaxing the condition of angular
+rigidity and utilizing the concept of formation rigidity, we propose a formation determination method to construct a rigid square
+conﬁguration, in which a pair of distances measured by one agent are used to control the formation’s scaling. Finally, using a
+simpliﬁed model of a quadrotor unmanned aerial vehicle (QUA V), simulation results validate the e ﬀectiveness of the proposed
+formation control scheme through several examples.
+Keywords angle measurements, distance measurements, formation control, rigid formation, multi-agent systems
+Citation: Li
+J Q, Chen L F, Li C Y . Multi-agent distributed formation control using local information measurements. Sci China Tech Sci, 2025, 68(7): 1720402,
+https://doi.org/10.1007/s11431-024-2896-5
+1
+Introduction
+In recent years, collaborative control of multi-agent systems
+has attracted widespread attention, with formation control is-
+sues receiving extensive research due to their signiﬁcance
+across multiple application domains [1,2]. Examples include
+unmanned aerial vehicle (UA V) search and rescue[3], collab-
+orative transport of ground robots [4], and satellite formation
+ﬂying [5].
+A key focus is addressing which variables need to be
+sensed and actively controlled to achieve desired formations
+*
+Corresponding author (email: liaofei@hdu.edu.cn)
+in multi-agent systems, as mentioned in ref. [6]. Sensors
+used for formation control typically include the global posi-
+tioning system (GPS), radar, and cameras, which can mea-
+sure positions, inter-agent distances, and bearings, respec-
+tively. The existing formation control methods are catego-
+rized based on the sensors and control variables used, includ-
+ing position-based, displacement-based (consensus-based)
+[7, 8], direction-based, distance-based, and angle-based ap-
+proaches. However, a disadvantage of position-based forma-
+tion control is that it typically requires a global coordinate
+system shared among the agents [9]. In displacement-based
+methods, agents measure the relative positions of their neigh-
+bors in a common reference coordinate system, necessitating
+--- PAGE 2 ---
+Li
+J Q, et al. Sci China Tech Sci July 2025, V ol. 68, Iss. 7, 1720402:2
+that all agents have a shared sense of direction [10, 11]. This
+implies that the local coordinate frames of all agents need to
+be aligned [12]. Achieving perfect alignment of all agents’
+coordinate systems is challenging due to the presence of sen-
+sor measurement noise and interference. When there is a
+misalignment in the agents’ coordinate frames, the forma-
+tion shape speciﬁed by relative positions may be distorted
+and exhibit non-zero translational velocity [13, 14]. In ref.
+[15], the theory of bearing rigidity was established, but it
+still requires agents to know a global reference frame. In con-
+trast, distance/angle-based formation methods that rely solely
+on local information from multi-agent systems have become
+popular, even though they increase the complexity of their
+design and analysis.
+Over the past few decades, distance rigidity has been ex-
+tensively studied both as a mathematical topic in graph the-
+ory [16] and as an engineering problem in the application
+of multi-agent system formations. Distance rigidity [17] is
+deﬁned based on the property that distances within a multi-
+point framework remain invariant under translational and ro-
+tational motions. Without requiring coordinate frame align-
+ment, the desired formation shape described by distances was
+achieved using local relative position measurements in ref.
+[18] by employing distance rigidity theory. Moreover, a the-
+ory based on bearing rigidity was proposed [15, 19]. Agents
+maintain their relative orientation with respect to their neigh-
+bors to ensure the stability of the formation. However, meth-
+ods solely based on bearings become ambiguous due to the
+lack of measurement for formation size. To address this,
+a bearing-based approach within the leader-follower frame-
+work was introduced [20, 21], but it requires that the ma-
+neuvering strategies of two leaders be pre-planned. With the
+advancement of sensor technology, angle measurements can
+be easily obtained through omnidirectional radar or vision-
+based cameras, which are cheaper, more reliable, and more
+accessible than distance measurements [22, 23]. Since angle
+measurements are scalars and do not change with motion, in-
+cluding translation, rotation, and scaling [24, 25], the theory
+of angle rigidity was established in ref. [26]. By assigning
+appropriate angle constraints to the agents, the desired for-
+mation shape can be achieved. However, a resulting issue
+is that the angles do not change with the scaling of the for-
+mation. When relying solely on angle information for con-
+trol, the size of the formation becomes ambiguous when the
+multi-agent system stabilizes. To address this issue, a con-
+trol algorithm for multi-agent systems was designed in ref.
+[27], which determines the formation shape through angle
+constraints while still using relative position measurements
+in the global coordinate system to scale the formation. Re-
+cently, the formation control method combining angle and
+distance has been studied in refs. [28, 29], and a formation
+control scheme with directed graph distance measurements
+and angle constraints has been proposed. However, these
+methods impose complex directed graph distance constraints
+and angle measurements, increasing the di ﬃculty of forma-
+tion rigidity design. In many cases, it is necessary to ma-
+nipulate the formation scale, such as to avoid obstacles [30],
+and the variation in pairwise distances between agents during
+scaling complicates the control algorithm.
+Motivated by the work above, we propose a formation
+scaling control law based on angle and distance to address
+formation maintenance during obstacle avoidance. This ap-
+proach requires each agent to measure only the angle infor-
+mation of its neighbors, with only one agent responsible for
+measuring distance information. Angle rigidity ensures the
+stability of the ﬁnal formation shape, while distance control
+manages the scaling of the formation. The contributions of
+this paper are summarized as follows.
+(1) Compared with ref. [26], this addresses the issue of
+ambiguity in controlling the formation size using only an-
+gle information. In ref. [26], when the formation system is
+stable, all angle constraints are satisﬁed. However, because
+angles do not change with scaling motions, the overall size
+of the formation is ambiguous and cannot be controlled arbi-
+trarily. Additionally, to relax an angular rigidity constraint in
+ref. [26], we discuss a method using a square formation case
+to control the scaling by weighting a pair of distances in two
+diﬀerent directions.
+(2) Diﬀ erent from the rigidity formation methods that
+combine angle and distance-directed graph in refs. [28, 29],
+the scaling transformation of the formation in this paper is
+controlled by a single agent, eliminating the need to change
+a large number of desired distances between di ﬀerent agents
+and thereby simplifying the complexity of the control algo-
+rithm during the process of expansion and contraction mo-
+tion.
+(3) This work represents a preliminary step in address-
+ing the problem of formation maintenance, deformation, and
+scaling control based on local information. Due to the di ﬃ-
+culty in constructing a Lyapunov function, we have currently
+proven the local convergence of the closed-loop nonlinear
+formation under double integrator dynamics. In view of this,
+we provide suﬃcient conditions to ensure the stability of the
+double integrator formation, which o ﬀers valuable guidance
+for future research.
+The remainder of this paper is organized as follows. Sec-
+tion 2 introduces the agent formation control problem. Sec-
+tion 3 presents the main results with diﬀ erent conﬁgurations.
+Section 4 shows the simulation results examining the perfor-
+mance of the proposed formation control law.
+Notations: An undirected graph, denoted as G = (V, E),
+consists of a vertex set V = {1, 2, . . . ,n} and an edge set
+E ⊆ V × V with m = |E|. The set of neighbors of vertex i
+is denoted as Ni , { j ∈ V : ( i, j) ∈ E}. An orientation of
+an undirected graph is the assignment of a direction to each
+edge. An oriented graph is an undirected graph together with
+--- PAGE 3 ---
+Li J Q, et al. Sci China Tech Sci July 2025, V ol. 68, Iss. 7, 1720402:3
+an orientation.
+2 Problem formulation
+For the n mobile agents moving in the plane, we deﬁne the
+set of agent indexes as V = {1, 2, · · · , n}. The dynamics of
+each agent i can be described as
+
+
+
+˙pi = vi,
+˙vi = ui,
+∀i ∈ V, (1)
+where pi ∈ R2 denotes the position of agent i in the ﬁxed
+global coordinate system, vi ∈ R2 is the velocity and ui ∈ R2
+is the control input.
+The following assumptions are made for all agents to
+achieve the desired formation conﬁguration.
+Assumption 1 All agents are already on the same plane
+when the formation needs to deform and scale.
+Assumption 2 Each agent is equipped with a sensor to
+measure LOS (Line of Sight).
+Assumption 3 The initial positions of the agents are in-
+dependent and non-collinear.
+Assumption 1 ensures that the formation is in a two-
+dimensional plane. Assumption 2 requires each agent to
+measure the directional angle of its neighbor with respect to
+its local coordinate system. Assumption 3 guarantees that the
+angle bisector direction exists and is unique.
+Under Assumptions 1 and 2, each agent i can measure the
+angle θi j ∈ [0, 2) relative to j ∈ N i in its local coordinate
+frame ∑
+i, as shown in Figure 1. The local coordinate system
+satisﬁes the right-hand frame. Then, the angle αi in the xi-yi
+plane can be given by
+αi = θi j − θik, (2)
+where αi ∈ [0, 2) is the interior angle of the triangle formed
+by j, i and k.
+As shown in Figure 1, the agent i can measure the LOS
+angle of its neighbors. Then, the interior angle αi can be cal-
+culated by
+cos αi = z⊤
+i jzik, (3)
+where zi j = pj− pi
+∥ pj− pi∥ , which starts from i, points toward j.
+Let α∗
+i ∈ (0, ) be the desired steady-state angles of the
+formation as shown in Figure 2(a). The angle-based forma-
+tion problem becomes the realization of the desired angle
+constraint:
+lim
+t→+∞
+( αi(t) − α∗
+i
+) = 0. (4)
+Deﬁnition 1 (Angle rigidity and global angle rigidity, ref.
+[26, Deﬁnition 2, Deﬁnition 3] )
+We give our description of the uniqueness of the frame-
+work based on graph theory.
+Deﬁnition 2 (Similarity and congruence) If two frame-
+works G1 = (V1, E1, W1) and G2 = (V2, E2, W2) satisfy
+the following conditions: (1) They have the same topological
+structure (i.e., there exists a graph isomorphism f : V1 →
+V2, such that for every edge ( i, j) ∈ E 1, there is an edge
+( f (i), f ( j)) ∈ E 2). (2) For each pair of corresponding edges
+e1i ∈ E 1 and e2i ∈ E 2, their weights satisfy w1i = k·w2i, where
+k is a ﬁxed proportional constant; then it can be said that the
+two frameworks are similar if k , 1, denoted as G1 ∼ G 2 and
+we say that two frameworks are congruent if k = 1, that is,
+G1 , G2.
+However, a problem arises when relying solely on the con-
+straints of eq. (4); it cannot e ﬀectively control the formation
+scale. For instance, we observed that the angles used to con-
+strain the conﬁguration in Figure 2(a) and (b) both satisfy
+eq. (4), but they do not determine the distances between the
+agents. When the system is stable, it satisﬁes the angular
+rigidity as deﬁned in Deﬁnition 1, but the actual framework
+G is not congruent with the desired framework G∗. In other
+words, achieving the desired shape may result in the agents’
+formation scale being either too large or too small, that is,
+similarity as deﬁned in Deﬁnition 2.
+A triangle can be uniquely determined given its three an-
+gles and any one side. Therefore, for triangular forma-
+tions, we can achieve the expansion and contraction of the
+Figure 1 (Color online) The angle measurements.
+Figure 2 Uncertainty in formation scale based solely on angle con-
+trol.
