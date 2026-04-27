@@ -203,6 +203,26 @@ $\det(\lambda I-\hat A^\star)=(\lambda+k_v)^4\prod_{i=1}^8(\lambda^2+k_v\lambda-
 
 **证明** 由第 3.1 节可知，原始误差中的 $e_{\theta_3}$ 可以由 $\hat\eta$ 唯一光滑恢复，因此第 3.2 节给出的最小闭环误差系统在原点附近构成一个 20 维局部自治系统。再由第 4.2 节可知，其线性化矩阵 $\hat A^\star$ 为 Hurwitz 矩阵。于是由引理 1 可得原点局部指数稳定。证毕。
 
+**引理 2（matched 加速度扰动下的局部 ISS / UUB 口径）** 设受扰系统写成
+\[
+\dot x=Ax+\phi(x)+Dw,
+\]
+其中 $A$ 为 Hurwitz 矩阵，$D$ 为常矩阵，且在原点附近有 $\|\phi(x)\|\le L\|x\|^2$。则存在原点附近的局部邻域与类 $\mathcal K$ 函数 $\gamma$，使得该系统关于输入 $w$ 局部输入到状态稳定。特别地，若 $w$ 有界且充分小，则状态局部一致最终有界；若 $w(t)\to 0$，则状态局部渐近收敛到原点。
+
+**证明** 取任意 $Q=Q^T>0$，令 $P=P^T>0$ 为 Lyapunov 方程 $A^TP+PA=-Q$ 的唯一解，并定义 $V(x)=x^TPx$。则
+\[
+\dot V\le -\lambda_{\min}(Q)\|x\|^2+2\|P\|L\|x\|^3+2\|PD\|\|x\|\|w\|.
+\]
+在充分小邻域内可使 $2\|P\|L\|x\|\le \lambda_{\min}(Q)/2$，从而
+\[
+\dot V\le -\frac{\lambda_{\min}(Q)}{2}\|x\|^2+2\|PD\|\|x\|\|w\|.
+\]
+再由 Young 不等式，对任意 $a,b>0$ 有 $2ab\le \frac{\lambda_{\min}(Q)}{4}a^2+\frac{4}{\lambda_{\min}(Q)}b^2$，于是得到
+\[
+\dot V\le -\frac{\lambda_{\min}(Q)}{4}\|x\|^2+\frac{4\|PD\|^2}{\lambda_{\min}(Q)}\|w\|^2.
+\]
+再结合 $\lambda_{\min}(P)\|x\|^2\le V(x)\le \lambda_{\max}(P)\|x\|^2$ 以及标准比较引理，即得系统关于 $w$ 的局部 ISS 估计。由局部 ISS 的标准推论可知：当 $w$ 有界且充分小时，状态局部一致最终有界；当 $w(t)\to 0$ 时，状态局部渐近收敛到原点。证毕。
+
 ## 5. 坐标无关推广与固定分支实现说明
 
 ### 5.1 固定分支上任意同构目标方形的坐标无关推广
@@ -233,7 +253,27 @@ $\det(\lambda I-\hat A^\star)=(\lambda+k_v)^4\prod_{i=1}^8(\lambda^2+k_v\lambda-
 
 **证明** 在 $P^\dagger$ 处有 $n_{142}^\dagger=\bar n_d=s^\star n_d$，故 $s^\star n_{142}^{\dagger T}n_d=1$。由 $n_{142}(p)$ 的连续性，存在平衡点邻域 $\mathcal U_{sw}$ 使得 $|s^\star n_{142}(p)^Tn_d-1|<\varepsilon$，其中 $0<\varepsilon<1-\delta_h$。于是对任意 $p\in\mathcal U_{sw}$ 都有 $s^\star n_{142}(p)^Tn_d>1-\varepsilon>\delta_h$。由于初始分支已满足 $s_0=s^\star$，迟滞更新判据在全部更新时刻都会保持在目标分支一侧，因此不会触发跨分支切换，故 $s_k$ 始终保持为 $s^\star$。证毕。
 
-由命题 1 与命题 2 可知，在“控制方案中不启用饱和控制、LESO 在该局部邻域内精确补偿绳索张力、初始分支已正确、轨道始终停留在局部邻域内”这一组条件下，实际外环实现退化为本文的固定分支冻结名义模型，因此定理 2 与推论 1 可直接作用于该实现。若 $\varepsilon_i^{rope}$ 仅小而不恒为零，则更自然的口径是把其视为经速度通道进入的附加输入，此时系统可获得局部 ISS、局部一致最终有界或在 $\varepsilon_i^{rope}(t)\to 0$ 时的局部渐近收敛，而本文不再声称严格的局部指数稳定。
+在命题 2 给出的固定分支局部邻域内，即使 LESO 对绳索张力的补偿不精确，真实最小内部误差系统仍可写成受扰形式
+\[
+\dot{\hat X}=\hat A^\star \hat X+\hat\phi(\hat X)+D_\varepsilon \varepsilon^{rope},
+\qquad
+D_\varepsilon=
+\begin{bmatrix}
+0_{8\times 12}\\
+I_{12}
+\end{bmatrix},
+\]
+其中 $\varepsilon^{rope}=[(\varepsilon_1^{rope})^T,(\varepsilon_2^{rope})^T,(\varepsilon_3^{rope})^T,(\varepsilon_4^{rope})^T]^T\in\mathbb R^{12}$ 为 LESO 与绳索张力之间的补偿残差堆叠向量，且 $\hat\phi(\hat X)$ 满足与定理 1 相同的局部二阶有界性质。
+
+**命题 3（LESO 与绳索张力存在补偿残差时的局部 ISS / UUB 口径）** 在定理 1 与命题 2 的条件下，若 $\varepsilon^{rope}$ 在某局部邻域内有界，则上述真实最小内部误差系统关于输入 $\varepsilon^{rope}$ 局部输入到状态稳定。特别地：
+
+1. 若 $\|\varepsilon^{rope}(t)\|$ 一致有界且充分小，则 $\hat X(t)$ 局部一致最终有界；
+2. 若 $\varepsilon^{rope}(t)\to 0$，则 $\hat X(t)\to 0$；
+3. 若进一步有 $\varepsilon^{rope}\equiv 0$，则恢复定理 1 和定理 2 的局部指数稳定结论。
+
+**证明** 由命题 2 可知，在该局部邻域内实际分支逻辑退化为固定分支逻辑；因此补偿残差仅通过速度通道进入最小内部误差系统，并可写成上述受扰形式。又由于定理 1 已证明 $\hat A^\star$ 为 Hurwitz，且 $\hat\phi(\hat X)$ 满足局部二阶有界条件，故直接对受扰系统应用引理 2，即得该系统关于 $\varepsilon^{rope}$ 的局部 ISS 结论。由局部 ISS 的标准推论分别得到局部一致最终有界、残差渐消下的局部渐近收敛以及零残差下恢复局部指数稳定。证毕。
+
+由命题 1 与命题 2 可知，在“控制方案中不启用饱和控制、LESO 在该局部邻域内精确补偿绳索张力、初始分支已正确、轨道始终停留在局部邻域内”这一组条件下，实际外环实现退化为本文的固定分支冻结名义模型，因此定理 2 与推论 1 可直接作用于该实现。若 LESO 与绳索张力之间存在补偿残差，即 $\varepsilon_i^{rope}\not\equiv 0$，则不能再直接声称严格的局部指数稳定，此时更自然的结论口径如命题 3 所示，应理解为局部 ISS、局部一致最终有界或残差渐消下的局部渐近收敛。
 
 ## 6. 物理可解释误差的回传结论
 

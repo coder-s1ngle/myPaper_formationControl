@@ -1,0 +1,2556 @@
+
+
+===== PAGE 1 =====
+6130 IEEE TRANSACTIONS ON AUTOMA TIC CONTROL, VOL. 68, NO. 10, OCTOBER 2023
+Angle Rigidity for Multiagent Formations in 3-D
+Liangming Chen and Ming Cao , Fellow, IEEE
+Abstract—This article establishes the notion and prop-
+erties of angle rigidity for 3-D multipoint frameworks with
+angle constraints, and then designs direction-only control
+laws to stabilize angle rigid formations of mobile agents in
+3-D. Angles are deﬁned using the interior angles of trian-
+gles within the given framework, which are independent of
+the choice of coordinate frames and can be conveniently
+measured using monocular cameras and direction-ﬁnding
+arrays. We show that 3-D angle rigidity is a local prop-
+erty, which is in contrast to the 3-D bearing rigidity as has
+been proved to be a global property in the literature. We
+demonstrate that such angle rigid and globally angle rigid
+frameworks can be constructed through adding repeatedly
+new points to the original small angle rigid framework with
+carefully chosen angle constraints. We also investigate how
+to merge two 3-D angle rigid frameworks by connecting
+three points of one angle rigid framework simultaneously
+to the other. When angle constraints are given only in the
+surface of a framework, angle rigidity of convex polyhedra
+is studied, in which the cases of triangular face and triangu-
+lated face are considered, respectively. The proposed 3-D
+angle rigidity theory is then utilized to design decentralized
+formation control strategies using local direction measure-
+ments for teams of mobile agents. Simulation examples are
+provided to validate the convergence of the formations.
+Index Terms —3-D angle rigidity, angularity, direc-
+tion/angle measurements, formation control, multiagent
+systems.
+I. I NTRODUCTION
+R
+IGIDITY of multipoint frameworks has been extensively
+studied for centuries as a mathematical topic in graph
+theory [1], [2], which has also been used as an insightful notion
+in many application scenarios, e.g., multiagent formations [3],
+material structures [4], and biological tissues[5]. Rigidity theory
+has primarily been used to characterize the stiffness of a frame-
+work with distance constraints for the discussion of distance
+rigidity [6]. When such constraints are properly chosen, the
+multipoint framework can be locally (resp. globally) rigid if all
+the interpoint distances are constant under local (resp. global)
+Manuscript received 27 January 2022; revised 26 July 2022 and 14
+December 2022; accepted 30 December 2022. Date of publication 17
+January 2023; date of current version 27 September 2023. Recom-
+mended by Associate Editor K. Cai. (Corresponding author: Liangming
+Chen.)
+Liangming Chen is with the Faculty of Science and Engineering,
+University of Groningen, 9747 Groningen, The Netherlands, and also
+with the Center for Control Science and T echnology , Southern Uni-
+versity of Science and T echnology , Shenzhen 518055, China (e-mail:
+chenlm6@sustech.edu.cn).
+Ming Cao is with the Faculty of Science and Engineering, University of
+Groningen, 9747 Groningen, The Netherlands (e-mail: m.cao@rug.nl).
+Color versions of one or more ﬁgures in this article are available at
+https://doi.org/10.1109/T AC.2023.3237799.
+Digital Object Identiﬁer 10.1109/T AC.2023.3237799
+perturbations; otherwise, the framework is said to be nonrigid or
+ﬂexible [7]. Therefore, how to select distance constraints to con-
+struct distance rigid frameworks and how to check a framework’s
+distance rigidity constitute the main subjects of distance rigidity
+theory [6]. However, those construction and checking conditions
+depend on the dimensiond of the space where those vertices are
+embedded. For example, for generic frameworks, Hendrickson
+has conjectured that if a graph G is (d +1 )-connected and
+redundantly rigid (the deﬁnition of redundant rigidity can be
+found in [7, Sect. 1.2]), then G is globally rigid, which has later
+been proved to be true for d =1 , 2 [8] but false for d ≥3 [9].
+Recently, bearing rigidity has been studied for frameworks with
+bearing constraints [10], [11], [12]. According to [10], when
+bearing constraints are given in coordinate frames with the same
+orientation, local bearing rigidity implies global bearing rigidity
+for an arbitrary dimension d. Without relying on the alignment
+of coordinate frames, angle rigidity has been studied recently for
+2-D frameworks [13], [14] andd-dimensional frameworks [15],
+respectively. However, even when angle constraints are deﬁned
+with a speciﬁc direction in 2-D [14], it has been shown that the
+resulting angle rigidity is a local property since angle rigidity
+does not imply global angle rigidity. Although 2-D angle rigidity
+[13], [14] and algebraic checking conditions for d-dimensional
+angle-constrained frameworks have been developed [15], angle
+rigidity in 3-D is more complicated and its main properties, such
+as construction methods, have not been adequately studied.
+In addition to the theoretical signiﬁcance, rigidity theory plays
+an important role in the application of multiagent formations[3],
+[16], [17], [18]. Using distance rigidity, formation control laws
+have been proposed for a team of mobile agents with relative
+position measurements in their local coordinate frames [19],
+[20], [21]. To make full use of low-cost and lightweight onboard
+sensors, e.g., monocular cameras and sensor arrays [22],u s i n g
+bearing rigidity theory, a bearing-only formation law has been
+designed [10] for a group of agents with aligned coordinate
+frames. Without the requirement on the alignment of agents’
+coordinate frames, angle/direction-based formation control al-
+gorithms have been proposed using angle rigidity [13], [14]
+or inﬁnitesimal shape-similarity [15]. For the direction-only
+formation approaches proposed in [14], no communication and
+distance measurements among the agents are needed. However,
+the direction-only formation algorithms in [14], [15], [23] are
+only applicable to ground robots moving in the plane and there
+is need to further study the control design for angle-constrained
+formations in 3-D using direction-only measurements.
+Motivated by the application of 3-D multiagent formations us-
+ing direction-only measurements, we develop 3-D angle rigidity
+in this article. First, we show the selection of angle constraints to
+0018-9286 © 2023 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+See https://www.ieee.org/publications/rights/index.html for more information.
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 2 =====
+CHEN AND CAO: ANGLE RIGIDITY FOR MUL TIAGENT FORMA TIONS IN 3-D 6131
+construct angle rigid frameworks. Then, we investigate minimal
+angle rigidity and angle rigidity of convex polyhedra with angle
+constraints only in their surfaces. Using the developed theories,
+we propose formation control laws to achieve a desired angle
+rigid formation in 3-D using direction-only measurements. The
+formation is constructed iteratively through the proposed two
+types of vertex-addition operations starting from a triangular for-
+mation and adding each new agent into the existing formation by
+three new angle constraints, in which interagent communication
+is required for each newly added agent under the ﬁrst type of
+vertex-addition operation. The main contributions of this work
+are summarized as follows:
+1) The approaches of constructing and merging 3-D an-
+gle rigid frameworks are proposed. Compared with
+the approaches of constructing 2-D angle rigid frame-
+works [13], [14], a sequential construction approach is
+developed for 3-D angle rigid frameworks. Compared
+with algebraic conditions for checking angle rigidity de-
+veloped for 2-D and 3-D frameworks in [24] and general
+d-dimensional frameworks in [15], our proposed con-
+struction method provides a topological checking condi-
+tion. Moreover, the merging operation on two angle rigid
+frameworks is also developed.
+2) Angle rigidity of convex polyhedra is discussed. Rigid-
+ity of convex polyhedra is one of the oldest geometric
+problems [1], [2], [25]. The existing literature focuses on
+distance rigidity of convex polyhedra and the problem of
+angle rigidity of convex polyhedra has not been investi-
+gated so far. In this work, several topological conditions
+are developed to guarantee rigidity of convex polyhedra
+with angle constraints.
+3) Control laws using direction-only measurements are pro-
+posed to stabilize 3-D angle rigid formations. Compared
+with [13], [24], where the measurements of interagent rel-
+ative positions are needed, our proposed control laws only
+require direction measurements. Compared with [13],
+[14], [15], [23], where the agents lie in a 2-D plane, our
+proposed control laws are designed for agents moving in
+a 3-D space and their corresponding stability analysis is
+more challenging. Compared with [11], [12], [26], [27],
+where the desired bearing rigid formation (resp. designed
+bearing-based control law) relies on agents’ coordinate
+frames, our desired angle rigid formation (resp. designed
+angle-based control law) is independent of agents’ coor-
+dinate frames.
+The rest of this article is organized as follows. Section II
+introduces the preliminaries. Section III presents the 3-D an-
+gle rigidity. In Section IV, the application to 3-D multiagent
+formations using direction-only measurements is investigated.
+Simulation examples are provided in Section V. Finally, Sec-
+tion VI concludes this article.
+II. P RELIMINARIES
+A. Notations
+Consider a 3-D multipoint framework and use the vertex
+set V = {1, 2,...,N } to denote the set of indices of N ≥3
+vertices. Consider the embedding of the vertex set V in R3
+through which each vertexi is associated with a distinct position
+pi ∈R3 and letp =[ pT
+1 ,...,p T
+N ]T ∈R3N be the conﬁguration
+of all the vertices. Let Im, ×, λmax, and λmin be the m-by-m
+identity matrix, the cross product, the maximum eigenvalue, and
+the minimum eigenvalue of a symmetric matrix, respectively. A
+triangle, surface, polyhedron, and angle-constrained framework
+are denoted by △, S, P, and A, respectively.
+B. Angularity
+Since each angle is associated with three vertices and an edge
+of a graph is only associated with two vertices, the description of
+angle-constrained frameworks by using graphs associated with
+edges of two vertices is less convenient, which motivates us to
+use “angularities” as has been done in [14]. Now, we extend the
+notion of 2-D angularity deﬁned in [14] to 3-D. First, an angle
+setA⊂V×V×V is the set {(j,i,k ),j,i,k ∈V,j ̸= i ̸= k},
+of which each element is a triplet. Each such triplet (j,i,k ) will
+be used in this article to denote an angle formed by the vertices
+j,i, andk, and by conﬁning the magnitude of the angles, one can
+effectively enforce an angle constraint. We denote the number of
+elements of the angle setA by|A|. Then, the combination of the
+vertex setV, the angle setA, and the position vectorp is called an
+angularity, which we denote by A(V,A,p ). An element (j,i,k )
+inA, whenpi,pj , andpk are distinct, corresponds to the interior
+angle formed by the rays −→ij and−→ik; more speciﬁcally, using the
+position vector p, the angle ∡jik ∈[0,π] corresponding to the
+triplet (j,i,k ) in A can be calculated by
+∡jik = arccos
+(
+b⊤
+ijbik
+)
+(1)
+where ∡jik = ∡kij, the unit vector bij := (pj −pi)/lij repre-
+sents the direction −→ij , and lij := ∥pj −pi∥.
+Remark 1: The 2-D angle in [14] is calculated using the
+counterclockwise direction. However, the deﬁnition of each 3-D
+angle’s direction depends on the associated vertices’ coordinate
+frames, which are not assumed to be aligned and known in this
+3-D angle rigidity. Although the 3-D angle deﬁned in (1) does
+not need the notion of being counterclockwise, the 3-D angle
+constraints will rely on similar notions to be deﬁned later.
+III. 3-D A NGLE RIGIDITY
+In this section, we ﬁrst introduce 3-D angle rigidity, then
+introduce the merging operation for two angle rigid angularities,
+and in the end discuss angle rigidity of convex polyhedra. All the
+discussions are conﬁned to 3-D and the right-hand rule applies
+to all rotation operations of vectors.
+A. Angle Rigidity
+Before deﬁning angle rigidity, we ﬁrst deﬁne the relations of
+equivalence and congruence for two angularities.
+Deﬁnition 1 [14]: We say two angularities A(V,A,p ) and
+A′(V,A,p′) in 3-D with the same V andA are equivalent if
+∡jik(pj,pi,pk)= ∡jik
+(
+p′
+j,p′
+i,p′
+k
+)
+for all (j,i,k ) ∈A.
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 3 =====
+6132 IEEE TRANSACTIONS ON AUTOMA TIC CONTROL, VOL. 68, NO. 10, OCTOBER 2023
+Fig. 1. Flex ambiguity in an angle rigid angularity .
+Deﬁnition 2 [14]: We say that A and A′ are congruent if
+∡jik(pj,pi,pk)= ∡jik
+(
+p′
+j,p′
+i,p′
+k
+)
+for all j,i,k ∈V.
+According to Deﬁnitions 1 and 2, two equivalent (resp. con-
+gruent) angularities’ corresponding angles deﬁned in A (resp.
+all the angles deﬁned in V×V×V ) have the same value. Now,
+we can deﬁne global angle rigidity and angle rigidity.
+Deﬁnition 3 [14]: An angularity A(V,A,p ) in 3-D is glob-
+ally angle rigid if every angularity that is equivalent to it is also
+congruent to it.
+Deﬁnition 4 [14]: An angularity A(V,A,p ) in 3-D is an-
+gle rigid if there exists an ϵ> 0 such that every angularity
+A′(V,A,p′) that is equivalent to it and satisﬁes ∥p′ −p∥ <ϵ ,i s
+also congruent to it.
+According to Deﬁnitions 3 and 4, global angle rigidity always
+implies angle rigidity, but the inverse is not necessarily true.
+This is different from bearing rigidity for which global bearing
+rigidity and bearing rigidity are equivalent [10], [11], [28].
+Theorem 1: An angle rigid angularity A(V,A,p ) in 3-D is
+not necessarily globally angle rigid.
+Proof: We prove this theorem by constructing an angularity
+that is angle rigid but not globally angle rigid. Consider the angu-
+larity A(V,A,p ) in Fig. 1 withV = {1, 2, 3, 4},A = {(1, 3, 2),
+(3, 2, 1), (1, 4, 2), (1, 4, 3), (2, 4, 3)}, and the embedding p1 =
+[0, 0, 0]T,p 2 =[ 0, 3, 0]T,p 3 =[ 4, 5, 0]T,p 4 =[ 2, 4, 2.5]T.T h e
+corresponding angles ∡132, ∡321, ∡142, ∡341, ∡243 can be
+calculated via (1).
+We ﬁrst check whether A(V,A,p ) is angle rigid. In △123,
+one can uniquely determine ∡213 = π−∡132−∡321, which
+implies that the interior angles in △123 are uniquely deter-
+mined. If point 4’s position could be uniquely determined by
+∡142, ∡143, ∡243, the other angles formed by 4 and 1,2,3
+would also be uniquely determined. To check the uniqueness
+of point 4 under ∡142, ∡143, ∡243, we ﬁrst show the surface
+which satisﬁes the angle constraint of∡142 given points 1 and 2.
+Since a 2-D angle constraint ∡142 allows point 4 to be in an arc
+ı12 [see Fig. 2(a)], the angle constraint of ∡142 in 3-D gives
+rise to a closed surface [see Fig. 2(b)] formed by rotating the
+arc ı12 along the line 12 in Fig. 2(a). Given points 1, 2, and 3
+and angles ∡142, ∡143, ∡243, point 4 can be determined by
+three such surfaces. By numerically checking the intersections
+of these three surfaces in Fig. 3(a), one can see that there are
+four separate points of intersection [see Fig. 3(b)] in these three
+Fig. 2. Extension of angle constraints from 2-D to 3-D. (a) 2D angle
+∡142. (B) 3D angle ∡142. (C) 2D angle ∡214. (D) 3D angle ∡214.
+Fig. 3. Intersection of three surfaces. (a) Three surfaces. (b) Surfaces’
+intersected curves.
+Fig. 4. Nongeneric p changes rigidity .
+surfaces. Therefore, when p1,p 2,p 3,p 4 are locally perturbed,
+there is only one unique position for point 4 in the neighborhood
+of its current position because these four intersection points are
+separate. More speciﬁcally, there always exists a sufﬁciently
+small perturbation (corresponding to ϵ in Deﬁnition 4) such
+that every perturbed angularity satisfying the given ﬁve angle
+constraints is congruent to A, i,e., A is angle rigid.
+We now show that A(V,A,p ) is not globally angle
+rigid. Perturbing p4 in R3, one ﬁnds another point p′
+4 =
+[0.0802, 4.0778, 1.4765]T satisfying all the angle constraints
+associated withA together withp1,p 2,p 3,b u t∡412 = 0.675 ̸=
+∡4′12 = 0.348. This ﬂex ambiguity shown in Fig.1 implies that
+A is not globally angle rigid.
+Note that nongeneric embeddings of p in R3 may change
+rigidity properties. Now, we consider three different embed-
+dings of a four-vertex angularity. When ∡213 = 0, ∡143 = 0
+as shown in Fig. 4(a), the angularity is angle rigid but not
+globally angle rigid since if 2 and 3 swap their positions,
+∡213, ∡143 remain the same but ∡234 changes by π.O nt h e
+other hand, Fig. 4(b) shows that when the same two angles are
+assigned to be ∡213 = π,∡143 = π, the angularity becomes
+globally angle rigid according to Deﬁnition 3. Note that in
+the above two cases, all the four points are collinear. When
+only three points are collinear as in Fig. 4(c), this angularity
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 4 =====
+CHEN AND CAO: ANGLE RIGIDITY FOR MUL TIAGENT FORMA TIONS IN 3-D 6133
+is in general ﬂexible if fewer than four angle constraints are
+given according to 2-D angle rigidity [ 14, Th. 3] since points
+1,2,3,4 are in a plane in this case. By giving three generic angles
+(e.g., not 0 or π)f o r ∡213, ∡143, ∡413 and one nongeneric
+angle ∡234 = πin Fig. 4(c), the angularity becomes glob-
+ally angle rigid because ∡124 = π−∡213−∡143−∡413,
+∡132 = ∡413 + ∡143, and ∡134 = π−∡132 are all uniquely
+determined. However, four vertices in general form a tetrahedron
+in 3-D. To rule out nongeneric situations for p, the notion of
+generic positions can be used. Following [ 7, Sec. 1.2], we say p
+is a generic position vector if its components are algebraically
+independent. We say an angularity A(V,A,p ) is generically
+(globally) angle rigid if p is generic and A is (globally) angle
+rigid; please refer to [7], [29] for more properties of generic
+rigidity.
+Since an angle rigid angularity is not necessarily globally
+angle rigid, 3-D angle rigidity is a local property, which is
+not related to the number of angle constraints imposed on
+a speciﬁc angularity. However, if one wants to construct an
+angle rigid structure efﬁciently, the number of angle constraints
+and their distributions within an angularity become central,
+which motivates us to develop sufﬁcient conditions to guarantee
+global angle rigidity. First, for two angularities A(V,A,p ) and
+A′(V,′ A,′ p′),w es a y A is a subangularity of A′ if V⊂V ′,
+A⊂A ′ andp is the corresponding subvector ofp′. For the small-
+est angularities with only three vertices, there is no difference
+between generic angle rigidity and generic global angle rigidity.
+Lemma 1 [14]: If a three-vertex angularity in 3-D is generi-
+cally angle rigid, it is also generically globally angle rigid.
+Proof: This is straightforward by following the proof in 2-D
+angle rigidity [ 14, Lemma 1].
+Now, we develop the vertex addition operations for 3-D angle
+rigidity to construct an angle rigid angularity from the smallest
+three-vertex angularity. Toward this end, we ﬁrst deﬁne some
+related notions.
+Deﬁnition 5: For a given angularity A(V,A,p ), we say that
+1) a new vertex i positioned atpi is linearly constrained with
+respect to A if there is j ∈V such that pi ̸= pj and pi is
+constrained to be on a ray −→ji starting from pj , e.g., p4 is
+constrained in ray −→14 in Fig. 2(a).
+2) i is conically constrained with respect to A if there
+are j,k ∈V such that {pi,pj,pk} is generic and pi is
+constrained to be on a cone Cj→k with pj as the cone’s
+apex and −→jk as the cone’s axis, e.g., p4 is constrained in
+coneC1→2 in Fig. 2(d).
+3) i is near-spherically constrainedwith respect toA if there
+are j,k ∈V such that {pi,pj,pk} is generic and pi is
+constrained to be on a near-spherical surface Sjk withjk
+in the surface’s rotation axis, e.g., p4 is constrained in
+near-spherical surface S12 in Fig. 2(b).
+For convenience, we also simply say i’s angle constraint
+is linear, conic, and near-spherical in the above three cases,
+respectively.
+In contrast to the linear and quadratic constraints from 2-D an-
+gles [see Fig.2(a) and (c)], each angle constraint in 3-D generally
+determines a surface [see Fig.2(b) and (d)] making computations
+and the exploration of its properties in 3-D more challenging.
+Fig. 5. Counterclockwise, clockwise, and linear constraints. (a) Coun-
+terclockwise constraint. (b) Clockwise constraint. (c) Linear constraint.
+To deal with this challenge, inspired by those formation control
+approaches where counterclockwise direction information
+among agents is employed to exclude formations’ ambigui-
+ties [30], [31], we also utilize counterclockwise direction con-
+straints for 3-D angle rigidity to exclude angularities’ ambigui-
+ties.
+Deﬁnition 6: For four points i,j,k,m in generic positions
+pi,pj,pk,pm,w es a y m is in a counterclockwise (resp. clock-
+wise) direction with respect to i,j,k if the signed volume of
+the tetrahedron formed by pm and pi,pj,pk is positive (resp.
+negative), i.e.,Vm−ijk = (pi−pm)T [(pj−pm)×(pk−pm)]
+6 > 0.C o r -
+respondingly, when the sign of the tetrahedron’s volume is ﬁxed
+to be positive (resp. negative), we say pm is under a counter-
+clockwise (resp. clockwise) direction constraint with respect to
+pi,pj,pk, e.g., see Fig. 5(a) and (b).
+Remark 2: As shown in Fig. 5(c), two noncoincident conic
+constraints Cj→k1,Cj→k2 sharing the same apex pj will lead to
+two cones intersecting at no more than two rays, denoted by −→ji1
+and−→ji2. Since−→ji1 and−→ji2 are symmetric with respect to the plane
+formed by the two cones’ rotation axes−→jk1 and−→jk2, one has that
+Vi1−jk1k2 and Vi2−jk1k2 have different signs. Therefore, each
+linear constraint can be obtained by two conic constraints with
+a common apex and an associated counterclockwise constraint.
+Motivated by Henneberg’s construction which has been seen
+as a cornerstone for distance rigidity theory, we now develop two
+types of vertex addition operations to construct global angle rigid
+and angle rigid angularities in 3-D, respectively.
+Deﬁnition 7 (Type-I vertex addition): For a given angularity
+A(V,A,p ), we say the angularity A′ with the augmented vertex
+set{V ∪{i}} is obtained from A through a Type-I vertex addi-
+tion if the new vertex i’s constraints with respect to A contain
+at least one of the following two cases:
+Case 1: two linear constraints −→j1i,−→j2i, in which {j1,j 2}⊆
+V, and −→j1i and −→j2i are not aligned but intersecting,
+see Fig. 6(a);
+Case 2: one linear constraint −→j1i and one conic constraint
+Cj1→j2 , in which{j1,j 2}⊆V , and−→j1i and−−→j1j2 are
+not aligned but intersecting, see Fig. 6(b).
+Deﬁnition 8 (Type-II vertex addition): For a given angularity
+A(V,A,p ), we say the angularity A′ with the augmented vertex
+set {V ∪{i}} is obtained from A through a Type-II vertex
+addition if the new vertex i’s constraints with respect to A
+contain at least one of the following two cases:
+Case 1: three near-spherical constraints Sj1j2,Sj1k1,Sj2k1
+with generic {pi,pj1,pj2,pk1} and {j1,j 2,k 1}⊆
+V, see Fig. 6(c).
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 5 =====
+6134 IEEE TRANSACTIONS ON AUTOMA TIC CONTROL, VOL. 68, NO. 10, OCTOBER 2023
+Fig. 6. T ype-I vertex addition and T ype-II vertex addition. (a) Case 1 in
+T ype-I vertex addition. (b) Case 2 in T ype-I vertex addition. (c) Case 1 in
+T ype-II vertex addition. (d) Case 2 in T ype-II vertex addition.
+Case 2: two near-spherical constraints Sj1k1,Sj4k1
+and one conic constraint Cj1→j4 with generic
+{pi,pj1,pj4,pk1} and {j1,j 4,k 1}⊆V ,s e e
+Fig. 6(d).
+Now, we are ready to present a sufﬁcient condition for global
+angle rigidity using Type-I vertex addition.
+Proposition 1: An angularity in 3-D is globally angle rigid if
+it can be obtained through a sequence of Type-I vertex additions
+starting from a generically angle rigid three-vertex angularity.
+Proof: According to Lemma 1, a generically angle rigid
+three-vertex angularity is globally angle rigid. Consider the two
+cases in the Type-I vertex addition given in Deﬁnition 7.I f
+case 1 applies, each linear constraint corresponds to a ray ac-
+cording to Deﬁnition 6. Then, the positionpi of the newly added
+vertexi is unique since two rays, not aligned, starting from two
+different points may intersect only at one point; if case 2 applies,
+pi is again unique since a ray starting from the axis of a cone can
+have only one intersection with the cone. Therefore,pi is always
+globally uniquely determined, after which all the involved angles
+are also globally uniquely determined. Then, iteratively, after a
+sequence of type-I vertex additions, the obtained angularity is
+globally angle rigid.
+In comparison, type-II vertex additions can only guarantee
+angle rigidity instead of global angle rigidity.
+Proposition 2: An angularity in 3-D is angle rigid if it can be
+obtained through a sequence of Type-II vertex additions starting
+from a generically angle rigid three-vertex angularity.
+The proof can be easily constructed following similar ar-
+guments as those for Proposition 1 and Theorem 1. The only
+difference is that pi now may have multiple isolated solutions
+and is only unique locally. Also, note that only two types of
+constraints are deﬁned in Type-II vertex addition operation
+in Deﬁnition 8, but there are more possible combinations of
+constraints which can also guarantee a locally unique point pi.
+Corollary 1: For an angularity A(V,A,p ), if there ex-
+ists an angle rigid (resp. globally angle rigid) subangularity
+A′(V,A,′ p) with A′ ⊂A, then A(V,A,p ) is also angle rigid
+(resp. globally angle rigid).
+Proof: Since the vertex set in the subangularityA′ is the same
+as A, one has from Deﬁnitions 3 and 4 that angle rigidity of the
+subangularity A′ implies angle rigidity of A.
+Remark 3: The associated counterclockwise direction con-
+straint introduced in Deﬁnition 6 can be used to remove the
+Fig. 7. Three-vertex addition operation and merging operation.
+reﬂection ambiguity such that the position of the added vertex i
+in the Type-I vertex addition operation (see Deﬁnition 7) can be
+globally uniquely determined. But this constraint is not sufﬁcient
+to make the position of the added point in Type-II vertex addition
+operation (see Deﬁnition 8) globally uniquely determined. An
+example is given in Fig. 1, where points 1, 2, 3 are in the
+clockwise direction with respect to both points 4 and 4’. In other
+words, not only reﬂection ambiguity but also ﬂex ambiguity may
+exist in Type-II vertex addition operation.
+Remark 4: Note that Propositions 1 and 2 can also be used
+as topological conditions to check global angle rigidity and
+angle rigidity of angularities that can be sequentially constructed
+from a triangle, respectively. For those angularities that are
+not constructed through such sequential operations, rank-based
+algebraic conditions can be employed to check their inﬁnitesimal
+or generic angle rigidity when the corresponding angularities’
+embeddingp is known [15, Th. 3].
+B. Merging two Angle Rigid Angularities
+After introducing how to add one vertex to an angularity
+in Propositions 1 and 2, we now investigate how to add three
+vertices to an angularity [see Fig. 7(a)], which becomes useful
+later for merging two angle rigid angularities.
+Deﬁnition 9 (Three-vertex addition operation): For a given
+angularity A(V,A,p ) and three new vertices {i1,i 2,i 3} ⊈ V,
+we say that the angularity A′ with the augmented vertex set
+{V ∪{i1,i 2,i 3}} is obtained from A through a three-vertex
+addition operation if the new vertices’ constraints with re-
+spect to A contain: two unaligned linear constraints −−→j1i1,−−→k1i1,
+two unaligned linear constraints −−→j2i2,−−→k3i2, and one conic con-
+straint Ci1→k1 and one associated counterclockwise constraint
+Vi3−i2i1k1 for i3, in which {j1,j 2,k 1,k 3}⊆V . We further de-
+note the angle set corresponding to these added angle constraints
+byA{i1,i2,i3}.
+Now, we merge a three-vertex generically angle rigid angu-
+larity to a globally angle rigid angularity by the three-vertex
+addition operation [see Fig. 7(a)].
+Proposition 3: For a globally angle rigid angularity
+A(V,A,p ) and a three-vertex generically angle rigid
+angularity A3
+(
+{i1,i 2,i 3},A3, [pT
+i1,p T
+i2,p T
+i3 ]T)
+, if one merges
+A and A3 by adding the vertices i1,i 2,i 3 to A through the
+three-vertex addition operation, then the merged angularity
+A′
+(
+V∪{i1,i 2,i 3},A∪A 3 ∪A{i1,i2,i3},
+[
+pT,p T
+i1,p T
+i2,p T
+i3
+]T)
+is globally angle rigid.
+Proof: Note that the positions of the added vertices i1 and
+i2 are globally unique according to Proposition 1 (case 1 of
+Type I vertex addition). After pi1 and pi2 are ﬁxed, the vertex
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 6 =====
+CHEN AND CAO: ANGLE RIGIDITY FOR MUL TIAGENT FORMA TIONS IN 3-D 6135
+i3 is constrained on the intersection of two cones with i1i2
+as these two cones’ rotation axis because A3 is generically
+angle rigid and ∡i3i1i2 and ∡i3i2i1 are ﬁxed. By further us-
+ing the given conic constraint for i3 together with the asso-
+ciated counterclockwise constraint, one has that the position
+of the added vertex i3 is also globally unique according to
+Proposition 1 (case 2 of Type-I vertex addition).
+Since the vertex set and the embedding of A are different
+from those of A′, Corollary 1 cannot be used as the the proof
+of Proposition 3.F i g .7(a) shows the original angle constraints
+to realize the three-vertex addition operation. According to [15]
+and [24], the minimum number of angle constraints to guar-
+antee an N -node angle-constrained framework’s angle rigidity
+is 3N −7. Therefore, the number of these angle constraints
+in Fig. 7(a) is 7 because the total degrees of freedoms for
+vertices i1,i 2,i 3 in 3-D is 9, and at least two angle con-
+straints are needed to make A3 generically angle rigid. Thus,
+at least 9-2 =7 angle constraints related to i1,i 2,i 3 are needed
+to merge A3 with A. Deﬁnition 9 only gives one set of angle
+constraints for merging operation under global angle rigidity,
+and there are many other acceptable sets, especially when the
+number of angle constraints is larger than 7 or the merged
+angularity is only required to be angle rigid. Now, we dis-
+cuss how to merge two angle rigid angularities as shown in
+Fig. 7(b).
+Proposition 4: Suppose that the angularity A1(V1,A1,p )
+is globally angle rigid and A2 (V2,A2,p′) with V1 ∩
+V2 = ∅ has a subangularity A′
+2 (V2,A′
+2,p′) which can
+be obtained through a sequence of Type-I vertex addi-
+tions from a generically angle rigid three-vertex angular-
+ity A3
+(
+{i1,i 2,i 3},A3,
+[
+pT
+i1,p T
+i2,p T
+i3
+]T)
+. If one merges A1
+and A2 by adding the vertices i1,i 2,i 3 to A1 through the
+three-vertex addition operation, then the merged angular-
+ity A′′
+(
+V1 ∪V2,A1 ∪A2 ∪A{i1,i2,i3},
+[
+pT,p′T]T)
+is glob-
+ally angle rigid.
+Proof: According to Proposition 3, adding the vertices
+i1,i 2,i 3 to A1 through the three-vertex addition operation yields
+global angle rigidity of the merged angularity with augmented
+vertex set{V1 ∪{i1,i 2,i 3}}. According to Proposition 1, Since
+A′
+2 can be obtained through a sequence of Type-I vertex ad-
+ditions from A3, one has global angle rigidity of the angu-
+larity A′
+1−2
+(
+V1 ∪V2,A1 ∪A′
+2 ∪A{i1,i2,i3},
+[
+pT,p′T]T)
+after
+merging A1 and A′
+2. Because the angularity A′
+1−2 is a suban-
+gularity of A′′, the merged angularity A′′ is globally angle rigid
+according to Corollary 1.
+C. Minimal Angle Rigidity
+Minimal angle rigidity plays an important role in deriving
+angle rigidity’s necessary and sufﬁcient conditions. Inspired by
+Laman theorem for 2-D distance-constrained frameworks, we
+now present some results on 3-D inﬁnitesimal minimal angle
+rigidity, whose deﬁnition is the same as [ 14, Deﬁnitions 9 and
+10] after replacing 2-D by 3-D. Thus, for more details about the
+deﬁnition of inﬁnitesimal minimal angle rigidity, we refer the
+readers to [14].
+Lemma 2: A 3-D angularity A(V,A,p ) is inﬁnitesimally
+minimally angle rigid if and only if it is inﬁnitesimally angle
+rigid and |A| =3 |V|− 7.
+The proof of Lemma 2 follows straightforwardly from the
+fact that the magnitude of each 3-D angle is invariant under its
+associated vertices’ overall translation, rotation, and scaling.
+Lemma 3: A 3-D inﬁnitesimally minimally angle rigid angu-
+larity must have a vertex associated with more than 2 but fewer
+than 9 angle constraints.
+From Lemma 2, the proof of Lemma 3 can be obtained
+straightforwardly by following the proof of [ 14, Lemma 4].
+However, according to Lemma 3, there are six cases for the
+number of the vertex’s associated constraints, which makes it
+challenging to use Laman’s induction method to get a neces-
+sary condition for angle rigidity. Instead, we focus on a spe-
+cial class of angularity, namely tetrahedral angularity whose
+angle set A is a tetrahedral angle set. We say A is a trian-
+gular angle set if for every (i1,j 1,k 1) ∈A, there also exists
+{(j1,k 1,i 1), (k1,i 1,j 1)}⊂A .W es a yA is a tetrahedral angle
+set if A is a triangular angle set and for every triangular an-
+gle subset T△i1j1k1 := {(i1,j 1,k 1), (j1,k 1,i 1), (k1,i 1,j 1)}∈
+A, there always exists a vertex m ∈V,m ̸= i1 ̸= j1 ̸= k1
+such that T△i1j1 m ∈A, T△i1k1 m ∈A, T△j1k1 m ∈A.W es a y
+{T△i1j1k1,T△i1j1 m,T△i1k1 m,T△j1k1 m} is a tetrahedral angle
+subset corresponding to tetrahedron
+ mi1j1k1.
+Deﬁnition 10: An angularity A(V,A,p ) is said to be in-
+ﬁnitesimally minimally and tetrahedrally angle rigid if A is a
+tetrahedral angle set, A is inﬁnitesimally angle rigid and fails to
+remain so after removing any tetrahedron in A.
+Let n
+A ∈N be the number of tetrahedra in the tetrahedral
+angle set A.L e t ¯A be the multiset satisfying that each element
+of ¯A is a triplet, ¯A consists of n
+A tetrahedral angle subset of A,
+| ¯A| =3 ∗4∗n
+A , and duplicate elements may exist in ¯A.
+Proposition 5: For an inﬁnitesimally minimally and tetra-
+hedrally angle rigid angularity A(V,A,p ), one has that n
+A =
+⌈ 3|V|−7
+5 ⌉, and A must have a vertex associated with one or two
+tetrahedra in ¯A.
+Proof: First, we prove n
+A = ⌈ 3|V|−7
+5 ⌉. From Lemma 2, an-
+gle rigid angularities’ minimum number of independent angle
+constraints (the deﬁnition of independent angles is given in [ 14,
+Deﬁnition 8]) is 3|V|− 7. Since each tetrahedron has ﬁve in-
+dependent angle constraints, one has n
+A = ⌈ 3|V|−7
+5 ⌉. Then, we
+prove A must have a vertex associated with one or two tetrahedra.
+Suppose on the contrary that each vertex is associated with at
+least three tetrahedra in ¯A. Since ¯A is a tetrahedral angle set and
+each vertexm will show up nine times in its associated tetrahe-
+dral angle subset {T△i1j1k1,T△i1j1 m,T△i1k1 m,T△j1k1 m},a l l
+the vertices’ appearance times in ¯A will be at least 3∗9∗|V|.
+However, the set ¯A only has 3∗4∗n
+A triples, i.e., all the
+vertices’ total appearance times in ¯A are 3∗12∗n
+A . Since
+36n
+A =3 6⌈ 3|V|−7
+5 ⌉ < 27|V|, this implies a contradiction, for
+which A must have a vertex associated with one or two tetrahe-
+dra.
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 7 =====
+6136 IEEE TRANSACTIONS ON AUTOMA TIC CONTROL, VOL. 68, NO. 10, OCTOBER 2023
+Although there are only two cases for the number of the
+vertex’s associated tetrahedra in an inﬁnitesimally, minimally
+and tetrahedrally angle rigid angularity, the combinatory form of
+those tetrahedra with respect to the other vertices inV is multiple,
+which makes it challenging to obtain a similar conclusion like
+Laman’s theorem. Nevertheless, the conclusions presented in
+this section can be a foundation for further investigation of 3-D
+minimal angle rigidity.
+D. Angle Rigidity of Convex Polyhedra
+As is well known, distance rigidity of convex polyhedra is
+one of the oldest geometric problems and has been studied
+by Euler [1], Cauchy [2], and Gluck [25], to name a few.
+Although many distance rigidity-related results have been ob-
+tained for convex polyhedra, the problem of angle rigidity of
+convex polyhedra1 has not been investigated so far. Instead of
+using edge-based frameworks, we use angularities introduced in
+Section II-B to describe polyhedra with angle constraints.
+For a convex polyhedron P , we deﬁne the corresponding
+angularity A(V,A,p ), where V is the vertex set consisting of
+all the vertices of P , A is the angle set consisting of all the
+angles2 of the faces of P , and p is the position vector of the
+3-D embedding of the vertices in V. Deﬁne the angle function
+fA(p): =[ f1,...,f |A|]T ∈R|A| for the angularity A(V,A,p )
+where fm : R9 → [0,π], m =1 ,..., |A|, is the mapping from
+[pT
+i ,p T
+j ,p T
+k ]T of the mth element (i,j,k ) in A to the angle
+∡ijk. The main difference between this section and the previous
+sections is that the angle constraints of a polyhedron are not in
+a cascading sequence, but all on its surfaces.
+Lemma 4 ([32], Sec. 10.3.2, Th. 1): If all angles on the faces
+of a convex polyhedron P remain constant when A is perturbed,
+then all the dihedral angles of P remain constant.
+Lemma 5 ([32], Sec. 10.4.1, Th. 1): If all edge lengths, angles
+in faces, and dihedral angles of a convex polyhedron P remain
+constant under a perturbation of A, then the perturbation must
+be a translation or rotation of A.
+With the properties of the perturbation provided in Lemmas
+4 and 5, we now provide a speciﬁc class of A such that these
+properties can be used for angle rigidity of convex polyhedra.
+Theorem 2: The angularity A(V,A,p ) obtained from a con-
+vex polyhedron P with all faces being triangles is angle rigid.
+Proof: Following Deﬁnition 1, we consider A’s equivalent
+angularity A′(V,A,p′) with∥p′ −p∥ <ϵ ,ϵ> 0, and denote by
+P′ the corresponding polyhedron. SinceA and A′ are equivalent,
+each two corresponding face angles in A and A′ have the same
+value (i.e., fA(p)= fA(p′)). According to Lemma 4, one has
+that each two corresponding dihedral angles formed by two
+adjacent faces in P and P′ have the same value.
+Considering an arbitrary face triangle △ijk,i,j,k ∈V,
+one has △ijk(pi,pj,pk) ∼△ijk(p′
+i,p′
+j,p′
+k). Now, we scale
+1We only consider closed polyhedra in this article.
+2For a closed polyhedron, one can easily distinguish the inside that its surfaces
+enclose from its outside, so it is possible to deﬁne the positive directions of
+the faces to be the normals pointing outwards. Therefore, the angle constraints
+on the surfaces of such a polyhedron can be associated with the clockwise or
+counterclockwise directions.
+Fig. 8. Angle rigidity of convex polyhedra. (a) Convex polyhedron with
+triangular surfaces. (b) Surface triangulation. (c) Coplanar face.
+A′ to obtain A′′, which satisﬁes ∥pi −pj∥ = ∥p′′
+i −p′′
+j∥,
+∥pi −pk∥ = ∥p′′
+i −p′′
+k∥ and ∥pk −pj∥ = ∥p′′
+k −p′′
+j∥. We de-
+note the scaled polyhedron by P′′. Since the scaling will not
+change all (face or dihedral) angles of a polyhedron, one
+hasfA∗−A(p′)= fA∗−A(p′′) andfA(p′)= fA(p′′), where A∗=
+{(i,j,k )|∀i,j,k ∈A,i ̸= j ̸= k} is the complete angle set.
+Now, we checkA and A′′. First, all the face angles have the same
+values in A and A′′ becausefA(p)= fA(p′)= fA(p′′). Second,
+all the dihedral angles in P and P′′ have the same values because
+P and P′ have the same dihedral angles and A′′ is a scaling
+of A′. Third, because △ijk(pi,pj,pk) ≃△ ijk(p′′
+i,p′′
+j,p′′
+k),t h e
+lengths of the edges in P have the same values as the lengths of
+the corresponding edges in P′′, which can be obtained by using
+the law of sines iteratively for the face triangles in P and P′′.
+From the above three facts and using Lemma5 for A and A′′, one
+has that A′′ is the translation or rotation of A, under which the
+values of all triple-vertex angles remain unchanged. It follows
+that fA∗−A(p)= fA∗−A(p′′)= fA∗−A(p′). Therefore, A and A′
+are congruent, and A is angle rigid.
+Instead of focusing on convex polyhedra with triangular faces
+[see Fig. 8(a)], we now study the case of convex polyhedra
+whose faces are not necessarily triangles. Note that when a face
+is not a triangle, the face’s vertices may become noncoplanar
+under perturbations, for which we now develop the operations
+of polygonal triangulation and surface triangulation.
+Deﬁnition 11 (Polygonal triangulation [29]): Polygonal tri-
+angulation is the decomposition of a polygon into a set
+of triangles where any two of these triangles either do
+not intersect at all or intersect at a common vertex or
+edge.
+Deﬁnition 12 (Surface triangulation): Surface triangulation
+for a polyhedron P is the decomposition of the surface of P
+using polygonal triangulation for each face of P and at the same
+time any two decomposed triangles from two faces of P either
+do not intersect at all or intersect at a common vertex or edge.
+An example of surface triangulation is shown in Fig. 8(b).
+Then, we deﬁne the corresponding triangulated angularity.
+Deﬁnition 13 (Triangulated polyhedral angularity): Let K
+be a surface triangulation of a polyhedron P with the vertex
+setV = {1, 2,...,N } and embeddingp =[ p⊤
+1 ,...,p ⊤
+N ]⊤. Then,
+we call A(V∪V ,′ A, [p⊤,p′⊤]⊤) a triangulated polyhedral an-
+gularity, where V′ is the vertex set consisting of the vertices
+added in the surface triangulation K, p′ is the corresponding
+embedding of the vertices in V′, and A denotes the angle set
+consisting of the interior angles of all polygonal faces of the
+polyhedron with vertices V∪V ′ and embedding [p⊤,p′⊤]⊤ and
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 8 =====
+CHEN AND CAO: ANGLE RIGIDITY FOR MUL TIAGENT FORMA TIONS IN 3-D 6137
+all the interior angles of triangles3 obtained byK for the surface
+of P . Then, the polyhedron corresponding to K is called a
+triangulated polyhedron ˜P .
+Note that if P is convex, we say its corresponding A is a
+convex triangulated polyhedral angularity. We ﬁrst present two
+lemmas which will be needed for the proof of the main result.
+Lemma 6: When locally perturbing the convex triangulated
+polyhedral angularity A
+(
+V∪V ,′ A,
+[
+p⊤,p′⊤]⊤)
+, the vertices
+of V∪V ′ that are on a face of ˜P are always coplanar under the
+angle constraints given in A.
+Proof: We ﬁrst prove that under the given angle constraints
+all the triangles in a face of ˜P will be coplanar under the
+local perturbation. Consider an arbitrary face S of ˜P whose
+vertices consist ofI = {i1,...,i m} wherem ≥3. Suppose that
+ik, 1 ≤k ≤m is one of the vertices in S and is involved in face
+triangles△j1ikj2,△j2ikj3,..., △jn−1ikjn wherej1,...,j n ∈
+I and j1,...,j n ̸= ik, and an example is in Fig. 8(c).N o t e
+that if j1 = jn−1 and j2 = jn, i.e., ik is only involved in
+one triangle △j1ikj2 in S, then one has that j1,ik,j 2 are
+coplanar since three arbitrary points in 3-D are coplanar.
+When ik is involved in more than one triangle in S, one has
+{(j1,ik,j 2), (j2,ik,j 3),..., (jn−1,ik,jn)}∈A , (j1,ik,jn) ∈
+A and ∡j1ikj2 + ∡j2ikj3 +··· ∡jn−1ikjn = ∡j1ikjn. Since
+all the vertices ofV andV’ lie on the boundary of the polyhedron,
+under the local perturbation, ik,j 1,j 2,...,j n must be coplanar;
+otherwise ∡j1ikj2 + ∡j2ikj3 +··· + ∡jn−1ikjn > ∡j1ikjn,
+which violates the given angle constraints. Note that for each
+triangle △ijk in face S, there always exists another triangle in
+face S that shares a common edge with △ijk. Without loss of
+generality, assume that the another triangle is △ij˜k and the in-
+tersected edge isij. Consider the ﬁrst case thati is only involved
+in these two triangles in face S. Then {(j,i,k ), (j,i, ˜k)}∈A ,
+(k,i, ˜k) ∈A and ∡jik + ∡ji˜k = ∡ki˜k. Under local perturba-
+tion, these two triangles are coplanar. The second case is that
+i is involved in multiple triangles, using the same argument
+for the shared vertex as ik, one has that these triangles are
+coplanar.
+To prove that all the vertices in each faceS is coplanar, we now
+consider that vertexik is involved inn−1 coplanar triangles in
+face S, and its neighboring vertexik+1 is involved in ˜n coplanar
+triangles in S, for which an example is in Fig. 8(c). Note that
+those n−1 triangles from ik and ˜n triangles from ik+1 must
+share at least one common triangle because of the existence of
+edge ikik+1. Then, those n +˜n−2 triangles of ik and ik+1
+should be coplanar, and thus all the these triangles’ vertices are
+coplanar. Next, if ik+1 has a different neighboring vertex than
+ik, we consider this vertex and label it ik+2. Using the previous
+argument again, one has that all triangles of ik,ik+1,ik+2 are
+coplanar. Using this argument repeatedly for new neighboring
+vertices until one reaches all vertices in I, one has that all the
+triangles in S∩Kare coplanar since the vertices of each triangle
+in S∩K lie in I. Because all the triangles in S∩K cover all
+the vertices in I, one has that the vertices of V∪V ′ that is in
+3Since the sum of three interior angles of each triangle is π, each triangle has
+one redundant angle in the angle set.
+S are coplanar under the perturbation. The same holds for the
+other faces of ˜P . □
+Lemma 7: When locally perturbing the convex triangulated
+polyhedral angularity A(V∪V ,′ A, [p⊤,p′⊤]⊤), if the scale of a
+triangle in a face of ˜P remains constant, then all the edge lengths
+of ˜P remain constant.
+Proof: Note that after triangulating the faces of the polyhe-
+dron P , the surface of ˜P becomes K, in which each triangle
+△ijk ∈K has three neighboring triangles and each of them
+shares a different edge with the triangle △ijk. When the scale
+of this arbitrary triangle△ijk inK is ﬁxed, its three neighboring
+triangles also have the same ﬁxed scale using the law of sines.
+Now, we show why the scales of all the other triangles in K
+are ﬁxed as well. Let the face where △ijk lies be S1 and the
+total number of triangles in S1 ism. Then, after ﬁxing the scale
+of the three neighboring triangles of △ijk, one can ﬁx △ijk’s
+neighboring triangles’ neighboring triangle; such a propagating
+ﬁxing process will ﬁx the scales of all the triangles in S1.N o w ,
+consider S1’s neighboring face S2 that shares at least one edge
+with S1. Since the scales of all triangles in S1 are ﬁxed, the
+length of this shared edge is ﬁxed and the scale of the triangle
+containing this edge in S2 is also ﬁxed. Apply for S2 the same
+argument for S1, all the triangles in S2 can be ﬁxed. Because
+the polyhedron P is closed, under the triangulation K, one can
+always ﬁx the neighboring triangles from those triangles with
+ﬁxed scale until all the triangles in K are ﬁxed. Therefore, all
+the edge lengths are constant provided that one triangle’s scale
+is constant. □
+Now, we present the main result about the convex triangulated
+polyhedral angularity.
+Theorem 3: A convex triangulated polyhedral angularity
+A(V∪V ,′ A, [p⊤,p′⊤]⊤) without any vertex of V′ lying in the
+interior of a face of P is angle rigid.
+Proof: We prove Theorem 3 following the proof of
+Theorem 2. According to Lemma 6, one has that the vertices
+ofV∪V ′ that are involved in a face of ˜P will be coplanar under
+the perturbation. Therefore, using Lemma4, each corresponding
+dihedral angle formed by two adjacent faces keep constant under
+the perturbation. On the other hand, Lemma 7 implies that all
+the edge lengths of ˜P keep constant under the given conditions.
+Based on these two facts and the proof of Theorem 2, one has
+that A is angle rigid. □
+A face in a convex polyhedron is said to be inﬁnitesimally
+angle rigid if the face can only translate, rotate and scale under
+any local perturbation. We now consider the case where each
+face of the convex polyhedron is inﬁnitesimally angle rigid.
+Corollary 2: A convex polyhedron with inﬁnitesimally angle
+rigid faces is angle rigid.
+The proof of this corollary follows the proof of Theorem2.O n
+the one hand, all angles in each face will remain constant under a
+perturbation according to the deﬁnition of inﬁnitesimally angle
+rigid face. On the other hand, translation and rotation of a face
+will not change the lengths of its edges. When one edge length
+is ﬁxed under the perturbation, the scale of the inﬁnitesimally
+angle rigid face is also ﬁxed, which implies that the lengths of
+the other edges of the face are ﬁxed. Note that each face of
+the convex polyhedron has at least three neighboring faces and
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 9 =====
+6138 IEEE TRANSACTIONS ON AUTOMA TIC CONTROL, VOL. 68, NO. 10, OCTOBER 2023
+each pair of them share a different edge with the original face.
+Therefore, by ﬁxing edge length iteratively, all the edge lengths
+of the polyhedron will be ﬁxed given one ﬁxed edge length in
+the polyhedron. From the above two facts and Lemma 5, one
+has that the convex polyhedron is angle rigid.
+E. Comparison With 2-D Angle Rigidity
+Recently, rigidity or inﬁnitesimal shape-similarity of 2-D
+angle-constrained frameworks has been investigated in [13],
+[14], [15]. Compared with the existing results in 2-D [13],
+[14], [15], the contributions of the developed 3-D angle rigidity
+in this article lie in three aspects. First, we show in Section
+III-A that each angle constraint determines a conic or near-
+spherical surface in 3-D, where a counterclockwise constraint
+is deﬁned to avoid reﬂection ambiguity. Second, the approaches
+of constructing and merging 3-D angle rigid frameworks are
+proposed in Sections III-A and III-B. The proposed sequential
+construction approach for 3-D angle rigid and globally angle
+rigid frameworks can also be employed as topological conditions
+to check 3-D frameworks’ angle rigidity. Last, angle rigidity of
+convex polyhedra is discussed in Section III-C, in which all
+the angle constraints only lie in the faces of polyhedra and
+no sequential construction from the given angle constraints is
+applicable.
+IV . APPLICA TION TO 3-D DIRECTION-ONL YFORMA TIONS
+In the applications of autonomous aerial refueling, drone
+swarm’s group display, and satellite formation keeping [33],
+a desired 3-D formation is usually required to be formed by
+those teams of vehicles, where 2-D angle-based formation algo-
+rithms [13], [14], [15], [23] cannot be used. In addition, many
+proposed formation control algorithms require the measure-
+ments of aligned bearings [10], [34], bearings under speciﬁc
+coordinate frames [11], [26], or relative positions [13], [19],
+[24], [35]. An angle-based synthesized controller is proposed
+in [36], which applies to d-dimensional space and arbitrary
+topology if interagent distance measurements are available. In
+some of those applications, compared with the aligned bearing
+or relative position measurements, direction (or local bearing)
+measurements are more accessible [14], [15], [22]. Therefore,
+in this section, we design direction-only formation algorithms to
+stabilize 3-D angle rigid formations with the help of 3-D angle
+rigidity theory that we have just developed.
+Consider a team of N ≥3 agents, labeled by 1, 2,...,N ,i n
+3-D, each of which is governed by single-integrator dynamics
+˙pi = ui,i =1 ,...,N (2)
+where pi ∈R3 denotes agent i’s position, and ui ∈R3 is the
+control input to be designed. Each agent i can measure the
+directions−→ij,j ∈Ni and only communicates with its neighbors
+when the formation is constructed by Type-I vertex addition,
+where Ni denotes agent i’s sensing neighbor set. Following
+Proposition 1 (case 2), we ﬁrst introduce a constructive mecha-
+nism for building an N -agent globally angle rigid formation by
+Type-I vertex addition. Denote byα∗
+jik ∈(0,π) agenti’s desired
+angle formed with agents j,k .
+Algorithm 1: Construct AnN -Agent Globally Angle Rigid
+Formation Based on Type-I V ertex Addition (Case 2).
+Step 1: Construct the ﬁrst triangular formation using three
+desired interior angles α∗
+312, α∗
+123,α∗
+231.
+Step 2: Add agent 4 using three desired interior angles
+α∗
+412,α∗
+421, α∗
+423 and one desired counterclockwise
+constraint of agent 4 with respect to agents 1, 2, 3.
+···
+Step k-2: Add agent k using three desired interior angles
+α∗
+ki1i2 ,α∗
+ki2i1 , α∗
+ki2i3,i 1 <k ,i2 <k ,i3 <k and one
+desired counterclockwise constraint of agent k with
+respect to agents i1,i 2,i 3.
+···
+Step N-2: Add agent N using three desired interior angles
+α∗
+Nj 1j2 ,α∗
+Nj 2j1 ,α∗
+Nj 2j3,j 1 <N,j 2 <N,j 3 <N and
+one desired counterclockwise constraint of agent N with
+respect to agents j1,j 2,j 3.
+Similarly, a mechanism based on the Type-II vertex addition
+can also be proposed to construct anN -agent angle rigid forma-
+tion. Correspondingly, in the follow-up sections, we ﬁrst control
+the ﬁrst three agents to form the desired triangular formation,
+and then control the remaining agents following the sequence
+of Type-I or Type-II vertex additions. Finally, we consider the
+control of convex polyhedral formations.
+A. Formation Control for the First Three Agents
+In this section, the control objectives for agents 1 to 3 are
+lim
+t→∞
+ei(t) = lim
+t→∞
+(
+α[i−1]i[i+1](t)−α∗
+[i−1]i[i+1]
+)
+=0 (3)
+where i =1 , 2, 3, [i]= i for i =1 ,.., 3, [i−1] = 3 for i =1 ,
+[i +1 ]=1 for i =3 , and αjik = arccos
+(
+bT
+ijbik
+)
+. Different
+from the bisector moving rule employed for 2-D angle rigid
+formations [14], motivated by [37], we design the following
+cyclic pursuing rule:
+ui(t)= −
+(
+α[i−1]i[i+1](t)−α∗
+[i−1]i[i+1]
+)
+bi[i+1](t) (4)
+where each agent i only needs to measure the directions−−−−→i[i +1 ] and −−−−→i[i−1] in its own coordinate frame to im-
+plement (4), and no interagent communication is required.
+Now, we study the angle error dynamics. Suppose lij (0) ̸=0
+and sinαjik (0) ̸=0 ,i,j,k =1 , 2, 3, then ∃T1 > 0 such that
+lij (t) ̸=0 , sinαjik (t) ̸=0 ,∀t ∈[0,T 1). Then for t ∈[0,T 1),
+according to the calculation of an angle’s time-derivative in [38,
+Eq. (6)]o r[ 14,E q . (31)], one has
+˙e1 =˙α312 = −
+(
+˙bT
+13b12 +bT
+13 ˙b12
+)
+/sinα312
+= −
+[Pb13 (˙p3 − ˙p1)
+l13 sinα312
+]T
+b12 −bT
+13
+Pb12 (˙p2 − ˙p1)
+l12 sinα312
+. (5)
+where Pb13 = I3 −b13b⊤
+13. By substituting (4) into (5),i tf o l -
+lows:
+bT
+13 ˙b12 = bT
+13Pb12/l12 [(α312 −α∗
+312)b12 −(α123 −α∗
+123)b23]
+= −(sinα312 sinα123/l12)(α123 −α∗
+123). (6)
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 10 =====
+CHEN AND CAO: ANGLE RIGIDITY FOR MUL TIAGENT FORMA TIONS IN 3-D 6139
+Similarly
+˙bT
+13b12 =
+(
+bT
+12Pb13/l13
+)
+[(α312−α∗
+312)b12−(α231−α∗
+231)b31]
+=
+(
+sin2 α312/l13
+)
+(α312 −α∗
+312). (7)
+By substituting (6) and (7) into (5), one obtains
+˙e1 = −(sinα312/l13)e1 +( s i nα123/l12)e2. (8)
+By following the steps similar to (5)–(8), one has the dynamics
+˙e2 and ˙e3. Then, one has the overall angle error dynamics of the
+ﬁrst three agents
+˙ef =
+⎡
+⎢⎣
+˙e1
+˙e2
+˙e3
+⎤
+⎥⎦ = F1(ef )ef =
+⎡
+⎢⎣
+−g312 g123 0
+0 −g123 g231
+g312 0 −g231
+⎤
+⎥⎦ef
+(9)
+where gjik =s i nαjik/lji,i,j,k ∈{1, 2, 3}. Since e1 +e2 +
+e3 ≡0, e1,e 2,e 3 are linearly dependent. Using the fact ˙e2 =
+−g123e2 +g231e3 = −g231e1 −(g123 +g231)e2, (9) can be
+equivalently described by
+˙es =
+[
+˙e1
+˙e2
+]
+=
+[
+−g312 g123
+−g231 −(g123 +g231)
+][
+e1
+e2
+]
+= Fs(es)es.
+(10)
+Although (10) is derived for t ∈[0,T 1), we now show that T1
+can be extended to inﬁnity.
+Lemma 8 (Noncollinearity): For the three-agent formation
+under the control law (4), if the formation is not initially
+collinear, it will not become collinear for ∀t> 0, and thus (10)
+applies for any t> 0.
+Proof: We prove by contradiction. Suppose collinearity may
+occur for t>T 1, and let Ts be the ﬁrst time at which the three
+agents approach being collinear. Then atT−
+s ,i tm u s tb et r u et h a t
+for the triangular formation formed by these three agents, two in-
+terior angles approach zero and the third approaches π. Without
+loss of generality, assume that agent 1 is the agent associated with
+the interior angle approaching π, and thus α1(T−
+s )= π−ϵ1,
+α2(T−
+s )= ϵ2 and α3(T−
+s )= ϵ3 for some inﬁnitesimally small
+positive numbers ϵ1, ϵ2, and ϵ3 satisfying ϵ1 = ϵ2 +ϵ3.F o r
+t ∈[0,Ts), one has
+˙e1 = −g312e1 +g123e2. (11)
+Since α∗
+1 is bounded away from π, e1(T−
+s ) > 0; since α∗
+2 is
+bounded away from zero, e2(T−
+s ) < 0. In addition, one can fur-
+ther check that atT−
+s ,g312> 0 andg123> 0. Hence, ˙e1(T−
+s )< 0,
+which implies that at T−
+s , if time further evolves, α1 decreases
+away from π, which contradicts the assumption that at Ts,t h e
+three agents become collinear and thus α1 becomes π.T h i s
+contradiction completes the proof. □
+Now, we present the convergence result for the three agents.
+Theorem 4: For the three-agent formation under the control
+law (4),i f α312(0),α123(0),α231(0) are not zero, the initial
+angle errorsei(0),i =1 , 2, 3 are sufﬁciently small and the initial
+distancesl12(0),l 23(0),l 31(0) are bounded away from zero, then
+the angle errors ei(t) converge exponentially to zero.
+Proof: To show the local convergence ofei, we use lineariza-
+tion to analyze the angle error dynamics (10). By takinge1 as an
+example, the linearized dynamics around the desired equilibrium
+es =0 are
+˙e1 =
+[∂(−g312e1 +g123e2)
+∂e1
+|es =0
+]
+e1
++
+[∂(−g312e1 +g123e2)
+∂e2
+|es=0
+]
+e2
+= −g∗
+312e1 +g∗
+123e2 (12)
+whereg∗
+jik = gjik|es =0,j ̸= i ̸= k andj,i,k ∈{1, 2, 3}. Then,
+by following the same step as(12) fore2, the linearized dynamics
+of (10) can be written as
+˙es = A1es (13)
+where A1 = Fs(es)|es =0 is a 2-by-2 constant matrix. Then,
+one has tr (A1)= −g∗
+312 −g∗
+123 −g∗
+231 < 0 and det (A1)=
+g∗
+312(g∗
+123 +g∗
+231)+ g∗
+123g∗
+231 > 0, where tr() and det() repre-
+sent the trace and determinant of a square matrix, respectively.
+It follows that A1 is Hurwitz. Following [ 14, Th. 5], it is
+straightforward to have that
+e2
+1 +e2
+2 = ∥es∥2 ≤ V1
+λmin(P1) ≤ V1(0)
+λmin(P1)e− t
+λmax (P1 ) . (14)
+where V1 = eT
+sP1es and −I2 = P1A1 +AT
+1P1. Since e1 +
+e2 +e3 ≡0, one has
+e2
+3 = e2
+1 +e2
+2 +2e1e2 ≤2
+(
+e2
+1 +e2
+2
+)
+≤ 2V1(0)
+λmin(P1)e− t
+λmax (P1 )
+which implies that ei,i =1 , 2, 3, under the dynamics (9) is
+locally and exponentially stable. □
+Remark 5: The triangular formation’s local convergence
+is still guaranteed if the control law (4) is general-
+ized to ui(t)= −(α[i−1]i[i+1](t)−α∗
+[i−1]i[i+1])(γ1bi[i−1](t)+
+γ2bi[i+1](t)), where γ1 ≥0,γ2 ≥0 and γ1 +γ2 =1 . The sta-
+bility analysis for the cases γ1 =0 and γ1 =1 is given in
+Theorem 4. For the case γ1 ∈(0, 1), where each agent moves
+towards the inner side of its interior angle (or its opposite di-
+rection), sinceu1(t),u 2(t),u 3(t) always lie in the plane formed
+byp1(0),p 2(0),p 3(0), the evolution trajectories of the ﬁrst three
+agents will be within a 2-D plane. According to[39], the stability
+underγ1 ∈(0, 1) can be obtained straightforwardly. Combining
+the above two cases, one has that a convex combination ofbi[i−1]
+and bi[i+1] in agent i’s controller is valid for the formation’s
+convergence.
+Since the convergence of (10) is only proved to be local, we
+now propose another control strategy such that the triangular
+formation is (almost) globally stable. Consider that agent 1 is
+static, i.e., ˙p1(t)=0 , and agents 2 and 3 are controlled by
+u2 = −(α123 −α∗
+123)b23,u 3 = −(α231 −α∗
+231)b32 (15)
+where no interagent communication is required.
+Theorem 5: For the three-agent formation under the control
+laws (15),i fp1(0),p 2(0),p 3(0) are not collinear, then the angle
+errorsei(t),i =1 , 2, 3 globally converge to zero.
+Proof: According to the moving directions of agents 2 and 3,
+the three agents will not be collinear for ∀t> 0. Now, we ﬁrst
+prove that no collision will occur between agents 2 and 3 using
+contradiction. Suppose that agents 2 and 3 ﬁrst collide at t =
+Tc > 0. Then, there are three possible cases for the two agents’
+status at T−
+c , namely, (a) one of them is static, (b) they move
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 11 =====
+6140 IEEE TRANSACTIONS ON AUTOMA TIC CONTROL, VOL. 68, NO. 10, OCTOBER 2023
+Fig. 9. Three possible collision cases.
+toward each other, (c) they move along the same direction, which
+are shown in Fig. 9. For the case (a), agent 2 being static implies
+α123(T−
+c )= α∗
+123. Since the angle α132 decreases monotoni-
+cally along the ray−→23, there exists a unique positionp∗
+3 in−→23 such
+that α231(p2(T−
+c ),p∗
+3,p 1)= α∗
+231. Since p∗
+3 is bounded away
+fromp2(T−
+c ) and agent 3 is controlled by an angle error feedback
+law (15), it is impossible that agent 3 will collide with agent 2
+at p2(T−
+c ). For case (b), according to the moving directions of
+the agents, α123(T−
+c ) <α∗
+123 and α231(T−
+c ) <α∗
+231. Then, the
+fact that α123(T−
+c )+ α132(T−
+c ) is sufﬁciently close to πcon-
+tradicts the fact that π= α∗
+123 +α∗
+231 +α∗
+312 >α123(T−
+c )+
+α231(T−
+c )+ α∗
+312 sinceα∗
+312 is bounded away from 0. For case
+(c), denote byp∗
+2,p∗
+3 the desired positions of agents 2, 3, respec-
+tively. According to the agents’ moving directions,p∗
+3 must be in
+the right side of p∗
+2 and ∥u2(T−
+c )∥ = |e2(T−
+c )| > ∥u3(T−
+c )∥ =
+|e3(T−
+c )|. Since α∗
+123 = α212(p∗
+2,p 1,p 2(T−
+c )) +α123(T−
+c ) and
+α132(T−
+c )= α∗
+132 +α313(p3(T−
+c ),p 1,p∗
+3), one has|e2(T−
+c )| =
+α212(p∗
+2,p 1,p 2(T−
+c )) and |e3(T−
+c )| = α313(p3(T−
+c ),p 1,p∗
+3).
+Sincep2(T−
+c ) is sufﬁciently close to p3(T−
+c ) andp∗
+2 is bounded
+away from p∗
+3, α212(p∗
+2,p 1,p 2(T−
+c )) <α313(p3(T−
+c ),p 1,p∗
+3)
+which contradicts the fact |e2(T−
+c )| > |e3(T−
+c )|. Since these
+three cases are impossible, l23(t) is bounded away from zero
+∀t> 0, which also implies sinα123(t), sinα231(t) are bounded
+away from zero. Then, following (5), one has the overall angle
+error dynamics:[
+˙e2
+˙e3
+]
+= −
+[
+sinα123/l21 0
+0s i n α231/l31
+][
+α123 −α∗
+123
+α231 −α∗
+231
+]
+(16)
+Since sinα123/l21 > 0 and sinα231/l31 > 0 are lower and up-
+per bounded, e2,e 3 converge to zero globally according to [40,
+Th. 2.5.1]. □
+B. Sequential Formation Control for the Remaining
+Agents by T ype-I Vertex Addition
+In this section, we control the remaining agents to achieve
+their desired angles deﬁned in the constructive Algorithm 1’s
+Steps 2 toN −2. To be speciﬁc, the control objectives for agent
+i, 4 ≤i ≤N, are
+limt→∞ ei1(t) = limt→∞
+(
+αij1j2 (t)−α∗
+ij1j2
+)
+=0 (17)
+limt→∞ ei2(t) = limt→∞
+(
+αij2j1 (t)−α∗
+ij2j1
+)
+=0 (18)
+limt→∞ ei3(t) = limt→∞
+(
+αij2j3 (t)−α∗
+ij2j3
+)
+=0 (19)
+where i =4 ,...,N , j1 ̸= j2 ̸= j3 j1 <i ,j2 <i ,j3 <i , and
+α∗
+ij1j2 ∈(0,π),α∗
+ij2j1 ∈(0,π),α∗
+ij2j3 ∈(0,π) denote three de-
+sired angles that agenti aims at maintaining with its neighboring
+agentsj1,j 2,j 3.
+We ﬁrst illustrate how to control agent 4, and then extend the
+result to theN -agent case. We propose the following control law
+for agent 4
+u4 =( α412 −α∗
+412)b42 +(α421 −α∗
+421)b41
++(α423 −α∗
+423)b43. (20)
+where the real-time angle information α412 = arccos
+(
+bT
+14b12
+)
+cannot be calculated by agent 4’s own direction measurements,
+but can be calculated via agent 1’s direction measurements−→14,−→12. Therefore, the implementation of control law (20) relies
+on not only agent 4’s direction measurements−→41,−→42,−→43, but also
+the real-time angle information α412(t),α421(t),α423(t) which
+can be sent from agents 1 and 2 to agent 4 through wireless
+communication. Now, we present the convergence of agent 4.
+Theorem 6: For the four-agent formation under
+the control (4) and (20),i f α123(0),α231(0),α312(0),
+α412(0),α421(0),α423(0) are not zero or π, the initial angle
+errors ei(0),e 4i(0),i =1 , 2, 3 are sufﬁciently small, the initial
+distances ljk (0),j ̸= k,j,k ∈{1, 2, 3, 4} are bounded away
+from zero and p4(0) is sufﬁciently away from the plane formed
+by p1(0),p 2(0),p 3(0), then the angle errors e4i(t) converge
+exponentially to zero.
+Proof: Sinceljk (0) and sinα412(0), sinα421(0), sinα423(0)
+are not zero, ∃T2 > 0 such that for t ∈[0,T 2), ljk (t) ̸=0 and
+sinα412(t), sinα421(t), sinα423(t) are not zero. Now, we study
+the dynamics of angle errors e41 = α412 −α∗
+412,e42 = α421 −
+α∗
+421, e43 = α423 −α∗
+423. Taking e41 as an example, similar to
+(5), one has
+˙e41 = −
+[Pb14 (˙p4 − ˙p1)
+l14 sinα412
+]T
+b12 −bT
+14
+Pb12 (˙p2 − ˙p1)
+l12 sinα412
+. (21)
+Substituting (20) and (4) into (21) yields
+˙e41 = − sinα142
+l14
+(α412−α∗
+412)−bT
+12Pb14b43
+l14 sinα412
+(α423 −α∗
+423)
+−e1bT
+12Pb14b12/(l14 sinα412)
++e2bT
+14Pb12b23/(l12 sinα412).
+Similarly, one can compute ˙e42 and ˙e43 to obtain
+˙e4 =
+[
+˙e41 ˙e42 ˙e43
+]T
+= F4(es,e 4)e4 +G4(es,e 4)es
+= −
+⎡
+⎢⎢⎣
+sinα142
+l14
+0
+bT
+12Pb14b43
+l14 sinα412
+0 sinα142
+l24
+bT
+21Pb24b43
+l24 sinα421
+0
+bT
+23Pb24b41
+l24 sinα423
+sinα243
+l24
+⎤
+⎥⎥⎦
+⎡
+⎣
+e41
+e42
+e43
+⎤
+⎦
++
+⎡
+⎣
+G11 G12
+G21 G22
+G31 G32
+⎤
+⎦
+[
+e1
+e2
+]
+(22)
+where G11 = −
+bT
+12Pb14b12
+l41 sinα412
+, G12 =
+bT
+14Pb12b23
+l12 sinα412
+, G21 =0 ,
+G22 = −
+(bT
+21Pb24b23
+l24 sinα421
++
+bT
+24Pb21b23
+l21 sinα421
+)
+, G31 = −
+bT
+24Pb23b31
+l23 sinα423
+,
+G32 = −
+(bT
+23Pb24b23
+l24 sinα423
++
+bT
+24Pb23b31
+l23 sinα423
+)
+. Then, we check the local
+stability of the four-agent formation. Linearizing (22) around
+the desired equilibrium {es =0 ,e 4 =0 } by following (12),
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 12 =====
+CHEN AND CAO: ANGLE RIGIDITY FOR MUL TIAGENT FORMA TIONS IN 3-D 6141
+one has the linearized dynamics
+˙e4 = A4e4 +B4es (23)
+where A4 = F4(es,e 4)|es =0,e4=0, B4 = G4(es,e 4)|es =0,e4 =0
+are constant matrices. Now, we check whether A4 is Hurwitz.
+det(λI3 −A4)
+=( λ +s i nα∗
+142/l∗
+14)( λ +s i nα∗
+142/l∗
+24)( λ +s i nα∗
+243/l∗
+24)
+−
+(
+λ + sinα∗
+142
+l∗
+14
+) (
+b∗T
+21Pb∗
+24b∗
+43
+)
+l∗
+24 sinα∗
+421
+(
+b∗T
+23Pb∗
+24b∗
+41
+)
+l∗
+24 sinα∗
+423
+(24)
+where λ ∈C denotes the eigenvalue of A4, l∗
+ji and b∗
+ji,j ,i ∈
+V are the distance and bearing evaluated at {es =0 ,e 4 =
+0}, respectively. Checking the eigenvalues of A4 by letting
+det(λI3 −A4)=0 , one has that A4 always has an eigenvalue
+−sinα∗
+142/l∗
+14 < 0. However, due to the second component in
+(24), it is challenging to check the sign of the real parts of the
+remaining two eigenvalues of A4. Here, we ﬁrst calculate(
+b∗T
+21Pb∗
+24b∗
+43
+)(
+b∗T
+23Pb∗
+24b∗
+41
+)
+=
+(
+l∗
+23b∗T
+21Pb∗
+24b∗
+23/l∗
+43
+)(
+l∗
+43b∗T
+43Pb∗
+24b∗
+41/l∗
+23
+)
+=[ c o sα∗
+123 −cosα∗
+423 cosα∗
+421][ c o sα∗
+143
+−cosα∗
+142 cosα∗
+243] (25)
+where we used the facts that b43 = (p3−p2 )+(p2−p4 )
+l43
+, Pb24 (p2 −
+p4)=0 , andb23 = (p3−p4 )+(p4−p2 )
+l23
+. Then, the other two eigen-
+values of A4 satisfy
+λ2 +( s i nα∗
+142/l∗
+24 +s i nα∗
+243/l∗
+24) λ +ε1 =0 (26)
+where ε1 =−[cosα∗
+123−cosα∗
+423 cosα∗
+421 ]
+l∗
+24 sinα∗
+421
+[cosα∗
+143−cosα∗
+142 cosα∗
+243 ]
+l∗
+24 sinα∗
+423
++
+sinα∗
+142
+l∗
+24
+sinα∗
+243
+l∗
+24
+.I fε1 > 0, then the remaining two eigenvalues of
+A4 have negative real parts, which implies that A4 is Hurwitz.
+Note that ε1 > 0 is equivalent to
+sinα∗
+421 sinα∗
+423 sinα∗
+142 sinα∗
+243
+> [cosα∗
+123−cosα∗
+423 cosα∗
+421][cosα∗
+143−cosα∗
+142 cosα∗
+243].
+(27)
+Now, we prove that (27) holds for all tetrahedral formations
+formed by agents 1–4. Splitting (27) into two inequalities
+sinα∗
+421 sinα∗
+423 > | cosα∗
+123 −cosα∗
+423 cosα∗
+421| and
+sinα∗
+142 sinα∗
+243 > | cosα∗
+143 −cosα∗
+142 cosα∗
+243|,w eﬁ r s t
+illustrate how to prove the ﬁrst inequality by using the
+facts that α∗
+123 ∈(0,π),α∗
+423 ∈(0,π),α∗
+421 ∈(0,π), and
+α∗
+123 +α∗
+423 +α∗
+421 < 2π, 2π>α∗
+ijk +α∗
+ijm >α∗
+kjm >
+0,i,j,k,m ∈{1, 2, 3, 4}. There are three possible cases.
+Case 1: cosα∗
+123 > cosα∗
+423 cosα∗
+421. When α∗
+423 ≤α∗
+421,
+by using 0 <α∗
+421 <α∗
+123 +α∗
+423, one has
+that 0 ≤α∗
+421 −α∗
+423 <α∗
+123 <π. It follows
+that cos(α∗
+421 −α∗
+423) > cosα∗
+123, which gives
+sinα∗
+421 sinα∗
+423 > cosα∗
+123 −cosα∗
+423 cosα∗
+421.
+Whenα∗
+423 >α∗
+421,b yu s i n gα∗
+423 <α∗
+421 +α∗
+123,
+one has −π<−α∗
+123 <α∗
+421 −α∗
+423 < 0.I t
+follows that cos(α∗
+421 −α∗
+423) > cos(−α∗
+123)=
+cos(α∗
+123), which also gives sinα∗
+421 sinα∗
+423 >
+cosα∗
+123 −cosα∗
+423 cosα∗
+421.
+Case 2: cosα∗
+123 < cosα∗
+423 cosα∗
+421. When π≤α∗
+421 +
+α∗
+423 < 2π,b yu s i n gα∗
+123 ∈(0,π), (2π−(α∗
+421 +
+α∗
+243)) ∈(0,π] and α∗
+123 < 2π−(α∗
+421 +α∗
+423),
+one has cosα∗
+123 > cos(2π−(α∗
+421 +α∗
+423)) =
+cos(α∗
+421 +α∗
+423). It follows sinα∗
+421 sinα∗
+423 >
+cosα∗
+423 cosα∗
+421 −cosα∗
+123. When 0 <α∗
+421 +
+α∗
+423 ≤π,b yu s i n g 0 <α∗
+123 <α∗
+421 +α∗
+423 ≤
+π, one also has sinα∗
+421 sinα∗
+423 >
+cosα∗
+423 cosα∗
+421 −cosα∗
+123.
+Case 3: cosα∗
+123 =c o sα∗
+423 cosα∗
+421. This case is obvious.
+Combining the above three cases together, one has that
+sinα∗
+421 sinα∗
+423 > | cosα∗
+123 −cosα∗
+423 cosα∗
+421| holds for all
+tetrahedral formations. The same analysis can be conducted for
+the second inequality, which proves (27).
+By combining (25)–(27), one has that A4 is always Hurwitz
+for tetrahedral formations formed by agents 1–4. Writing (13)
+and (23) into a compact form yields
+˙¯e4 =
+[
+˙es
+˙e4
+]
+= H4 ¯e4 =
+[
+A1 0
+B4 A4
+][
+es
+e4
+]
+. (28)
+BecauseA1 andA4 are Hurwitz, H4 is also Hurwitz. Then, for
+the identity matrix I5 ∈R5×5, there exists a positive deﬁnite
+matrix P2 ∈R5×5 such that P2H4 +HT
+4 P2 = −I5. Construct
+the Lyapunov function
+V2 =¯eT
+4 P2 ¯e4. (29)
+Taking the time-derivative of (29) yields ˙V2 = −¯eT
+4 ¯e4 ≤
+−V2/λmax(P2), which implies that
+∥e4∥2 ≤∥¯e4∥2 ≤ V2
+λmin(P2) ≤ V2(0)
+λmin(P2)e− t
+λmax (P2 ) (30)
+which implies the exponential stability of ∥e4(t)∥
+for t ∈[0,T 2). Since ∥ ˙p4∥≤| e41| +|e42| +|e43|≤√
+3∥e4∥≤
+√
+3V2 (0)
+λmin (P2)e− t
+2λmax (P2 ) , one has ∥p4(t)−p4(0)∥≤
+∫t
+0 ∥ ˙p4(τ)∥dτ≤2λmax(P2)
+√
+3V2 (0)
+λmin(P2 ) (1−e− t
+2λmax(P2 ) ) for
+t ∈[0,T 2). Since V2(0) is sufﬁciently small, ∥p4(t)−p4(0)∥
+is also sufﬁciently small for t ∈[0,T 2). Since p4(0) is
+sufﬁciently away from the plane formed by p1(0),p 2(0),p 3(0),
+p4(T−
+2 ) is also sufﬁciently away from the plane formed by
+p1(0),p 2(0),p 3(0), which implies that l4i(T−
+2 ),i =1 , 2, 3 and
+sinα412(T−
+2 ), sinα421(T−
+2 ), sinα423(T−
+2 ) are not zero. Then,
+one can extend T−
+2 to T3,T 3 >T 2. In fact one can check that
+when T3 →∞ , ∥p4(t)−p4(0)∥ is still sufﬁciently small for
+∀t ∈[0,∞), which implies that (22) is always well-deﬁned and
+∥e4(t)∥ is exponentially stable for ∀t ∈[0,∞). □
+Remark 6: The ﬁrst three agents always lie in the plane
+formed by p1(0),p 2(0),p 3(0) since the control actions (4) are
+conﬁned in this plane. If ∃T3 such thatp4(T3) lies in that plane,
+thenp4(t),∀t>T 3 will always be in that plane according to the
+control law (20). Then, the angle error (22) will not converge to
+zero because in this caseF4(es,e 4) becomes singular. Therefore,
+Theorem 6 requires thatp4(0) is sufﬁciently away from the plane
+formed by p1(0),p 2(0),p 3(0).
+Now, we precisely describe the requirements on l4i(0),i =
+1, 2, 3, e4i(0) and the initial distance h4−123(0) between p4(0)
+and the plane formed by p1(0),p 2(0),p 3(0) such that (22) is
+well-deﬁned. First, taking l41 as an example and letting the ﬁrst
+three agents static, one has
+l41(t)= l41(0) +
+∫ t
+0
+˙l41dτ≥l41(0)−
+∫ t
+0
+|bT
+41(˙p1 − ˙p4)|dτ
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 13 =====
+6142 IEEE TRANSACTIONS ON AUTOMA TIC CONTROL, VOL. 68, NO. 10, OCTOBER 2023
+≥l41(0)−4
+√
+V2(0)
+λmin(P2) λmax(P2)
+(
+1−e− t
+2λmax(P2 )
+)
+(31)
+which implies that if l41(0) > 4
+√
+V2(0)/λmin(P2)λmax(P2),
+then no collision between agents 1 and 4 will occur for t> 0.
+To guarantee that 1/ sinα412 is well-deﬁned in (21), one
+requires 0 <α412(t) <π. According to (30), one has
+|e41| = |α412 −α∗
+412|≤∥ e4∥≤
+√
+V2(0)/λmin(P2). (32)
+It follows that α∗
+412 −
+√
+V2(0)/λmin(P2) ≤α412(t) ≤α∗
+412 +√
+V2(0)/λmin(P2). Therefore, if
+√
+V2(0) <
+√
+λmin(P2)∗
+min{π−α∗
+412,α∗
+412}, one always has 0 <α412(t) <π.
+The distance h4−123(t) between p4(t) and the plane
+formed by p1(0),p 2(0),p 3(0) can be calculated by
+h4−123(t)= V4−123
+S123 (0) =
+pT
+4¯1 (t)(p4¯2 (t)×p4¯3 (t))
+3l12 (0)l13 (0) sinα213 (0), where p4¯i(t)=
+pi(0)−p4(t),i =1 , 2, 3. Then, one has
+˙V4−123 = 1
+6 ˙pT
+4 (p4¯2 ×p4¯3)+ pT
+4¯1 [˙p4 × (p3(0)−p2(0))]
+≤ 1
+6 (|e41| +|e42| +|e43|)
+[
+l42(max)l43(max) +l32(0)l41(max)
+]
+where l4i(max) =m a x{∥p4¯i(t)∥, ∀t> 0} = l4i(0) +
+4
+√
+V2(0)/λmin(P2)λmax(P2), and we used the fact
+∥p4¯i(t)∥≤ l4i(0) +
+∫t
+0 ∥ ˙p4(τ)∥dτ≤ l4i(0) +
+∫t
+0 (|e41| +
+|e42| +|e43|)∥dτ≤l4i(0) + 4
+√
+V2(0)/λmin(P2)λmax(P2).
+Therefore, one has
+h4−123(t) ≥h4−123(0)−
+∫ t
+0
+| ˙V4−123(τ)|/S123(0)dτ
+≥h4−123(0)−ε2
+(
+1−e−0.5t/λmax (P2 )
+)
+(33)
+where ε2 =
+4[l42(max)l43(max) +l32(0)l41(max) ]
+3l12 (0)l13 (0) sinα213 (0) λmax(P2)
+√
+V2 (0)
+λmin (P2) .I t
+follows that ifh4−123(0) >ε2, then agent 4 will never reach the
+plane formed by agents 1, 2, 3.
+Now, we extend the results to the N -agent case by designing
+the control law for agent i, 4 ≤i ≤N as
+ui =
+(
+αij1j2 −α∗
+ij1j2
+)
+bij2 +
+(
+αij2j1 −α∗
+ij2j1
+)
+bij1
++
+(
+αij2j3 −α∗
+ij2j3
+)
+bij3. (34)
+Theorem 7: For the N -agent formation under the con-
+trol (4) and (34),i f sinαjik (0) ̸=0 ,j,i,k ∈{1,...,N },t h e
+initial angle errors em(0),eim,m =1 , 2, 3 are sufﬁciently
+small, the initial distances lji (0) are bounded away from
+zero and pi(0) is sufﬁciently away from the plane formed
+by pj1 (0),pj2 (0),pj3 (0),j 1,j 2,j 3 ∈Ni, then the angle errors
+eim(t) converge exponentially to zero.
+The proof of Theorem 7 can be obtained by combining The-
+orems 4 and 6 and using the reasoning [ 14, Th. 6].
+C. Sequential Formation Control for the Remaining
+Agents by T ype-II Vertex Addition
+Now, we investigate the addition of the remaining agents by
+Type-II vertex addition (we only focus on Case 1, and Case 2
+can be similarly analyzed) developed in Deﬁnition 8. We design
+the following control law for agent 4
+u4 = −(α142 −α∗
+142)(b41 +b42)−(α243 −α∗
+243)(b42
++b43)−(α341 −α∗
+341)(b43 +b41), (35)
+where α∗
+142 ∈(0,π),α∗
+243 ∈(0,π),α∗
+341 ∈(0,π) are three de-
+sired angles that agent 4 aims at achieving with agents 1, 2,
+3. The implementation of (35) only relies on agent 4’s direction
+measurements−→41,−→42,−→43, and no interagent communication is re-
+quired. To obtain the convergence of ˜e41 = α142 −α∗
+142, ˜e42 =
+α243 −α∗
+243, ˜e43 = α341 −α∗
+341, we aim at obtaining the dy-
+namics of ˜e41, ˜e42, ˜e43. Since the three components in (35) are
+similar, we ﬁrst analyze the dynamics of αi4k,i,k ∈{1, 2, 3}.
+Using (5) and (35), one has
+˙αi4k = Nk4i ˙pi −(Ni4k +Nk4i)˙p4 +Ni4k ˙pk
+= Nk4i ˙pi +Ni4k ˙pk +e4i (Ni4kb4i +Nk4ib4k)
++e4k (Nk4ib4k +Ni4kb4m +Nk4ib4m)
++e4m (Ni4kb4m +Nk4ib4m +Ni4kb4i) (36)
+where Nkji = −bT
+jkPbji /(lji sinαkji ) ∈R1×3 and m =
+{1, 2, 3}/{i,k}. Deﬁningfijk = −Nijkbji =s i nαijk/ljk > 0
+and specializing the cases {i =1 ,k =2 ,m =3 },{i =2 ,k =
+3,m =1 },{i =3 ,k =1 ,m =2 } in (36) yields the overall
+angle error dynamics
+˙˜e4 =[ ˙˜e41 ˙˜e42 ˙˜e43]⊤ = ˜F4(es, ˜e4)˜e4 + ˜G4(es, ˜e4)es
+=
+⎡
+⎢⎣
+−f142 −f241 h(142,3) −f241 h(142,3) −f142
+h(243,1) −f243 −f243 −f342 h(243,1) −f342
+h(143,2) −f143 h(143,2) −f341 −f341 −f143
+⎤
+⎥⎦
+⎡
+⎣
+˜e41
+˜e42
+˜e43
+⎤
+⎦
++
+⎡
+⎢⎢⎢⎢⎢⎢⎣
+−N241(b12 +b13) −N142(b21 +b23)
+−N342(b21 +b23) −[N243(b31 +b32)
++N342(b21 +b23)]
+−N341(b31 +b32)
+−N143(b31 +b32) −N143(b31 +b32)
+⎤
+⎥⎥⎥⎥⎥⎥⎦
+[
+e1
+e2
+]
+(37)
+where h(ijk,m) =( Nijk +Nkji )bjm .
+Theorem 8: For the four-agent formation under the control
+(4) and (35),i f
+0 <h ∗
+(i4k,j) < 2m i n{f∗
+k4i,f ∗
+i4k} (38)
+i,j,k ∈{1, 2, 3},i ̸= j ̸= k, sinαj4k(0) ̸=0 , the initial angle
+errors ˜e4i(0) are sufﬁciently small, the initial distancesl4i(0) are
+bounded away from zero andp4(0) is sufﬁciently away from the
+plane formed by p1(0),p 2(0),p 3(0), then the angle errors ˜e4(t)
+converge exponentially to zero.
+Proof: Linearizing (37) around {es =0 ,e 4 =0 } by follow-
+ing (12), one has the linearized dynamics
+˙˜e4 = ˜A4 ˜e4 + ˜B4es (39)
+where ˜A4 = ˜F4(es, ˜e4)|es =0,˜e4 =0, B4 = G4(es,e 4)|es =0,e4 =0.
+To obtain the stability of the linearized system (39),w ea i m
+at proving that ˜A4 is Hurwitz. By using the Gershgorin circle
+theorem [ 41, Th. 6.1.1], the three eigenvalues of ˜A4 must lie
+within the union of the following three Gershgorin discs
+|λ +f∗
+i4j +f∗
+j4i|≤| h∗
+(i4j,k) −f∗
+i4j| +|h∗
+(i4j,k) −f∗
+j4i| (40)
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 14 =====
+CHEN AND CAO: ANGLE RIGIDITY FOR MUL TIAGENT FORMA TIONS IN 3-D 6143
+where i,j,k ∈{1, 2, 3},i ̸= j ̸= k. Note that f∗
+i4k > 0 for all
+i,k =1 , 2, 3. Therefore, by using (38), one has
+0 < |h∗
+(j4i,k) −f∗
+i4j| +|h∗
+(i4j,k) −f∗
+j4i| <f ∗
+i4j +f∗
+j4i. (41)
+By combining (40) with (41), one has that the union of the
+three Gershgorin discs in (40) always lies in the left half of
+the complex plane, which implies that the three eigenvalues
+of ˜A4 have negative real parts. Therefore, (38) is a sufﬁcient
+condition to guarantee that matrix ˜A4 is Hurwitz which implies
+the exponential convergence of ˜e4 by following (28)–(30).
+Also following (31)–(33), one can precisely describe the
+requirements onlji (0), ˜e4i(0) and the initial distanceh4−123(0)
+in this case. Similarly, we can extend the results toN -agent case
+by designing the following control law:
+ui = −
+(
+αj1ij2 −α∗
+j1ij2
+)
+(bij1 +bij2 )−
+(
+αj2ij3 −α∗
+j2ij3
+)
+(bij2
++bij3 )−
+(
+αj3ij1 −α∗
+j3ij1
+)
+(bij3 +bij1 ), 4 ≤i ≤N
+(42)
+where α∗
+j1ij2 ∈(0,π),α∗
+j2ij3 ∈(0,π),α∗
+j3ij1 ∈(0,π). Then,
+the convergence result can be obtained following Theorem 7.
+Remark 7: To implement the proposed sequential formation
+laws, each agent is allowed to have its own local coordinate
+frame [14]. Compared with the control law (42), which only
+needs local direction measurements, the control law (34) needs
+not only direction measurements, but also interagent communi-
+cation. However, (42) can only stabilize tetrahedral formation
+satisfying (38), and (34) can stabilize an arbitrary tetrahedral
+formation, which is also an advantage over the 2-D control
+laws [14]. In addition, the 3-D control laws proposed in Sections
+IV -Aand IV -Bare based on pursuing rule, which is different
+from the bisector rule proposed in 2-D case [14].
+D. Convex Polyhedral Formations
+Different from the sequential formations, we assume that the
+angle constraints are only in the faces of a convex polyhedral
+formation. From Theorem 2, we ﬁrst show how to stabilize a
+convex polyhedral angle rigid formation with 4 triangular faces
+and 12 angle constraints, then extend it to more general cases.
+The control laws for the four agents are designed as
+ui = −ejikbik −emijbij −ekimbim (43)
+where i ̸= j ̸= k ̸= m, i,j,k,m ∈{1, 2, 3, 4}, eijk = αijk −
+α∗
+ijk . Using the calculations (36), one has the error dynamics
+˙eijk = Nijk (˙pk − ˙pj )+ Nkji (˙pi − ˙pj )
+= Nijk (−eikmbkm −ejkibki +eijmbjm +ekjibji )
++Nkji (−ejikbik −ekimbim +eijmbjm +emjkbjk ).
+(44)
+By specifying all possible combinations of i,j,k,m for (44),
+one will have the error dynamics of the 12 face angles. However,
+the three angles in each face of the tetrahedron are linearly
+dependent, e.g., e123 +e231 +e312 =0 . Therefore, we choose
+in each face two interior angles to form the state variable es =
+[e123,e 231,e 234,e 243,e 214,e 241,e 341,e 314]⊤ and take A1 =
+{(1, 2, 3), (2, 3, 1), (2, 3, 4), (2, 4, 3),(2, 1, 4),(2, 4, 1),(3, 4, 1),
+(3, 1, 4)}. Then, one has the closed-loop angle error dynamics
+˙es = A(es)es (45)
+where A(es) ∈R8×8 consists of the coefﬁcients of the angle
+errors in (44). Following the linearization step, (45) can be
+linearized as ˙es = A∗
+ses whereA∗
+s = A(es)|es =0.
+Theorem 9: For the four-agent convex polyhedral formation
+under the control (43),i f
+sinα∗
+ijk +s i nα∗
+jki
+l∗
+jk
+> |
+sinα∗
+kij
+l∗
+ji
+− sinαjki
+l∗
+jk
+| +|N∗
+ijkb∗
+km|
++|N∗
+ijkb∗
+jm| +|N∗
+kjib∗
+im| +|N∗
+kjib∗
+jm| +|N∗
+kjib∗
+jk| (46)
+where (i,j,k )∈A1, m ={1, 2, 3, 4}/{i,j,k }, sinαijk (0)̸=0 ,
+the initial angle errors eijk (0) are sufﬁciently small, and the
+initial distances lij (0) are bounded away from zero, then the
+angle errors eijk (t) converge exponentially to zero.
+Proof: To check the local stability of (45), we examine the
+eigenvalue distribution of matrixA∗
+s ∈R8×8. Takinge423 as an
+example, its linearized dynamics can be written as
+˙e423 = −sinα∗
+423 +sinα∗
+234
+l∗
+23
+e423 +
+[sinα∗
+342
+l∗
+24
+− sinα∗
+234
+l∗
+23
+]
+e243
+−N∗
+423b∗
+31e431 +N∗
+423b∗
+21e421 −N∗
+324b∗
+41e341
++N∗
+324b∗
+21e421 +N∗
+324b∗
+23e123 (47)
+Using [41, Th. 6.1.1] again, to render the eigenvalue to be in the
+left half of the complex plane, one requires
+(sinα∗
+423 +s i nα∗
+234)/l∗
+23 > |sinα∗
+342/l∗
+24 −sinα∗
+234/l∗
+23|
++|N∗
+423b∗
+31| +|N∗
+423b∗
+21| +|N∗
+324b∗
+41| +|N∗
+324b∗
+21| +|N∗
+324b∗
+23|
+which is one case of (46). Using the same step for the other
+angles, the similar condition can be obtained. Thus, if the con-
+dition (46) holds for all the six angles deﬁned in A1, then A∗
+s is
+Hurwitz, which implies the local stability of (45).
+For an N -agent convex polyhedral formation, the con-
+trol law for agent i, 1 ≤i ≤N can be designed as ui =
+−∑
+(j,i,k)∈Aejikbik, whereA is the angle set containing all the
+angles of the triangular faces of the convex polyhedral formation.
+Using similar steps as (44)–(47), a stability condition can be
+obtained to guarantee the local stability of the convex polyhedral
+formation with triangular faces.
+Remark 8: For all the designed formation control laws in this
+section, the measurement topology is described by the desired
+angle constraints, i.e., if there is an α∗
+ijk , then agent j needs
+to measure −→ji, −→jk. While the communication topology only
+appears in (34), where if there is an α∗
+ij1j2,j 1 <i ,j2 <i , then
+agent j1 needs to send the measured αij1j2 to agent i.N o t e
+that both the measurement and communication topology are
+distributed. In addition, the checking conditions (38) and (46)
+can be transformed to be related only with desired angles by
+using the law of sines.
+Remark 9: Since the designed direction-only formation con-
+trol laws are for single-integrators, to apply them to real robotic
+vehicles, such as quadrotors, the feedforward of the vehicles’
+nonlinear dynamics and feedback of the vehicles’ velocity are
+usually needed [42]. Another important aspect is the on-board
+sensing of the intervehicle directions, which can be accessed by
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 15 =====
+6144 IEEE TRANSACTIONS ON AUTOMA TIC CONTROL, VOL. 68, NO. 10, OCTOBER 2023
+Fig. 10. Formation trajectories and evolution of angle errors under the
+controller (4) and (20).
+Fig. 11. Formation trajectories and evolution of angle errors under the
+controller (15) and (35).
+monocular cameras with tag recognition, direction ﬁnding-based
+Bluetooth 5.1 modules, and AOA-based UWB modules. We also
+remark that direction-only formation control laws will be useful
+for those coordinated tasks where the intervehicle distances are
+hard to be measured, e.g., for swarm satellites and autonomous
+underwater vehicles (AUV).
+V. S IMULA TIONEXAMPLES
+In this section, we use numerical examples with six agents
+forming a triangular prism to validate the effectiveness of the
+proposed formation control laws. The desired formation is
+constructed by starting from △123 and adding the remaining
+agents 4–6 sequentially through Type-I or Type-II vertex
+additions. The tetrahedra used for vertex additions are
+4123,
+ 5124,
+ 6145. We initialize all agents’ positions
+as p1(0) = [0 .5,−0.3, 0.4]⊤,p 2(0) = [3 .8, 0.3, 0.4]⊤,
+p3(0) = [4 .2, 4.3,−0.2]⊤,p 4(0) = [4.3, 0.3, 4.2]⊤,p 5(0) =
+[4.3, 4.3, 3.8]⊤,p 6(0) = [−0.1,−0.1, 3.9]⊤. The desired angles
+are α∗
+123 = π/2,α∗
+231 = π/4,α∗
+412 = π/4,α∗
+421 = π/2,
+α∗
+423 = π/2,α∗
+512 = arccos(
+√
+2/4),α∗
+521 = π/2,α∗
+524 =
+π/4,α∗
+614 = π/4,α∗
+641 = π/4,α∗
+645 = π/2.
+When the six-agent formation is controlled by (4) and (20),
+i.e., constructed by Type-I vertex addition, Fig. 10 gives the
+formation trajectories and the evolution of angle errors. When
+the six-agent formation is controlled by (15) and (35), i.e.,
+constructed by Type-II vertex addition, Fig. 11 gives the for-
+mation trajectories and the evolution of angle errors. Also, we
+simulate the case where each agent i’s single-integrator model
+is added by disturbances0.01∗[sin(it), sin(it +π/2), sin(it +
+π)]⊤,i =1 ,..., 6.F i g .12 gives the formation trajectories and
+Fig. 12. Formation trajectories and evolution of angle errors under the
+controller (15), (35) and disturbances.
+the evolution of angle errors under the control laws (4) and (20)
+and disturbances.
+The achievement of the desired triangular prism formation and
+the convergence of the angle errors in Figs. 10–12 illustrate the
+effectiveness of the proposed formation control laws. For the
+evolution of angle errors in Figs. 10 and 11, the convergence
+speed of the angle errors in Fig. 10 is faster. From Fig. 11,
+|α231 −α∗
+231| decreases monotonically and agents 2 and 3 move
+along the line formed by p2(0) and p3(0), which validate the
+result of Theorem5.I nF i g .12, the angle errors after convergence
+are within 5× 10−3, which illustrates the formation’s robustness
+against disturbances.
+VI. C ONCLUSION
+In this article, we have proposed 3-D angle rigidity theory and
+applied it to multiagent direction-only formation control. First,
+by constructing an angle rigid angularity with ﬂex ambiguity,
+we have shown that angle rigidity in 3-D is a local property.
+To construct globally angle rigid and angle rigid angularities,
+two types of vertex addition operations have been developed,
+respectively. Motivated by Laman theorem, minimal angle rigid-
+ity has been investigated. When angle constraints are given in
+surfaces of polyhedra, angle rigidity of convex polyhedra has
+been studied by employing properties of perturbations for rigid
+frameworks. Using the developed 3-D angle rigidity, we have
+designed 3-D direction-only formation laws by following those
+two types of construction approaches and the intuition of angle
+error feedback.
+This article has investigated 3-D angle rigidity and applied it to
+direction-only multiagent formations. Our future work on angle
+rigidity will consider the extension of 3-D angle rigidity to higher
+dimensional spaces, and the necessary and sufﬁcient condition
+for angle rigidity. Our future work on formation control will
+focus on direction-only multiagent formations governed by more
+complicated agent dynamics, such as quadrotor dynamics, AUV
+dynamics, spacecraft dynamics, and high-order dynamics.
+REFERENCES
+[1] L. Euler, “Opera postuma,” Euler Arch. Index Number E819 ,v o l .1 ,
+pp. 494–496, 1862.
+[2] A. L. Cauchy, “Sur les polygones et les polyedres, seconde mémoire,” J.
+Ecole Polytechnique, vol. 16, no. 9, pp. 26–38, 1813.
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 
+
+===== PAGE 16 =====
+CHEN AND CAO: ANGLE RIGIDITY FOR MUL TIAGENT FORMA TIONS IN 3-D 6145
+[3] B. D. Anderson, C. Y u, B. Fidan, and J. M. Hendrickx, “Rigid graph
+control architectures for autonomous formations,” IEEE Control Syst.
+Mag., vol. 28, no. 6, pp. 48–63, Dec. 2008.
+[4] M. D. Collins, M. L. Quillin, G. Hummer, B. W. Matthews, and S. M.
+Gruner, “Structural rigidity of a large cavity-containing protein revealed by
+high-pressure crystallography,” J. Mol. Biol., vol. 367, no. 3, pp. 752–763,
+2007.
+[5] D. Bi, J. Lopez, J. M. Schwarz, and M. L. Manning, “A density-
+independent rigidity transition in biological tissues,”Nature Phys., vol. 11,
+no. 12, pp. 1074–1079, 2015.
+[6] L. Asimow and B. Roth, “The rigidity of graphs,” Trans. Amer . Math. Soc.,
+vol. 245, pp. 279–289, 1978.
+[7] R. Connelly, “Generic global rigidity,” Discrete Comput. Geometry ,
+vol. 33, no. 4, pp. 549–563, 2005.
+[8] B. Jackson and T. Jordán, “Connected rigidity matroids and unique realiza-
+tions of graphs,” J. Combinatorial Theory, Ser . B, vol. 94, no. 1, pp. 1–29,
+2005.
+[9] R. Connelly, “On generic global rigidity, applied geometry and discrete
+mathematics,” DIMACS Ser . Discrete Math. Theoret. Comput. Sci,v o l .4 ,
+pp. 147–155, 1991.
+[10] S. Zhao and D. Zelazo, “Bearing rigidity and almost global bearing-only
+formation stabilization,” IEEE Trans. Autom. Control , vol. 61, no. 5,
+pp. 1255–1268, May 2016.
+[11] G. Michieletto, A. Cenedese, and D. Zelazo, “A uniﬁed dissertation on
+bearing rigidity theory,” IEEE Trans. Control Netw. Syst. , vol. 8, no. 4,
+pp. 1624–1636, Dec. 2021.
+[12] D. Zelazo, P . R. Giordano, and A. Franchi, “Bearing-only formation control
+using an SE (2) rigidity theory,” in Proc. IEEE 54th Conf. Decis. Control,
+2015, pp. 6121–6126.
+[13] G. Jing, G. Zhang, H. W. J. Lee, and L. Wang, “Angle-based shape determi-
+nation theory of planar graphs with application to formation stabilization,”
+Automatica, vol. 105, pp. 117–129, 2019.
+[14] L. Chen, M. Cao, and C. Li, “Angle rigidity and its usage to stabilize
+multi-agent formations in 2D,”IEEE Trans. Autom. Control, vol. 66, no. 8,
+pp. 3667–3681, Aug. 2021.
+[15] I. Buckley and M. Egerstedt, “Inﬁnitesimal shape-similarity for character-
+ization and control of bearing-only multirobot formations,” IEEE Trans.
+Robot., vol. 37, no. 6, pp. 1921–1935, Dec. 2021.
+[16] H.-S. Ahn, F ormation Control. Berlin, Germany: Springer, 2020.
+[17] H. G. De Marina, B. Jayawardhana, and M. Cao, “Distributed rotational
+and translational maneuvering of rigid formations and their applications,”
+IEEE Trans. Robot., vol. 32, no. 3, pp. 684–697, Jun. 2016.
+[18] K. Sakurama, “Uniﬁed formulation of multi-agent coordination with
+relative measurements,” IEEE Trans. Autom. Control , vol. 66, no. 9,
+pp. 4101–4116, Sep. 2021.
+[19] L. Krick, M. E. Broucke, and B. A. Francis, “Stabilisation of inﬁnitesimally
+rigid formations of multi-robot networks,” Int. J. Control , vol. 82, no. 3,
+pp. 423–439, 2009.
+[20] R. Olfati-Saber and R. M. Murray, “Graph rigidity and distributed for-
+mation stabilization of multi-vehicle systems,” in Proc. IEEE 41st Conf.
+Decis. Control, 2002, vol. 3, pp. 2965–2971.
+[21] Z. Sun, B. D. Anderson, M. Deghat, and H.-S. Ahn, “Rigid formation
+control of double-integrator systems,” Int. J. Control , vol. 90, no. 7,
+pp. 1403–1419, 2017.
+[22] S. Zhao and D. Zelazo, “Bearing rigidity theory and its applications for
+control and estimation of network systems: Life beyond distance rigidity,”
+IEEE Control Syst. Mag., vol. 39, no. 2, pp. 66–83, Apr. 2019.
+[23] M. Basiri, A. N. Bishop, and P . Jensfelt, “Distributed control of triangular
+formations with angle-only constraints,” Syst. Control Lett., vol. 59, no. 2,
+pp. 147–154, 2010.
+[24] S.-H. Kwon and H.-S. Ahn, “Generalized weak rigidity: Theory, and local
+and global convergence of formations,”Syst. Control Lett., vol. 146, 2020,
+Art. no. 104800.
+[25] H. Gluck, “Almost all simply connected closed surfaces are rigid,” in
+Geometric Topology. Berlin, Germany: Springer, 1975, pp. 225–239.
+[26] G. Michieletto and A. Cenedese, “Formation control for fully actuated
+systems: A quaternion-based bearing rigidity approach,” in Proc. IEEE
+18th Eur . Control Conf., 2019, pp. 107–112.
+[27] F. Schiano, A. Franchi, D. Zelazo, and P . R. Giordano, “A rigidity-based
+decentralized bearing formation controller for groups of quadrotor UA Vs,”
+in Proc. IEEE/RSJ Int. Conf. Intell. Robots Syst. , 2016, pp. 5099–5106.
+[28] T. Eren, “Formation shape control based on bearing rigidity,” Int. J.
+Control, vol. 85, no. 9, pp. 1361–1379, 2012.
+[29] R. Connelly, “Rigidity,” in Handbook of Convex Geometry . Amsterdam,
+The Netherlands: Elsevier, 1993, pp. 223–271.
+[30] B. D. Anderson, Z. Sun, T. Sugie, S.-I. Azuma, and K. Sakurama, “For-
+mation shape control with distance and area constraints,” IF AC J. Syst.
+Control, vol. 1, pp. 2–12, 2017.
+[31] T. Liu and M. de Queiroz, “An orthogonal basis approach to formation
+shape control,” Automatica, vol. 129, 2021, Art. no. 109619.
+[32] A. D. Alexandrov, Convex Polyhedra. Berlin, Germany: Springer, 2005.
+[33] X. Li, Y . Bai, X. Dong, Q. Li, and Z. Ren, “Distributed time-varying forma-
+tion control with uncertainties based on an event-triggered mechanism,”
+Sci. China Inf. Sci. , vol. 64, no. 3, pp. 1–10, 2021.
+[34] M. H. Trinh, S. Zhao, Z. Sun, D. Zelazo, B. D. Anderson, and H.-S. Ahn,
+“Bearing-based formation control of a group of agents with leader-ﬁrst fol-
+lower structure,” IEEE Trans. Autom. Control, vol. 64, no. 2, pp. 598–613,
+Feb. 2019.
+[35] X. Chai, J. Liu, Y . Y u, and C. Sun, “Observer-based self-triggered control
+for time-varying formation of multi-agent systems,” Sci. China Inf. Sci.s ,
+vol. 64, no. 3, pp. 1–16, 2021.
+[36] I. Buckley and M. Egerstedt, “Controller synthesis for inﬁnitesimally
+shape-similar formations,” inProc. IEEE Int. Conf. Robot. Automat., 2020,
+pp. 5597–5603.
+[37] M. Cao, A. S. Morse, C. Y u, B. D. Anderson, and S. Dasguvta, “Controlling
+a triangular formation of mobile autonomous agents,” in Proc. IEEE 46th
+Conf. Decis. Control, 2007, pp. 3603–3608.
+[38] I. Buckley and M. Egerstedt, “Inﬁnitesimally shape-similar motions using
+relative angle measurements,” in Proc. IEEE/RSJ Int. Conf. Intell. Robots
+Syst., 2017, pp. 1077–1082.
+[39] A. N. Bishop, “A very relaxed control law for bearing-only triangular
+formation control,” IF AC Proc. V olumes, vol. 44, no. 1, pp. 5991–5998,
+2011.
+[40] S. Sastry and M. Bodson, Adaptive Control: Stability, Convergence and
+Robustness. Chelmsford, MA, USA: Courier Corporation, 2011.
+[41] R. A. Horn and C. R. Johnson, Matrix Analysis. Cambridge, U.K: Cam-
+bridge Univ. Press, 2012.
+[42] C. Deng, C. Wen, W. Wang, X. Li, and D. Y ue, “Distributed adaptive
+tracking control for high-order nonlinear multi-agent systems over event-
+triggered communication,” IEEE Trans. Autom. Control, to be published,
+doi: 10.1109/TAC.2022.3148384.
+Liangming Chen received the B. E. degree in
+automation from Southwest Jiaotong University ,
+Chengdu, China, in 2015.
+He is currently an Associate Professor with
+Southern University of Science and T echnology ,
+Shenzhen, China. From 2015 to 2021, he was
+enrolled jointly in the Ph.D. programs of systems
+and control with the Harbin Institute of T ech-
+nology , China, and the University of Groningen,
+the Netherlands. From 2021 to 2022, he was a
+Research Fellow with Nanyang T echonological
+University , Singapore. His research interests are in rigidity theory and
+multi-agent systems.
+Ming Cao (Fellow, IEEE) received the bache-
+lor’s degree in 1999 and the master’s degree in
+2002 from Tsinghua University , China, and the
+Ph.D. degree in 2007 from Y ale University , New
+Haven, CT , USA, all in electrical engineering.
+He is currently a Professor of systems and
+control with the Engineering and T echnology
+Institute (ENTEG), the University of Groningen,
+Groningen, the Netherlands, where he started
+as an Assistant Professor in 2008. From 2007
+to 2008, he was a Postdoctoral Research Asso-
+ciate with the Department of Mechanical and Aerospace Engineering,
+Princeton University , Princeton, NJ, USA. He worked as a Research
+Intern in 2006 with the Mathematical Sciences Department, IBM T . J.
+Watson Research Center, USA. His main research interest is in au-
+tonomous agents and multi-agent systems, decision making dynamics
+and complex networks.
+Dr. Cao is the 2017 and inaugural recipient of the Manfred Thoma
+medal from the International Federation of Automatic Control (IFAC) and
+the 2016 recipient of the European Control Award sponsored by the Eu-
+ropean Control Association (EUCA). He is a Senior Editor for S YSTEMS
+AND CONTROL LETTERS, an Associate Editor for IEEE T RANSACTIONS ON
+AUTOMA TIC CONTROL, IEEE T RANSACTIONS ON CIRCUITS AND SYSTEMS
+and IEEE C IRCUITS AND SYSTEMS MAGAZINE
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:38:39 UTC from IEEE Xplore.  Restrictions apply. 

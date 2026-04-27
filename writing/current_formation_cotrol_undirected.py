@@ -172,6 +172,7 @@ class SimulationConfig:
     gif_frame_stride: int = 120
     gif_fps: int = 40
     undirected_normal_hysteresis: float = 0.05
+    controlled_angle_names: tuple[str, ...] = ("e_1", "e_2", "e_4")
     output_dir: Path = ROOT / "output" / "double_integrator" / "current_formation_cotrol_undirected"
 
 
@@ -232,6 +233,7 @@ class UndirectedFormationController:
         self.use_leso = config.use_leso
         self.use_saturation_control = bool(config.use_saturation_control)
         self.undirected_normal_hysteresis = max(0.0, float(config.undirected_normal_hysteresis))
+        self.controlled_angle_names = set(config.controlled_angle_names)
         self.normal_branch_sign = 1.0
 
         self.K_rope = 74.0
@@ -389,6 +391,9 @@ class UndirectedFormationController:
             e_angle = theta - angle["theta_star"]
 
             self.angle_error_history[angle["name"]].append(e_angle)
+            if angle["name"] not in self.controlled_angle_names:
+                continue
+
             gain = self._gain(e_angle, self.d_p_angle, self.bp_angle, self.mu_p_angle)
             u[i] += -gain * e_angle * (zij + zik)
 
@@ -1075,6 +1080,7 @@ def print_summary(
     print(np.array2string(final_velocities, precision=3, suppress_small=True))
     print(f"Final d12 error: {d12 - edge_target:.4f} m")
     print(f"Final d14 error: {d14 - edge_target:.4f} m")
+    print(f"Controlled angle constraints: {sorted(controller.controlled_angle_names)}")
     print("Final angle errors (rad):")
     final_angle_errors = {
         name: values[-1]

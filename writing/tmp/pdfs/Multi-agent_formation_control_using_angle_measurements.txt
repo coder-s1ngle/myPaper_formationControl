@@ -1,348 +1,0 @@
-Multi-agent_formation_control_using_angle_measurements.pdf
-
---- PAGE 1 ---
-Multi-agent formation control using angle measurements
-Liangming Chen, Ming Cao, Chuanjiang Li, Xiaodong Cheng and Yuri Kapitanyuk
-Abstract This paper investigates the triangular and polyg-
-onal formation control problem for mobile multi-agent systems
-under the constraint that each agent can only take angle
-measurements. For triangular formations, due to the fact that
-the sum of three interior angles always equals , the desired
-triangular shape can be obtained when any two agents achieve
-desired angles for which they are the corresponding vertices
-of the triangle. So to achieve the desired shape of a triangular
-formation, we propose to let one agent remain xed and the
-other two agents move along their bisectors respectively with
-respect to their two neighbors. For convex polygonal formations,
-since the sum of all interior angles is constant, we are able to
-use a similar control strategy to achieve the desired polygonal
-shape. The stability of the closed-loop multi-agent systems is
-proved using Lyapunov theory. Finally, simulation examples
-illustrate the validity of the theoretic results.
-I. INTRODUCTION
-Formations of multi-agent systems have broad applica-
-tions, e.g., Unmanned Aerial Vehicles (UA Vs) formations in
-the near-Earth space [1], Autonomous Underwater Vehicles
-(AUVs) formations in oceans [2], and Spacecraft Formation
-Flying (SFF) in deep space [3]. Formation control has
-become a hot topic in the research community of multi-
-agent systems [4], [5]. The sensors used in formation control
-include GPS, radar, and camera, which produce the measure-
-ments of positions, inter-agent distances, and bearings [5],
-[6]. Many results have concentrated on the position-based or
-displacement-based formation control problem, partly due to
-the convenience to apply control theories for linear systems
-or gradient systems [7][10]. The disadvantage of position-
-based formation control is that a global coordinate system
-is usually required to be shared among the agents [6],
-[11]. In distance-based formation control, relative positions
-measured in each agent's local coordinate system are usually
-required [12], [13]. However, in many practical applications,
-it is hard for each agent to gain knowledge of the global
-coordinate system or measure relative positions with respect
-to neighboring agents [14], [15]. For example, in deep space,
-it is difcult for satellites to get the GPS information because
-there is usually no global coordinate system with respect to
-the earth [16].
-L. Chen, M. Cao, X. Cheng and Y . Kapitanyuk are with
-Faculty of Science and Engineering, University of Groningen,
-Groningen, 9747 AG, The Netherlands. L. Chen and C. Li are with
-Department of Control Science and Engineering, Harbin Institute of
-Technology, Harbin, 150001, China. X. Cheng is also with Control
-Systems Group, Department of Electrical Engineering, Eindhoven
-University of Technology, 5600 MB Eindhoven, The Netherlands.
-chenliangming@hit.edu.cn, m.cao@rug.nl,
-lichuan@hit.edu.cn, x.cheng@rug.nl,
-yura.kapitanyuk@gmail.com
-With the rapid development of sensor technologies, an-
-gle measurements are becoming cheaper, more reliable and
-accessible than relative position or inter-agent distance mea-
-surements [6], [11]. Angle information can be easily obtained
-by the full-range radar or vision-based camera [17]. Thus,
-angle sensors are more applicable in engineering practices,
-which motivates us to study the problem of multi-agent
-formation control using only angle measurements. For angle-
-based formation control, one agent's interior angle is usu-
-ally calculated by the relative bearings with respect to
-its neighboring agents. More precisely, there are mainly
-three different denitions for bearing. The rst is the angle
-between a sensing beam and an axis of the global coordinate
-system [15], [18]. The second refers to the angle between the
-sensing beam and the x-axis of the corresponding agent's
-local coordinate system [19], [20]. The third is represented
-in a global coordinate system by the unit vector starting from
-the corresponding sensing agent along the sensing beam [21],
-[22]. Correspondingly, there are research results studying the
-angle-measurement based formation control problem using
-each of the above denitions of bearing.
-Eren et al. [18] used the second denition and established
-direction-based bearing rigidity using the fact that a bearing
-constraint can be transformed into a constraint on the direc-
-tion that an agent is conned to move along once all agents
-know the global coordinate system. In a follow-up work [14],
-the triangular formation control problem was investigated,
-in which some distance measurements were needed. Also
-using the second denition, Bishop et al. [19], [20] studied
-the triangular formation control problem using only angle
-measurements; more specically in [20], Poincare-Bendixson
-theorem was used to prove the asymptotic convergence of
-the closed-loop formation control system. The results in
-[23] extended those in [19], [20] to four-agent formations.
-The distributed control of angle-constrained cyclic forma-
-tions was studied in [24] using bearing-only measurements,
-where local stability was proved. In [15], by using the rst
-denition, stiff rigidity with mixed bearing and distance
-constraints was dened and a formation control algorithm
-was designed. Zhao et al. [21] established bearing rigidity
-using the third denition, in which a bearing-only formation
-control algorithm was constructed to guarantee almost global
-convergence. In [22], translational and scaling formation ma-
-neuvering control was realized via a bearing-based approach,
-in which both the bearing information and relative positions
-were required.
-Motivated by the existing results, in this study we aim
-at solving the formation control problem using only angle
-measurements, in which bearing takes its meaning according
-2019 American Control Conference (ACC)
-Philadelphia, PA, USA, July 10-12, 2019
-978-1-5386-7926-5/$31.00 ©2019 AACC 59
-Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:45:28 UTC from IEEE Xplore.  Restrictions apply. 
---- PAGE 2 ---
-to the second denition. Two classes of formations are
-considered, i.e., triangular and convex polygonal formations.
-Since the sum of the three interior angles of any triangle is
-, the desired triangular formation is realized when any two
-agents achieve their desired angles. Thus, our control strategy
-stipulates that one agent keeps static and the other two are
-guided to reach their desired angles by moving along the
-bisector of the corresponding interior angle. Similarly, the
-sum of the interior angles of a convex polygon is constant.
-Therefore, to realize the convex polygonal formation control,
-one can also let one agent keep static and the other agents
-move to reach their desired angles.
-The main contributions of this study can be summarized
-as follows. The triangular and convex polygonal formations
-are realized using only angle measurements. Compared with
-other proposed formation control algorithms which require
-the measurements of bearings, distances or relative positions
-[14], [15], only angle measurements are required in this
-study, which can be realized by only installing on-board
-camera. Angle-based Lyapunov functions are designed to
-prove the stability of the closed-loop formation systems.
-Compared with using Poincare-Bendixson theorem as is done
-in [20], Lyapunov theorem offers a more general analysis
-framework. Different from [21], [22], the global coordinate
-system is not needed in our approach.
-The rest of this paper is organized as follows. Section
-II introduces basic background knowledge and the problem
-formulation. In Section III, we dene the triangular formation
-control problem, followed by the stability analysis of the
-closed-loop system. In Section IV , the convex polygonal
-formation control and the corresponding stability analysis
-are given. The theoretical results are illustrated by numerical
-simulations in Section V .
-II. P RELIMINARIES AND PROBLEM FORMULATION
-For an N-agent formation, we rst dene the agents'
-dynamics and the bearing measurements. Then, the research
-problem is formally formulated.
-A. Agents' dynamics
-For the N-agent system moving in the plane, the motion
-dynamics of an agent i is governed by [20]
-_pi =vi
-cosi
-sini
-
-;i = 1;:::;N (1)
-where pi = [xi;yi]T 2 R2 denotes the position of agent i,
-andvi2 R is the speed, and the heading angle i is dened
-counter-clockwise with respect to agent i's local x-direction
-and always takes its value from ( ; ]. Both vi andi are
-the control inputs to be determined.
-B. Bearing measurements
-Agenti measures only the bearingij2 ( ; ];8j2N i
-towards agent j evaluated counter-clockwise from its local
-xi-direction, and hereNi denotes the set of the neighbors of
-agent i.
-First, we dene the auxiliary angle
-i =ji(i+1) i(i 1)j2 [0; 2) (2)
-which is the angle measured counter-clockwise from
-minfi(i+1);i(i 1)g to maxfi(i+1);i(i 1)g with respect
-to agent i's local x-direction.
-Then, we dene the interior angle i to be
-i =
-(
-i; if i
-2 i; otherwise (3)
-where i2 [0; ] represents agent i's interior angle in the
-triangle formed by (i  1), i and (i + 1), see Fig.1.
-i
-( 1)ii 
-ix
-i+1
-i-1
-1ix 
-1ix 
-i
-i
-( 1)ii 
-Fig. 1: The angle measurements.
-C. Problem formulation
-The goal is to design for each agent i formation control
-algorithms for vi and i such that the closed-loop system
-can achieve:
-(1) For a triangular formation ( N = 3)
-lim
-t!1
-(i 
-i ) = 0;8i = 1; 2; 3 (4)
-where 
-i denote agent i's desired interior angle, and natu-
-rally 
-1 +
-2 +
-3 =.
-(2) Convex polygonal formation(N >3)
-lim
-t!1
-(i 
-i ) = 0;8i = 1;:::;N (5)
-wherePN
-i=1
-i = (N 2) and the given desired formation
-polygon is convex.
-III. T RIANGULAR FORMATION CONTROL
-In this section, we aim at solving the triangular formation
-control problem using only angle measurements. First, we
-will introduce two related lemmas. Then, for two repre-
-sentative triangles, the formation control algorithms and the
-corresponding stability analysis will be given respectively.
-60
-Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:45:28 UTC from IEEE Xplore.  Restrictions apply. 
---- PAGE 3 ---
-A. Related lemmas
-Dene the initial angle error ~i(0) by
-~i(0) =
-8
-><
->:
-0; if 
-i =i(0)
-+1; if 
-i i(0)> 0
- 1; if 
-i i(0)< 0
-(6)
-The following lemma shows the relationship between the
-initial triangle and the desired triangle.
-Lemma 1: For any triangular formations, if initially there
-exists one agent i with ~i(0)6= 0 , then there always exists
-a pair of distinct k and j satisfying ~k(0)> 0 and ~j(0)<
-0;i;j;k 2f 1; 2; 3g.
-The above lemma holds because 
-1 +
-2 +
-3 =1(0) +
-2(0) + 3(0) = . The following lemma is on how the
-angles change when agents move.
-Lemma 2: For the triangle formed by agents i, j and k,
-if vj = 0, vk = 0, and vi6= 0, then i will increase when i
-moves towards the inside of the triangle and i will decrease
-when i moves towards the outside of the triangle along the
-bisector of i.
-Using the above lemmas, we obtain the following table
-summarizing a set of triangular formation motion strategies
-for different initial formations.
-Triangle ~1 ~2 ~3 Formation motion strategies
-Case 1 0 +1  1 agents 1, 3 keep static, agent 2 moves
-Case 2 +1 +1  1 agent 1 keeps static, agents 2, 3 move
-Case 3 +1  1  1 agent 2 keeps static, agents 1, 3 move
-TABLE I: Triangular formation motion strategies.
-Note that the above listed cases represent all the possible
-scenarios by relabelling the indices of the agents. Based
-on the above lemmas and table, in the following, we will
-describe how to realize a triangular formation in Case 1 and
-Case 2 in detail. For Case 3, one can use the same formation
-control algorithms for agents 1, 3 as those given in Case 2.
-B. Triangular formation control for Case 1
-In this case,1(0) = 
-1,2(0)<
-2, and3(0)>
-3. In
-a triangle, the third angle equals the desired value as long as
-the other two angles equal their desired values. Thus, in the
-motion strategy of the triangular formation system in Case
-1 we let agents 1, 3 keep static and agent 2 move along the
-line connecting agent 2 and agent 1, which makes 1 =
-1
-and 2 converge to 
-2.
-1
-2 3
-2'
-Fig. 2: The triangular formation motion strategy in Case 1.
-Specically, the speed and heading control algorithms for
-agent 2 become
-v2 = k2(2 
-2) (7)
-2 =21 (8)
-where k2 is a positive constant as a design parameter to
-adjust the convergence speed of the closed-loop system. The
-speed control law (7) represents the feedback of the relative
-angle error. The heading control law (8) is used to guide
-agent 2 to move along the line connecting agents 1 and 2.
-In the triangular formation control algorithms (7), (8), only
-the angle information 2, 21 measured in agent 2's local
-coordinate system is used.
-Now we are ready to prove the main result.
-Theorem 1: For the triangular formation system in Case 1,
-with the formation control algorithms (7), (8), the three-agent
-formation will achieve its desired shape asymptotically.
-Proof: The angular velocity of agent 2 with respect
-to agent 3 is determined by the tangent component of the
-velocity vector with respect to the line connecting agent 2
-and agent 3. Thus, one can get
-_3 = v2
-r23
-sin(2) = 2 
-2
-r23
-sin(2) (9)
-where the sign is negative because 3 will decrease when
-v2 > 0, and rij =kpi pjk. Since k2 has no effect on the
-system's stability, without loss of generality, we use ki =
-1;8i = 1;:::; 3 in the following proof.
-For the triangle in Case 1, because _1 = 0 andP3
-i=1 _i =
-0, one gets
-_2 =  _3 = 2 
-2
-r23
-sin(2): (10)
-Denote the angle error by ei =i 
-i;i = 1; 2; 3. Then,
-we have
-_e2 = A(e)e2 (11)
-where A(e) = sin(2)
-r23
-. Note that sin(2)6= 0;r 236= 0;8t>
-0. Thus, we have A(e)> 0;8t> 0.
-The only equilibrium of the closed-loop system (11) is
-fe2j _e2 = 0g = fe2je2 = 0g because A(e) > 0, which
-corresponds to the desired triangular formation shape.
-Consider the following candidate Lyapunov function
-V1 = 1
-2e2
-2: (12)
-Taking the time derivative of V1 gives
-_V1 = A(e)e2
-2 < 0: (13)
-As e2 = 0 is the only equilibrium of the closed-loop
-system (11), one has
-lim
-t!1
-(2 
-2) = 0 (14)
-which implies that limt!1(3 
-3) = 0 because e1 = 0 .
-61
-Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 05,2026 at 06:45:28 UTC from IEEE Xplore.  Restrictions apply. 
