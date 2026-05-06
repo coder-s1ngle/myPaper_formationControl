@@ -140,15 +140,16 @@ n_{142}=\frac{b_{14}\times b_{12}}
 {\|b_{14}\times b_{12}\|}.
 \end{equation}
 
-A natural choice for the normal-direction error is the cross product
+A natural candidate for the normal-direction error is the cross product
 \(n_{142}\times n_d\),
-where \(n_d\in\mathbb R^3\) with \(\|n_d\|=1\) is the prescribed target plane normal.
-For the capture net application, the sign of the net opening normal is irrelevant:
+where \(n_d\in\mathbb R^3\), \(\|n_d\|=1\), is the prescribed target plane normal.
+For the capture net application, the sign of the net opening normal is immaterial:
 \(n_d\) and \(-n_d\) correspond to the same physical net opening orientation,
 as illustrated in Fig.~\ref{fig:orientation_branch}.
-However, this raw cross product formulation introduces a control singularity:
-when the formation maneuvers and the current normal \(n_{142}\) approaches \(-n_d\) (an equally valid target orientation),
-the error \(n_{142}\times n_d\) remains nonzero and would drive an unnecessary \(180^\circ\) plane rotation toward \(+n_d\).
+This raw cross product formulation, however, introduces a control singularity.
+When the formation maneuvers and the current normal \(n_{142}\) approaches \(-n_d\),
+the error \(n_{142}\times n_d\) remains nonzero even though \(-n_d\) is an equally valid target;
+the controller would then drive an unnecessary \(180^\circ\) plane rotation toward \(+n_d\).
 
 To eliminate this spurious rotation, we define the candidate set
 \begin{equation}
@@ -167,7 +168,7 @@ The normal-direction error is then defined with respect to the selected branch:
 \label{eq:normal-error}
 e_n=n_{142}\times \bar n_d.
 \end{equation}
-When \(e_n=0\), the formation plane is aligned with the target plane in the undirected sense (\(n_{142}=\pm n_d\)). The branch selection~\eqref{eq:normal-representative} ensures that the controller tracks whichever element of \(\mathcal N_d\) is locally closer, avoiding the spurious rotation inherent in the raw cross product formulation.
+When \(e_n=0\), the formation plane is aligned with the target plane in the undirected sense, i.e., \(n_{142}=\pm n_d\). The branch selection~\eqref{eq:normal-representative} ensures that the controller tracks whichever element of \(\mathcal N_d\) is locally closer, thereby avoiding the spurious rotation inherent in the raw cross product formulation.
 
 In 3-D maneuvering, the four agents may drift out of the reference plane. To enforce coplanarity, we require agent~3 to lie on the reference plane \(\{1,2,4\}\). The coplanarity error is measured from agent~3's local bearings as
 \begin{equation}
