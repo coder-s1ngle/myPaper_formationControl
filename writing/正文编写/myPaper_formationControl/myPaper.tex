@@ -51,34 +51,19 @@ This paper considers the formation control of four agents forming a planar squar
 
 \subsection{Agent Dynamics}
 
-Consider a group of four agents moving in 3-D space, indexed by
+Consider a group of four agents moving in 3-D space. The index set is
 \begin{equation}
 \label{eq:vertex-set}
 \mathcal V=\{1,2,3,4\}.
 \end{equation}
-The position and velocity of agent \(i\) are denoted by \(p_i(t)\in\mathbb R^3\) and \(v_i(t)\in\mathbb R^3\), respectively. Unless otherwise stated, all vectors are expressed in a fixed inertial frame. Define the stacked vectors
-\begin{equation}
-\label{eq:stacked-position}
-p=\left[p_1^T,p_2^T,p_3^T,p_4^T\right]^T\in\mathbb R^{12},\qquad
-v=\left[v_1^T,v_2^T,v_3^T,v_4^T\right]^T\in\mathbb R^{12}.
-\end{equation}
-
-Each agent is modeled as a double integrator:
+The dynamics of agent \(i\) are described by the double integrator
 \begin{equation}
 \label{eq:agent-dynamics}
-\begin{aligned}
-\dot p_i(t)&=v_i(t),\\
-\dot v_i(t)&=u_i(t),
-\end{aligned}
+\dot p_i = v_i,\qquad
+\dot v_i = u_i,
 \qquad i\in\mathcal V,
 \end{equation}
-where \(u_i(t)\in\mathbb R^3\) is the control input to be designed. In compact form,
-\begin{equation}
-\label{eq:aggregate-dynamics}
-\dot p=v,\qquad
-\dot v=u,
-\end{equation}
-with \(u=[u_1^T,u_2^T,u_3^T,u_4^T]^T\in\mathbb R^{12}\).
+where \(p_i\in\mathbb R^3\) and \(v_i\in\mathbb R^3\) denote the position and velocity of agent \(i\) in a fixed inertial frame, and \(u_i\in\mathbb R^3\) is the control input.
 
 For any \(i,j\in\mathcal V\), define the relative position vector, inter-agent distance, and bearing vector as
 \begin{equation}
