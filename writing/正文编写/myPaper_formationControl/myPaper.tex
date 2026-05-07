@@ -84,9 +84,9 @@ The following assumptions are made on the sensing and communication capabilities
 
 \emph{Assumption 1:} Each agent is equipped with LOS sensing to acquire the relative direction information required by the formation controller.
 
-\emph{Assumption 3:} Only agent~1 measures the distances to its two neighboring agents, namely \(d_{12}\) and \(d_{14}\), and the measured distances can be transmitted to the corresponding neighboring agents when needed.
+\emph{Assumption 2:} Only agent~1 measures the distances to its two neighboring agents, namely \(d_{12}\) and \(d_{14}\), and the measured distances can be transmitted to the corresponding neighboring agents when needed.
 
-\emph{Remark 1:} Assumptions~1 and~3 specify the onboard sensing and communication requirements. Each agent requires only a bearing sensor, except agent~1 which additionally carries a distance sensor. The communication burden is limited to two scalar distances sent from agent~1 to agents~2 and~4. No alignment of local coordinate frames is required, and no global position information is needed.
+\emph{Remark 1:} Assumptions~1 and~2 specify the onboard sensing and communication requirements. Each agent requires only a bearing sensor, except agent~1 which additionally carries a distance sensor. The communication burden is limited to two scalar distances sent from agent~1 to agents~2 and~4. No alignment of local coordinate frames is required, and no global position information is needed.
 
 \subsection{Formation Constraints}
 
@@ -128,15 +128,21 @@ n_{142}=\frac{b_{14}\times b_{12}}
 A natural candidate for the normal-direction error is the cross product
 \(n_{142}\times n_d\),
 where \(n_d\in\mathbb R^3\), \(\|n_d\|=1\), is the prescribed target plane normal.
-For the capture net application, the sign of the net opening normal is immaterial:
-\(n_d\) and \(-n_d\) correspond to the same physical net opening orientation,
-as illustrated in Fig.~\ref{fig:orientation_branch}.
-This raw cross product formulation, however, introduces a control singularity.
-When the formation maneuvers and the current normal \(n_{142}\) approaches \(-n_d\),
-the error \(n_{142}\times n_d\) remains nonzero even though \(-n_d\) is an equally valid target;
-the controller would then drive an unnecessary \(180^\circ\) plane rotation toward \(+n_d\).
+This quantity vanishes whenever \(n_{142}\) is parallel to \(n_d\),
+which occurs at both \(n_{142}=n_d\) and \(n_{142}=-n_d\).
+At the latter, the error is zero despite \(n_{142}\neq n_d\);
+the cross product cannot distinguish the two opposite alignment directions.
 
-To eliminate this spurious rotation, we define the candidate set
+For the capture net application, the sign of the net opening normal is immaterial:
+\(n_d\) and \(-n_d\) represent the same physical net opening orientation
+(Fig.~\ref{fig:orientation_branch}).
+The sign ambiguity at the target is therefore acceptable in itself.
+However, because the raw error treats \(+n_d\) as the unique signed target,
+the equilibrium at \(n_{142}=-n_d\) is unstable under the control law:
+a formation near \(-n_d\) is driven toward \(+n_d\)
+rather than settling at the closer branch.
+
+To make both branches stable, we define the candidate set
 \begin{equation}
 \label{eq:normal-set}
 \mathcal N_d=\{n_d,-n_d\},
@@ -153,7 +159,7 @@ The normal-direction error is then defined with respect to the selected branch:
 \label{eq:normal-error}
 e_n=n_{142}\times \bar n_d.
 \end{equation}
-When \(e_n=0\), the formation plane is aligned with the target plane in the undirected sense, i.e., \(n_{142}=\pm n_d\). The branch selection~\eqref{eq:normal-representative} ensures that the controller tracks whichever element of \(\mathcal N_d\) is locally closer, thereby avoiding the spurious rotation inherent in the raw cross product formulation.
+When \(e_n=0\), the formation plane is aligned with the target plane in the undirected sense, i.e., \(n_{142}=\pm n_d\). With the branch selection~\eqref{eq:normal-representative}, both \(n_{142}=n_d\) and \(n_{142}=-n_d\) are stable equilibria of the closed-loop system.
 
 In 3-D maneuvering, the four agents may drift out of the reference plane. To enforce coplanarity, we require agent~3 to lie on the reference plane \(\{1,2,4\}\). The coplanarity error is measured from agent~3's local bearings as
 \begin{equation}
@@ -213,7 +219,7 @@ Equations \eqref{eq:angle-convergence}--\eqref{eq:coplanar-convergence} together
 \section{Main Results}
 In this section, we present the distributed formation control law, establish the necessity of the coplanarity constraint, and analyze the closed-loop stability. The following assumption is made for the local analysis.
 
-\emph{Assumption 4 (Initial configuration):} The initial formation lies in a neighborhood of the desired configuration \(\mathcal S(\ell^*,n_d)\), and the positions of the agents are distinct with nondegenerate reference triangles \(\{1,2,4\}\) and \(\{2,3,4\}\).
+\emph{Assumption 3 (Initial configuration):} The initial formation lies in a neighborhood of the desired configuration \(\mathcal S(\ell^*,n_d)\), and the positions of the agents are distinct with nondegenerate reference triangles \(\{1,2,4\}\) and \(\{2,3,4\}\).
 
 \subsection{Control Law Design}
 
