@@ -1,4 +1,4 @@
-\documentclass[lettersize,journal]{IEEEtran}
+\documentclass[journal]{IEEEtran}
 \usepackage{amsmath,amsfonts,amssymb}
 \usepackage{algorithmic}
 \usepackage{algorithm}
@@ -120,7 +120,7 @@ where \(\ell^*>0\) is the desired side length of the square formation. The const
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=3.2in,trim=6pt 6pt 6pt 6pt,clip]{figures/fig_1}
+\includegraphics[width=3.45in,trim=6pt 6pt 6pt 6pt,clip]{figures/fig_1}
 \caption{Square formation constraints. The four interior angle constraints \(\mathcal A\) determine the square shape, while the two distance-constrained edges \(\mathcal E_d\) fix the formation scale.}
 \label{fig:square_constraints}
 \end{figure}
@@ -200,7 +200,7 @@ The condition \(|n_{142}^{T}n_d|=1\) requires the reference-plane normal to be p
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=3.0in,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_3}
+\includegraphics[width=3.45in,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_3}
 \caption{Coplanarity constraint. The error \(e_{\mathrm{cop}}\) measured by agent~3 characterizes its deviation from the reference plane formed by agents~1, 2, and~4.}
 \label{fig:coplanar_constraint}
 \end{figure}
@@ -440,15 +440,14 @@ Physically, \(\hat G^*\) is the stiffness matrix relating the second derivative 
 \end{multline}
 The factorization reflects the physical channel separation at the target square: the factor \((\lambda+k_n)^2\) corresponds to the two normal-error components, each governed by the normal control gain \(k_n\) independently; the factor \((\lambda+\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}})\) corresponds to the coplanarity channel with gain \(k_{\mathrm{cop}}\); the factor \((\lambda+\frac{4k_\theta}{\ell^*})\) is the bulk angular mode; and the repeated quadratic factor corresponds to the two coupled angle--distance modes involving the pairs \((e_{\theta_1},e_{14})\) and \((e_{\theta_4},e_{12})\) (or their symmetric equivalents).
 
-\emph{G. Hurwitz verification.}
-For any positive gains \(k_\theta,k_d,k_{\mathrm{cop}},k_n>0\) and \(\ell^*>0\):
-\begin{itemize}
-\itemsep0pt
-\item The root of \(\lambda+k_n=0\) is \(-k_n<0\) (double multiplicity).
-\item The root of \(\lambda+\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}}=0\) is strictly negative.
-\item The root of \(\lambda+\frac{4k_\theta}{\ell^*}=0\) is strictly negative.
-\item For the quadratic factor \(\lambda^2+a\lambda+b\) with \(a=\frac{2(k_d\ell^*+k_\theta)}{\ell^*}>0\) and \(b=\frac{2k_d k_\theta}{\ell^*}>0\), both coefficients are strictly positive, which by the Routh--Hurwitz criterion guarantees that both roots have strictly negative real parts.
-\end{itemize}
+\emph{G. Hurwitz verification.} For any positive gains, all factors of the characteristic polynomial have strictly negative roots:
+\begin{enumerate}
+\itemsep0pt\raggedright
+\item \(\lambda+k_n=0\) gives \(-k_n<0\) (double multiplicity);
+\item \(\lambda+\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}}=0\) gives a strictly negative root;
+\item \(\lambda+\frac{4k_\theta}{\ell^*}=0\) gives a strictly negative root;
+\item \(\lambda^2+a\lambda+b\) with \(a=\frac{2(k_d\ell^*+k_\theta)}{\ell^*}>0\) and \(b=\frac{2k_d k_\theta}{\ell^*}>0\) has both coefficients positive, so by Routh--Hurwitz both roots have strictly negative real parts.
+\end{enumerate}
 Hence all eight eigenvalues of \(\hat G^*\) lie strictly in the open left half-plane; \(\hat G^*\) is Hurwitz.
 
 \emph{H. Full system Hurwitz.}
@@ -524,9 +523,7 @@ In particular, all geometric errors and velocity errors converge to zero exponen
 
 \subsection{Undirected Normal Branch Selection}
 
-In the nominal model analyzed above, the normal branch \(\bar n_d\) is treated as fixed. We now specify how this branch is selected in practice and verify that, once correctly initialized, it remains fixed in a neighborhood of the target square.
-
-Let the two candidate normal directions be \(\mathcal N_d=\{n_d,-n_d\}\). The branch is selected by
+In the nominal model analyzed above, the normal branch \(\bar n_d\) is treated as fixed. We now specify how this branch is selected in practice and verify that, once correctly initialized, it remains fixed in a neighborhood of the target square. Let the two candidate normal directions be \(\mathcal N_d=\{n_d,-n_d\}\); the branch is selected by
 \begin{equation}
 \bar n_d=\operatorname*{arg\,max}_{\eta\in\mathcal N_d}\left(n_{142}^{T}\eta\right),
 \end{equation}
@@ -673,7 +670,7 @@ Because of the xy/z channel decoupling at the target square, \(\hat G^*\) is blo
 \end{equation}
 where \(\hat G^*_{xy}\in\mathbb R^{5\times 5}\) governs the in-plane (angle + distance) dynamics and \(\hat G^*_{z}\in\mathbb R^{3\times 3}\) governs the out-of-plane (coplanarity + normal) dynamics.
 
-\noindent\textbf{Out-of-plane block.} From the z-component rows of \(\hat C^*\) and z-component columns of \(-\hat B^*\):
+\textbf{Out-of-plane block:} From the z-component rows of \(\hat C^*\) and z-component columns of \(-\hat B^*\):
 \begin{itemize}
 \itemsep0pt
 \item The \((e_{\mathrm{cop}})\) row of \(\hat C^*\) multiplied by the \((e_{\mathrm{cop}})\) column of \(-\hat B^*\) (agent~3, z-component) yields the scalar \(-\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}}\).
@@ -681,7 +678,7 @@ where \(\hat G^*_{xy}\in\mathbb R^{5\times 5}\) governs the in-plane (angle + di
 \end{itemize}
 Hence \(\hat G^*_{z}=\operatorname{diag}(-\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}},-k_n,-k_n)\).
 
-\noindent\textbf{In-plane block.} The 5-D subspace involves \(e_{12},e_{14},e_{\theta_1},e_{\theta_2},e_{\theta_4}\) (with \(e_{\theta_3}\) eliminated via Lemma~1). Direct computation of the relevant rows of \(\hat C^*\) and columns of \(-\hat B^*\) yields
+\textbf{In-plane block:} The 5-D subspace involves the distance errors \(e_{12},e_{14}\) and the angle errors \(e_{\theta_1},e_{\theta_2},e_{\theta_4}\) (with \(e_{\theta_3}\) eliminated via Lemma~1). Direct computation of the relevant rows of \(\hat C^*\) and columns of \(-\hat B^*\) yields
 \begin{equation}
 \hat G^*_{xy}=
 \begin{bmatrix}
