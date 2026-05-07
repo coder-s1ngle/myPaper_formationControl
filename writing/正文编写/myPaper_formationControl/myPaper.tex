@@ -73,7 +73,7 @@ d_{ij}=\|q_{ij}\|,\qquad
 b_{ij}=\frac{q_{ij}}{\|q_{ij}\|}.
 \end{equation}
 The unsigned interior angle formed by agents \(j\), \(i\), and \(k\) is
-\begin{equation}
+\begin{equation} 
 \label{eq:angle-definition}
 \alpha_{jik}=\arccos\left(b_{ij}^{T}b_{ik}\right),
 \qquad \alpha_{jik}\in[0,\pi].
@@ -223,9 +223,7 @@ In this section, we present the distributed formation control law, establish the
 
 \subsection{Control Law Design}
 
-For each angle constraint \((j,i,k)\in\mathcal A\), let \(e_{\theta_i}=\alpha_{jik}-\pi/2\) denote the angular error. For the two distance-constrained edges, let \(e_{12}=d_{12}-\ell^*\) and \(e_{14}=d_{14}-\ell^*\). Define the velocity tracking error \(\tilde v_i=v_i-v_c^*\), where the desired common velocity \(v_c^*\) is taken as constant in the nominal design. The coplanarity error \(e_{\mathrm{cop}}\), the reference-plane normal \(n_{142}\), and the normal error \(e_n=n_{142}\times\bar n_d\) are as defined in \eqref{eq:coplanar-error}--\eqref{eq:normal-error}. Let \(r_i=p_i-p_{124}\) where \(p_{124}=(p_1+p_2+p_4)/3\) is the centroid of the reference triangle. All control gains \(k_\theta,k_d,k_v,k_{\mathrm{cop}},k_n\) are positive scalars.
-
-The distributed formation control law is proposed as
+The distributed formation control laws are proposed as follows:
 \begin{equation}
 \label{eq:total-control}
 \begin{aligned}
@@ -238,10 +236,10 @@ u_3&=-k_\theta e_{\theta_3}(b_{34}+b_{32})-k_{\mathrm{cop}}e_{\mathrm{cop}}n_{23
     &\quad -k_v\tilde v_3,\\[2pt]
 u_4&=-k_\theta e_{\theta_4}(b_{41}+b_{43})-k_d e_{14}b_{14}
       +k_n(e_n\times r_4)\\
-    &\quad -k_v\tilde v_4.
+    &\quad -k_v\tilde v_4,
 \end{aligned}
 \end{equation}
-The angle terms drive each interior angle toward \(\pi/2\) along the angle bisectors; the distance terms regulate the two constrained edges to \(\ell^*\); the coplanarity term, applied only to agent~3, restores coplanarity; the normal terms, applied to agents~1,~2, and~4, rotate the formation plane toward \(\bar n_d\); and the velocity damping term ensures convergence to \(v_c^*\).
+where \(e_{\theta_i}=\alpha_{jik}-\pi/2\) for \((j,i,k)\in\mathcal A\), \(e_{12}=d_{12}-\ell^*\) and \(e_{14}=d_{14}-\ell^*\) are the edge-length errors, \(\tilde v_i=v_i-v_c^*\) is the velocity tracking error, and \(r_i=p_i-p_{124}\) with \(p_{124}=(p_1+p_2+p_4)/3\). The coplanarity error \(e_{\mathrm{cop}}\), reference-plane normal \(n_{142}\), and normal error \(e_n\) are as defined in Section~II. The gains \(k_\theta,k_d,k_v,k_{\mathrm{cop}},k_n\) are positive scalars.
 
 \subsection{Necessity of the Coplanarity Constraint}
 
