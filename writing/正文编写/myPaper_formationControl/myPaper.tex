@@ -80,13 +80,15 @@ The unsigned interior angle formed by agents \(j\), \(i\), and \(k\) is
 \end{equation}
 Since defining signed angles in 3-D requires additional reference directions or aligned coordinate frames, we adopt unsigned angles throughout \cite{chen2023angleRigidity3D}.
 
-The following assumptions are made on the sensing and communication capabilities of each agent.
+The following assumptions are made.
 
 \emph{Assumption 1:} Each agent is equipped with LOS sensing to acquire the relative direction information required by the formation controller.
 
 \emph{Assumption 2:} Only agent~1 measures the distances to its two neighboring agents, namely \(d_{12}\) and \(d_{14}\), and the measured distances can be transmitted to the corresponding neighboring agents when needed.
 
-\emph{Remark 1:} Assumptions~1 and~2 specify the onboard sensing and communication requirements. Each agent requires only a bearing sensor, except agent~1 which additionally carries a distance sensor. The communication burden is limited to two scalar distances sent from agent~1 to agents~2 and~4. No alignment of local coordinate frames is required, and no global position information is needed.
+\emph{Assumption 3 (Initial configuration):} The initial formation lies in a neighborhood of the desired configuration \(\mathcal S(\ell^*,n_d)\), and the positions of the agents are distinct with nondegenerate reference triangles \(\{1,2,4\}\) and \(\{2,3,4\}\).
+
+\emph{Remark 1:} Assumptions~1--3 specify the onboard sensing, communication, and initialization requirements. Each agent requires only a bearing sensor, except agent~1 which additionally carries a distance sensor. The communication burden is limited to two scalar distances sent from agent~1 to agents~2 and~4. No alignment of local coordinate frames is required, and no global position information is needed.
 
 \subsection{Formation Constraints}
 
@@ -217,9 +219,7 @@ Equations \eqref{eq:angle-convergence}--\eqref{eq:coplanar-convergence} together
 
 % \section{Where to Get \LaTeX \ Help --- User Groups}
 \section{Main Results}
-In this section, we present the distributed formation control law, establish the necessity of the coplanarity constraint, and analyze the closed-loop stability. The following assumption is made for the local analysis.
-
-\emph{Assumption 3 (Initial configuration):} The initial formation lies in a neighborhood of the desired configuration \(\mathcal S(\ell^*,n_d)\), and the positions of the agents are distinct with nondegenerate reference triangles \(\{1,2,4\}\) and \(\{2,3,4\}\).
+In this section, we present the distributed formation control law, establish the necessity of the coplanarity constraint, and analyze the closed-loop stability.
 
 \subsection{Control Law Design}
 
