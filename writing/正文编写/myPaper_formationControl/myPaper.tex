@@ -161,14 +161,14 @@ e_n=n_{142}\times \bar n_d.
 \end{equation}
 When \(e_n=0\), the formation plane is aligned with the target plane in the undirected sense, i.e., \(n_{142}=\pm n_d\). With the branch selection~\eqref{eq:normal-representative}, both \(n_{142}=n_d\) and \(n_{142}=-n_d\) are stable equilibria of the closed-loop system.
 
-In 3-D maneuvering, the four agents may drift out of the reference plane. To enforce coplanarity, we require agent~3 to lie on the reference plane \(\{1,2,4\}\). The coplanarity error is measured from agent~3's local bearings as
+In 3-D maneuvering, the four agents may drift out of the reference plane. To enforce coplanarity, we require agent~3 to lie on the reference plane \(\{1,2,4\}\). Using its local bearings, agent~3 measures the coplanarity error as
 \begin{equation}
 \label{eq:coplanar-error}
 e_{\mathrm{cop}}=b_{31}^{T}n_{234},
 \qquad
-n_{234}=\frac{b_{32}\times b_{34}}{\|b_{32}\times b_{34}\|}.
+n_{234}=\frac{b_{32}\times b_{34}}{\|b_{32}\times b_{34}\|},
 \end{equation}
-Although this expression appears to measure the deviation of agent~1 from plane \(\{2,3,4\}\), it is geometrically equivalent to the deviation of agent~3 from plane \(\{1,2,4\}\): both characterize the non-coplanarity of the tetrahedron \(\{1,2,3,4\}\) and differ only by a scaling factor proportional to the triangle areas. Thus, \(e_{\mathrm{cop}}=0\) if and only if agent~3 lies on \(\{1,2,4\}\), i.e., the four agents are coplanar (see Fig.~\ref{fig:coplanar_constraint}).
+where \(n_{234}\) is the unit normal of plane \(\{2,3,4\}\). This quantity directly captures the perpendicular deviation of agent~3 from plane \(\{1,2,4\}\): the scalar triple product of a tetrahedron is independent of which face is chosen as the base, so the height of agent~3 above \(\{1,2,4\}\) equals the height of agent~1 above \(\{2,3,4\}\) up to a fixed area ratio. Consequently, \(e_{\mathrm{cop}}=0\) if and only if agent~3 lies on \(\{1,2,4\}\), i.e., the four agents are coplanar (see Fig.~\ref{fig:coplanar_constraint}).
 
 Combining the above constraints, the desired formation configuration set is
 \begin{equation}
