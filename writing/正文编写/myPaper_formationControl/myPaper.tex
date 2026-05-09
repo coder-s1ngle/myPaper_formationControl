@@ -127,19 +127,19 @@ where \(\ell^*>0\) is the desired side length of the square formation. The const
 
 Although the angle and distance constraints together specify the in-plane square shape and scale, they do not determine the orientation of the formation plane in 3-D space: the normal vector of the plane spanned by the four agents is a free degree of freedom under these constraints.
 
-In the counter-drone capture net scenario, the net opening plane must face the incoming target; the plane orientation is therefore a prescribed control objective. To prescribe the orientation in 3-D, we introduce a plane-normal constraint. The reference plane of the formation is defined by the ordered triplet of agents~1, 4, and~2, whose unit normal vector is
+In the counter-drone capture net scenario, the net opening plane must face the incoming target; the plane orientation is therefore a prescribed control objective. To prescribe the orientation in 3-D, we introduce a plane-normal constraint. The reference plane of the formation is defined by the ordered triplet of agents~1, 2, and~4, whose unit normal vector is
 \begin{equation}
-\label{eq:normal-142}
-n_{142}=\frac{b_{14}\times b_{12}}
-{\|b_{14}\times b_{12}\|}.
+\label{eq:normal-124}
+n_{124}=\frac{b_{12}\times b_{14}}
+{\|b_{12}\times b_{14}\|}.
 \end{equation}
 
 A natural candidate for the normal-direction error is the cross product
-\(n_{142}\times n_d\),
+\(n_{124}\times n_d\),
 where \(n_d\in\mathbb R^3\), \(\|n_d\|=1\), is the prescribed target plane normal.
-This quantity vanishes whenever \(n_{142}\) is parallel to \(n_d\),
-which occurs at both \(n_{142}=n_d\) and \(n_{142}=-n_d\).
-At the latter, the error is zero despite \(n_{142}\neq n_d\);
+This quantity vanishes whenever \(n_{124}\) is parallel to \(n_d\),
+which occurs at both \(n_{124}=n_d\) and \(n_{124}=-n_d\).
+At the latter, the error is zero despite \(n_{124}\neq n_d\);
 the cross product cannot distinguish the two opposite alignment directions.
 
 For the capture net application, the sign of the net opening normal is immaterial:
@@ -147,7 +147,7 @@ For the capture net application, the sign of the net opening normal is immateria
 as shown in Figure~\ref{fig:orientation_branch}.
 The sign ambiguity at the target is therefore acceptable in itself.
 However, because the raw error treats \(+n_d\) as the unique signed target,
-the equilibrium at \(n_{142}=-n_d\) is unstable under the control law:
+the equilibrium at \(n_{124}=-n_d\) is unstable under the control law:
 a formation near \(-n_d\) is driven toward \(+n_d\)
 rather than settling at the closer branch.
 
@@ -161,14 +161,14 @@ and select the branch closest to the current normal direction:
 \begin{equation}
 \label{eq:normal-representative}
 \bar n_d=\operatorname*{arg\,max}_{\eta\in\mathcal N_d}
-\left(n_{142}^{T}\eta\right).
+\left(n_{124}^{T}\eta\right).
 \end{equation}
 The normal-direction error is then defined with respect to the selected branch:
 \begin{equation}
 \label{eq:normal-error}
-e_n=n_{142}\times \bar n_d.
+e_n=n_{124}\times \bar n_d.
 \end{equation}
-When \(e_n=0\), the formation plane is aligned with the target plane in the undirected sense, i.e., \(n_{142}=\pm n_d\). With the branch selection~\eqref{eq:normal-representative}, both \(n_{142}=n_d\) and \(n_{142}=-n_d\) are stable equilibria of the closed-loop system.
+When \(e_n=0\), the formation plane is aligned with the target plane in the undirected sense, i.e., \(n_{124}=\pm n_d\). With the branch selection~\eqref{eq:normal-representative}, both \(n_{124}=n_d\) and \(n_{124}=-n_d\) are stable equilibria of the closed-loop system.
 
 In 3-D maneuvering, the four agents may drift out of the reference plane. To enforce coplanarity, we require agent~3 to lie on the reference plane \(\{1,2,4\}\). Using its local bearings, agent~3 measures the coplanarity error as
 \begin{equation}
@@ -186,10 +186,10 @@ Combining the above constraints, the desired formation configuration set is
 \begin{aligned}
 &\alpha_{jik}=\alpha_{jik}^*,\; (j,i,k)\in\mathcal A,\\
 &d_{ij}=d_{ij}^*,\; (i,j)\in\mathcal E_d,\\
-&e_{\mathrm{cop}}=0,\; |n_{142}^{T}n_d|=1\bigr\}.
+&e_{\mathrm{cop}}=0,\; |n_{124}^{T}n_d|=1\bigr\}.
 \end{aligned}
 \end{equation}
-The condition \(|n_{142}^{T}n_d|=1\) requires the reference-plane normal to be parallel to \(n_d\) in an unoriented sense, i.e., the formation plane must be parallel to the target plane without prescribing a signed normal direction.
+The condition \(|n_{124}^{T}n_d|=1\) requires the reference-plane normal to be parallel to \(n_d\) in an unoriented sense, i.e., the formation plane must be parallel to the target plane without prescribing a signed normal direction.
 
 \begin{figure}[!t]
 \centering
@@ -246,7 +246,7 @@ u_4&=-k_\theta e_{\theta_4}(b_{41}+b_{43})-k_d e_{14}b_{14}
     &\quad -k_v\tilde v_4,
 \end{aligned}
 \end{equation}
-where \(e_{\theta_i}=\alpha_{jik}-\pi/2\) for \((j,i,k)\in\mathcal A\), \(e_{12}=d_{12}-\ell^*\) and \(e_{14}=d_{14}-\ell^*\) are the edge-length errors, \(\tilde v_i=v_i-v_c^*\) is the velocity tracking error, and \(r_i=p_i-p_{124}\) with \(p_{124}=(p_1+p_2+p_4)/3\). The coplanarity error \(e_{\mathrm{cop}}\), reference-plane normal \(n_{142}\), and normal error \(e_n\) are as defined in Section~II. The gains \(k_\theta,k_d,k_v,k_{\mathrm{cop}},k_n\) are positive scalars.
+where \(e_{\theta_i}=\alpha_{jik}-\pi/2\) for \((j,i,k)\in\mathcal A\), \(e_{12}=d_{12}-\ell^*\) and \(e_{14}=d_{14}-\ell^*\) are the edge-length errors, \(\tilde v_i=v_i-v_c^*\) is the velocity tracking error, and \(r_i=p_i-p_{124}\) with \(p_{124}=(p_1+p_2+p_4)/3\). The coplanarity error \(e_{\mathrm{cop}}\), reference-plane normal \(n_{124}\), and normal error \(e_n\) are as defined in Section~II. The gains \(k_\theta,k_d,k_v,k_{\mathrm{cop}},k_n\) are positive scalars.
 
 \subsection{Necessity of the Coplanarity Constraint}
 
@@ -305,7 +305,7 @@ Define the raw internal error vector
 \eta=\bigl[e_{12},\,e_{14},\,e_{\theta_1},\,e_{\theta_2},\,e_{\theta_3},\,e_{\theta_4},\,e_{\mathrm{cop}},\,(e_n^\perp)_1,\,(e_n^\perp)_2\bigr]^{T}\in\mathbb R^{9},
 \label{eq:eta-def}
 \end{equation}
-where \((e_n^\perp)_1,(e_n^\perp)_2\) are the two independent in-plane components of the normal error \(e_n=n_{142}\times\bar n_d\) (the third component vanishes identically because \(e_n\perp n_{142}\) by construction). The velocity error stack is \(\tilde v=[\tilde v_1^{T},\tilde v_2^{T},\tilde v_3^{T},\tilde v_4^{T}]^{T}\in\mathbb R^{12}\) with \(\tilde v_i=v_i-v_c^*\).
+where \((e_n^\perp)_1,(e_n^\perp)_2\) are the two independent in-plane components of the normal error \(e_n=n_{124}\times\bar n_d\) (the third component vanishes identically because \(e_n\perp n_{124}\) by construction). The velocity error stack is \(\tilde v=[\tilde v_1^{T},\tilde v_2^{T},\tilde v_3^{T},\tilde v_4^{T}]^{T}\in\mathbb R^{12}\) with \(\tilde v_i=v_i-v_c^*\).
 
 \emph{A. Error kinematics.}
 We first derive the time derivatives of each geometric error in terms of \(\tilde v\).
@@ -332,7 +332,7 @@ where \(P_{b_{ij}}\) projects onto the plane orthogonal to \(b_{ij}\). From \(\c
 \end{equation}
 Since \(e_{\theta_i}=\alpha_{jik}-\pi/2\), we have \(\dot e_{\theta_i}=\dot\alpha_{jik}\) for each \((j,i,k)\in\mathcal A\). Each \(\dot e_{\theta_i}\) is a linear combination of \(\tilde v_1,\dots,\tilde v_4\) with coefficients depending smoothly on the current configuration through the bearing vectors, distances, and sines of the angles.
 
-For the coplanarity error \(e_{\mathrm{cop}}=b_{31}^{T}n_{234}\) where \(n_{234}=(b_{32}\times b_{34})/\|b_{32}\times b_{34}\|\), the time derivative involves \(\dot b_{31}\) and the derivative of the normalized cross product. Both terms are linear in \(\tilde v\) with configuration-dependent coefficients. Similarly, for the normal error \(e_n=n_{142}\times\bar n_d\) with \(n_{142}=(b_{14}\times b_{12})/\|b_{14}\times b_{12}\|\) and constant \(\bar n_d\), the derivative \(\dot e_n=\dot n_{142}\times\bar n_d\) is linear in \(\tilde v_1,\tilde v_2,\tilde v_4\) (agent~3 does not appear in \(n_{142}\)). The two independent components \((e_n^\perp)_1,(e_n^\perp)_2\) are extracted by projection.
+For the coplanarity error \(e_{\mathrm{cop}}=b_{31}^{T}n_{234}\) where \(n_{234}=(b_{32}\times b_{34})/\|b_{32}\times b_{34}\|\), the time derivative involves \(\dot b_{31}\) and the derivative of the normalized cross product. Both terms are linear in \(\tilde v\) with configuration-dependent coefficients. Similarly, for the normal error \(e_n=n_{124}\times\bar n_d\) with \(n_{124}=(b_{14}\times b_{12})/\|b_{14}\times b_{12}\|\) and constant \(\bar n_d\), the derivative \(\dot e_n=\dot n_{124}\times\bar n_d\) is linear in \(\tilde v_1,\tilde v_2,\tilde v_4\) (agent~3 does not appear in \(n_{124}\)). The two independent components \((e_n^\perp)_1,(e_n^\perp)_2\) are extracted by projection.
 
 Collecting all nine kinematic relations, there exists a smooth matrix function \(C(p)\in\mathbb R^{9\times 12}\) such that
 \begin{equation}
@@ -525,12 +525,12 @@ In particular, all geometric errors and velocity errors converge to zero exponen
 
 In the nominal model analyzed above, the normal branch \(\bar n_d\) is treated as fixed. We now specify how this branch is selected in practice and verify that, once correctly initialized, it remains fixed in a neighborhood of the target square. Let the two candidate normal directions be \(\mathcal N_d=\{n_d,-n_d\}\); the branch is selected by
 \begin{equation}
-\bar n_d=\operatorname*{arg\,max}_{\eta\in\mathcal N_d}\left(n_{142}^{T}\eta\right),
+\bar n_d=\operatorname*{arg\,max}_{\eta\in\mathcal N_d}\left(n_{124}^{T}\eta\right),
 \end{equation}
-where \(n_{142}\) is the current reference-plane normal defined in \eqref{eq:normal-142}. To prevent chattering, a hysteresis threshold \(\delta_h\in(0,1)\) is used: the branch is updated only when the alignment measure \(n_{142}^T n_d\) crosses \(\pm\delta_h\).
+where \(n_{124}\) is the current reference-plane normal defined in \eqref{eq:normal-124}. To prevent chattering, a hysteresis threshold \(\delta_h\in(0,1)\) is used: the branch is updated only when the alignment measure \(n_{124}^T n_d\) crosses \(\pm\delta_h\).
 
 \emph{Proposition 1 (Branch invariance):} Let the initial branch be correctly selected as \(s^*\in\{+1,-1\}\) satisfying \(\bar n_d=s^*n_d\). There exists a neighborhood \(\mathcal U_{sw}\) of the target square such that, if the trajectory remains within \(\mathcal U_{sw}\), the hysteresis rule never triggers a branch switch. Hence the actual controller reduces to the fixed-branch controller considered in Theorem~1.
-\emph{Proof:} At the target square, \(s^*n_{142}^T n_d=1\). By continuity of \(n_{142}(p)\), there exists a neighborhood where \(|s^*n_{142}(p)^T n_d-1|<\varepsilon\) with \(0<\varepsilon<1-\delta_h\). The hysteresis update criterion then permanently evaluates to \(s^*\), so no switch occurs. \hfill\(\blacksquare\)
+\emph{Proof:} At the target square, \(s^*n_{124}^T n_d=1\). By continuity of \(n_{124}(p)\), there exists a neighborhood where \(|s^*n_{124}(p)^T n_d-1|<\varepsilon\) with \(0<\varepsilon<1-\delta_h\). The hysteresis update criterion then permanently evaluates to \(s^*\), so no switch occurs. \hfill\(\blacksquare\)
 
 \section{Simulations}
 \emph{To be completed.} Numerical simulations will validate the proposed formation control scheme under two comparisons: (i) the full controller versus the controller without the coplanarity term, to verify the necessity established in Section~III-B; (ii) the controller with and without the undirected normal term, to illustrate branch selection and the handling of the reflection ambiguity.
