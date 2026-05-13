@@ -1,5 +1,15 @@
-\documentclass[journal]{IEEEtran}
+\documentclass[letterpaper,journal]{IEEEtran}
 \usepackage{amsmath,amsfonts,amssymb}
+\usepackage{amsthm}
+\usepackage{enumitem}
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newtheorem{problem}{Problem}
 \usepackage{algorithmic}
 \usepackage{algorithm}
 \usepackage{array}
@@ -9,9 +19,9 @@
 \usepackage{url}
 \usepackage{verbatim}
 \usepackage{graphicx}
+\usepackage{placeins}
 \usepackage{cite}
 \hyphenation{op-tical net-works semi-conduc-tor IEEE-Xplore}
-% updated with editorial comments 8/9/2021
 
 \begin{document}
 
@@ -32,7 +42,7 @@
 \maketitle
 
 \begin{abstract}
-This paper studies the distributed formation control problem of four agents forming a planar square in 3-D space. For a square, the concyclic nature of the vertices renders unsigned angle constraints alone insufficient to determine a unique labeled formation---two reflected configurations with opposite cyclic connection orders satisfy the same angle constraints. To address this reflection ambiguity, an undirected plane-normal control scheme is introduced. The desired formation configuration is thus described by local angle constraints, selected distance constraints, an undirected plane-normal constraint, and a coplanarity constraint. A distributed formation controller combining these five terms is formulated to achieve the desired square shape, select the intended reflection branch, maintain coplanarity, and track a desired common velocity. A minimal internal error coordinate is constructed, and local exponential stability of the nominal closed-loop system is proved. The coplanarity term is shown, via a perturbation analysis, to provide first-order sensitivity to out-of-plane deviations where angle-based terms provide only second-order sensitivity, establishing its necessity for 3-D planar formation control.
+This paper studies the distributed formation control problem of four agents forming a planar square in 3-D space. For a square, the concyclic nature of the vertices renders unsigned angle constraints alone insufficient to determine a unique labeled formation---two reflected configurations with opposite cyclic connection orders satisfy the same angle constraints. To address this reflection ambiguity, an undirected plane-normal control scheme is introduced. The desired formation configuration is thus described by local angle constraints, selected distance constraints, an undirected plane-normal constraint, and a coplanarity constraint. A distributed formation controller combining these five terms is formulated to achieve the desired square shape, select the intended reflection branch, maintain coplanarity, and track a desired common velocity. A minimal internal error coordinate is constructed, and local exponential stability of the nominal closed-loop system is proved through linearized Hurwitz verification. The coplanarity term is shown, via a perturbation analysis, to provide first-order sensitivity to out-of-plane deviations where angle-based terms provide only second-order sensitivity, establishing its necessity for 3-D planar formation control.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -51,11 +61,7 @@ This paper considers the formation control of four agents forming a planar squar
 
 \subsection{Agent Dynamics}
 
-Consider a group of four agents moving in 3-D space. The index set is
-\begin{equation}
-\label{eq:vertex-set}
-\mathcal V=\{1,2,3,4\}.
-\end{equation}
+Consider a group of four agents moving in 3-D space, with index set \(\mathcal V=\{1,2,3,4\}\).
 The dynamics of agent \(i\) are described by the double integrator
 \begin{equation}
 \label{eq:agent-dynamics}
@@ -82,13 +88,22 @@ Since defining signed angles in 3-D requires additional reference directions or 
 
 The following assumptions are made.
 
-\emph{Assumption 1:} Each agent is equipped with LOS sensing to acquire the relative direction information required by the formation controller.
+\begin{assumption}
+Each agent is equipped with LOS sensing to acquire the relative direction information required by the formation controller.
+\end{assumption}
 
-\emph{Assumption 2:} Only agent~1 measures the distances to its two neighboring agents, namely \(d_{12}\) and \(d_{14}\), and the measured distances can be transmitted to the corresponding neighboring agents when needed.
+\begin{assumption}
+Only agent~\#1 measures the distances to its two neighboring agents, namely \(d_{12}\) and \(d_{14}\). The distance \(d_{24}\), when needed, can be obtained from geometric relations, and the relevant side-length information can be transmitted to the agents that use it.
+\end{assumption}
 
-\emph{Assumption 3:} The initial formation lies in a neighborhood of the desired configuration \(\mathcal S(\ell^*,n_d)\), and the positions of the agents are distinct with nondegenerate reference triangles \(\{1,2,4\}\) and \(\{2,3,4\}\).
+\begin{assumption}
+The initial positions of the agents are sufficiently close to a nondegenerate desired square formation.
+\end{assumption}
 
-\emph{Remark 1:} Assumptions~1--3 specify the onboard sensing, communication, and initialization requirements. Each agent requires only a bearing sensor, except agent~1 which additionally carries a distance sensor. The communication burden is limited to two scalar distances sent from agent~1 to agents~2 and~4. No alignment of local coordinate frames is required, and no global position information is needed.
+\begin{remark}
+Assumptions~1--3 specify the onboard sensing, communication, and initialization requirements. Each agent requires only a bearing sensor, except agent~\#1 which additionally carries a distance sensor. The communication burden is limited to scalar side-length information transmitted to the agents that use it. No alignment of local coordinate frames is required, and no global position information is needed.
+\end{remark}
+
 
 \subsection{Formation Constraints}
 
@@ -98,36 +113,20 @@ The in-plane square shape is encoded by the angle constraint set
 \mathcal A=\{(2,1,4),(3,2,1),(4,3,2),(1,4,3)\},
 \end{equation}
 where each tuple \((j,i,k)\in\mathcal A\) denotes the interior angle with agent \(i\) as the vertex. The desired angles are
-\begin{equation}
-\label{eq:desired-angle}
-\alpha_{jik}^*=\frac{\pi}{2},
-\qquad (j,i,k)\in\mathcal A.
-\end{equation}
+\(\alpha_{jik}^*=\pi/2\) for all \((j,i,k)\in\mathcal A\).
 
-Angle constraints determine the square shape but leave the formation scale free. To fix the scale, we introduce two distance-constrained edges associated with agent~1 \cite{li2025localInfo}:
-\begin{equation}
-\label{eq:distance-edge-set}
-\mathcal E_d=\{(1,2),(1,4)\}.
-\end{equation}
-The desired distances are
-\begin{equation}
-\label{eq:desired-distance}
-d_{ij}=d_{ij}^*=\ell^*,
-\qquad
-(i,j)\in\mathcal E_d,
-\end{equation}
-where \(\ell^*>0\) is the desired side length of the square formation. The constraint set is illustrated in Figure~\ref{fig:square_constraints}.
+Angle constraints determine the square shape but leave the formation scale free. To fix the scale, we introduce two distance-constrained edges associated with agent~\#1, denoted by \(\mathcal E_d=\{(1,2),(1,4)\}\) \cite{li2025localInfo}. Their desired distances are \(d_{ij}^*=\ell^*\), \((i,j)\in\mathcal E_d\), where \(\ell^*>0\) is the desired side length of the square formation. The constraint set is illustrated in Fig.~\ref{fig:square_constraints}.
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=3.45in,trim=6pt 6pt 6pt 6pt,clip]{figures/fig_1}
-\caption{Square formation constraints. The four interior angle constraints \(\mathcal A\) determine the square shape, while the two distance-constrained edges \(\mathcal E_d\) fix the formation scale.}
+\includegraphics[width=0.85\columnwidth,trim=6pt 6pt 6pt 6pt,clip]{figures/fig_1}
+\caption{(Color online) Formation constraints: four angles and two distances determine the target square.}
 \label{fig:square_constraints}
 \end{figure}
 
-Although the angle and distance constraints together specify the in-plane square shape and scale, they do not determine the orientation of the formation plane in 3-D space: the normal vector of the plane spanned by the four agents is a free degree of freedom under these constraints.
+Although the angle and distance constraints together specify the in-plane square shape and scale, they are invariant under rigid rotations in 3-D. Specifically, for any \(Q\in SO(3)\) and \(c\in\mathbb R^3\), the transformed positions \(\tilde p_i=Qp_i+c\) preserve all constrained distances and angles, i.e., \(\tilde d_{ij}=d_{ij}\) and \(\tilde\alpha_{jik}=\alpha_{jik}\), while the plane normal changes as \(\tilde n_{124}=Qn_{124}\). Hence the same square shape and scale admit a continuum of spatial orientations, and an additional plane-normal constraint is required to select the desired formation plane.
 
-In the counter-drone capture net scenario, the net opening plane must face the incoming target; the plane orientation is therefore a prescribed control objective. To prescribe the orientation in 3-D, we introduce a plane-normal constraint. The reference plane of the formation is defined by the ordered triplet of agents~1, 2, and~4, whose unit normal vector is
+In the counter-drone capture net scenario, the net opening plane must face the incoming target; the plane orientation is therefore a prescribed control objective. To prescribe the orientation in 3-D, we introduce a plane-normal constraint. The reference plane of the formation is defined by the ordered triplet of agents~\#1, \#2, and~\#4, whose unit normal vector is
 \begin{equation}
 \label{eq:normal-124}
 n_{124}=\frac{b_{12}\times b_{14}}
@@ -142,72 +141,55 @@ which occurs at both \(n_{124}=n_d\) and \(n_{124}=-n_d\).
 At the latter, the error is zero despite \(n_{124}\neq n_d\);
 the cross product cannot distinguish the two opposite alignment directions.
 
-For the capture net application, the sign of the net opening normal is immaterial:
-\(n_d\) and \(-n_d\) represent the same physical net opening orientation
-as shown in Figure~\ref{fig:orientation_branch}.
-The sign ambiguity at the target is therefore acceptable in itself.
-However, because the raw error treats \(+n_d\) as the unique signed target,
-the equilibrium at \(n_{124}=-n_d\) is unstable under the control law:
-a formation near \(-n_d\) is driven toward \(+n_d\)
-rather than settling at the closer branch.
+For the capture net application, \(n_d\) and \(-n_d\) represent the same physical net opening orientation, as shown in Fig.~\ref{fig:orientation_branch}. The sign ambiguity is therefore acceptable at the target. A raw signed error, however, still treats \(+n_d\) as the unique target and makes the branch \(n_{124}=-n_d\) non-attractive. Formations initialized near this branch are driven toward \(+n_d\) instead of settling at the closer equivalent orientation.
 
-To make both branches stable, we define the candidate set
-\begin{equation}
-\label{eq:normal-set}
-\mathcal N_d=\{n_d,-n_d\},
-\qquad \|n_d\|=1,
-\end{equation}
-and select the branch closest to the current normal direction:
-\begin{equation}
-\label{eq:normal-representative}
-\bar n_d=\operatorname*{arg\,max}_{\eta\in\mathcal N_d}
-\left(n_{124}^{T}\eta\right).
-\end{equation}
-The normal-direction error is then defined with respect to the selected branch:
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_2}
+\caption{(Color online) Two orientation branches: both \(n_{124}=\pm n_d\) satisfy the undirected normal constraint.}
+\label{fig:orientation_branch}
+\end{figure}
+
+To make both branches stable, let \(\mathcal N_d=\{n_d,-n_d\}\), \(\|n_d\|=1\), and select the branch closest to the current normal direction. The selected branch and the corresponding normal-direction error are
 \begin{equation}
 \label{eq:normal-error}
+\bar n_d=\operatorname*{arg\,max}_{\eta\in\mathcal N_d}
+\left(n_{124}^{T}\eta\right),\qquad
 e_n=n_{124}\times \bar n_d.
 \end{equation}
-When \(e_n=0\), the formation plane is aligned with the target plane in the undirected sense, i.e., \(n_{124}=\pm n_d\). With the branch selection~\eqref{eq:normal-representative}, both \(n_{124}=n_d\) and \(n_{124}=-n_d\) are stable equilibria of the closed-loop system.
+When \(e_n=0\), the formation plane is aligned with the target plane in the undirected sense, i.e., \(n_{124}=\pm n_d\). With this branch selection, both \(n_{124}=n_d\) and \(n_{124}=-n_d\) are stable equilibria of the closed-loop system.
 
-In 3-D maneuvering, the four agents may drift out of the reference plane. To enforce coplanarity, we require agent~3 to lie on the reference plane \(\{1,2,4\}\). Using its local bearings, agent~3 measures the coplanarity error as
+In 3-D maneuvering, the four agents may drift out of the reference plane. To enforce coplanarity, we require agent~\#3 to lie on the reference plane \(\{1,2,4\}\). From the three local bearings \(b_{31}\), \(b_{32}\), and \(b_{34}\), agent~\#3 evaluates the coplanarity error as
 \begin{equation}
 \label{eq:coplanar-error}
 e_{\mathrm{cop}}=b_{31}^{T}n_{234},
 \qquad
 n_{234}=\frac{b_{32}\times b_{34}}{\|b_{32}\times b_{34}\|},
 \end{equation}
-where \(n_{234}\) is the unit normal of plane \(\{2,3,4\}\). The absolute value \(|e_{\mathrm{cop}}|\) is proportional to the volume of the tetrahedron formed by the four agents, which vanishes if and only if the agents are coplanar. Hence \(e_{\mathrm{cop}}=0\) precisely when agent~3 lies on \(\{1,2,4\}\) as shown in Figure~\ref{fig:coplanar_constraint}.
+where \(n_{234}\) is the unit normal of plane \(\{2,3,4\}\), constructed from \(b_{32}\) and \(b_{34}\). This bearing-based construction is illustrated in Fig.~\ref{fig:coplanar_constraint}. Geometrically, \(|e_{\mathrm{cop}}|\) is proportional to the volume of the tetrahedron formed by the four agents and vanishes if and only if agent~\#3 lies on the reference plane \(\{1,2,4\}\).
 
-Combining the above constraints, the desired formation configuration set is
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_3}
+\caption{(Color online) Coplanarity measurement via three local bearings.}
+\label{fig:coplanar_constraint}
+\end{figure}
+
+Combining the above constraints, let \(\mathcal S(\ell^*,n_d)\) denote the set of all \(p\in\mathbb R^{12}\) satisfying
 \begin{equation}
 \label{eq:desired-formation-set}
-\mathcal S(\ell^*,n_d)=\bigl\{p\in\mathbb R^{12}\mid
 \begin{aligned}
-&\alpha_{jik}=\alpha_{jik}^*,\; (j,i,k)\in\mathcal A,\\
-&d_{ij}=d_{ij}^*,\; (i,j)\in\mathcal E_d,\\
-&e_{\mathrm{cop}}=0,\; |n_{124}^{T}n_d|=1\bigr\}.
+\alpha_{jik}&=\alpha_{jik}^*, &&(j,i,k)\in\mathcal A,\\
+d_{ij}&=d_{ij}^*, &&(i,j)\in\mathcal E_d,\\
+e_{\mathrm{cop}}&=0, &&|n_{124}^{T}n_d|=1.
 \end{aligned}
 \end{equation}
 The condition \(|n_{124}^{T}n_d|=1\) requires the reference-plane normal to be parallel to \(n_d\) in an unoriented sense, i.e., the formation plane must be parallel to the target plane without prescribing a signed normal direction.
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=3.45in,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_2}
-\caption{Two labeled square configurations satisfying the same angle and distance constraints. They correspond to opposite cyclic connection orders and are distinguished by the sign of the plane normal.}
-\label{fig:orientation_branch}
-\end{figure}
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=3.45in,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_3}
-\caption{Coplanarity constraint. The error \(e_{\mathrm{cop}}\) measured by agent~3 characterizes its deviation from the reference plane formed by agents~1, 2, and~4.}
-\label{fig:coplanar_constraint}
-\end{figure}
-
 With the above setup, the formation control problem is stated as follows.
 
-\emph{Problem 1:} Consider the four-agent system \eqref{eq:agent-dynamics} under Assumptions~1 and~3. Design a distributed formation controller such that the closed-loop system achieves
+\begin{problem}
+Consider the four-agent system \eqref{eq:agent-dynamics} under Assumptions~1--3. Design a distributed formation controller such that the closed-loop system achieves
 \begin{align}
 \lim_{t\to+\infty}
 \bigl(\alpha_{jik}(t)-\alpha_{jik}^*\bigr)&=0,
@@ -222,11 +204,12 @@ With the above setup, the formation control problem is stated as follows.
 & i&\in\mathcal V. \label{eq:velocity-convergence}
 \end{align}
 Equations \eqref{eq:angle-convergence}--\eqref{eq:coplanar-convergence} together with \eqref{eq:normal-convergence} imply convergence to \(\mathcal S(\ell^*,n_d)\), while \eqref{eq:velocity-convergence} ensures velocity tracking.
+\end{problem}
 
 
 % \section{Where to Get \LaTeX \ Help --- User Groups}
 \section{Main Results}
-In this section, we present the distributed formation control law, establish the necessity of the coplanarity constraint, and analyze the closed-loop stability.
+In this section, we present the distributed formation control law, establish the necessity of the coplanarity constraint, and prove local exponential stability of the nominal closed-loop system.
 
 \subsection{Control Law Design}
 
@@ -234,340 +217,576 @@ The distributed formation control laws are proposed as follows:
 \begin{equation}
 \label{eq:total-control}
 \begin{aligned}
-u_1&=-k_\theta e_{\theta_1}(b_{12}+b_{14})+k_d(e_{12}b_{12}+e_{14}b_{14})\\
+u_1&=\dot v_c^*-k_\theta e_{\theta_1}(b_{12}+b_{14})
+     +k_d(e_{12}b_{12}+e_{14}b_{14})\\
     &\quad +k_n(e_n\times r_1)-k_v\tilde v_1,\\
-u_2&=-k_\theta e_{\theta_2}(b_{23}+b_{21})-k_d e_{12}b_{12}
+u_2&=\dot v_c^*-k_\theta e_{\theta_2}(b_{23}+b_{21})-k_d e_{12}b_{12}
       +k_n(e_n\times r_2)\\
     &\quad -k_v\tilde v_2,\\
-u_3&=-k_\theta e_{\theta_3}(b_{34}+b_{32})-k_{\mathrm{cop}}e_{\mathrm{cop}}n_{234}\\
+u_3&=\dot v_c^*-k_\theta e_{\theta_3}(b_{34}+b_{32})
+     -k_{\mathrm{cop}}e_{\mathrm{cop}}n_{234}\\
     &\quad -k_v\tilde v_3,\\[2pt]
-u_4&=-k_\theta e_{\theta_4}(b_{41}+b_{43})-k_d e_{14}b_{14}
+u_4&=\dot v_c^*-k_\theta e_{\theta_4}(b_{41}+b_{43})-k_d e_{14}b_{14}
       +k_n(e_n\times r_4)\\
     &\quad -k_v\tilde v_4,
 \end{aligned}
 \end{equation}
-where \(e_{\theta_i}=\alpha_{jik}-\pi/2\) for \((j,i,k)\in\mathcal A\), \(e_{12}=d_{12}-\ell^*\) and \(e_{14}=d_{14}-\ell^*\) are the edge-length errors, \(\tilde v_i=v_i-v_c^*\) is the velocity tracking error, and \(r_i=p_i-p_{124}\) with \(p_{124}=(p_1+p_2+p_4)/3\). The coplanarity error \(e_{\mathrm{cop}}\), reference-plane normal \(n_{124}\), and normal error \(e_n\) are as defined in Section~II. The gains \(k_\theta,k_d,k_v,k_{\mathrm{cop}},k_n\) are positive scalars.
+where \(v_c^*\) and \(\dot v_c^*\) denote the desired velocity and the desired acceleration of the formation, respectively, \(e_{\theta_i}=\alpha_{jik}-\pi/2\) for \((j,i,k)\in\mathcal A\), \(e_{12}=d_{12}-\ell^*\) and \(e_{14}=d_{14}-\ell^*\) are the edge-length errors, \(\tilde v_i=v_i-v_c^*\) is the velocity tracking error, and \(r_i=p_i-p_{124}\) with \(p_{124}=(p_1+p_2+p_4)/3\). The coplanarity error \(e_{\mathrm{cop}}\), reference-plane normal \(n_{124}\), and normal error \(e_n\) are as defined in Section~II. The gains \(k_\theta,k_d,k_v,k_{\mathrm{cop}},k_n\) are positive scalars.
 
-\subsection{Necessity of the Coplanarity Constraint}
+The coplanarity term \(-k_{\mathrm{cop}}e_{\mathrm{cop}}n_{234}\) in \(u_3\) applies a force along the normal of plane \(\{2,3,4\}\) that pushes agent~\#3 back toward the reference plane \(\{1,2,4\}\) to restore coplanarity, as illustrated in Fig.~\ref{fig:coplanar_action}. For the normal control, the error vector \(e_n=n_{124}\times\bar{n}_d\) lies in the formation plane and defines the rotation axis. The forces \(k_n(e_n\times r_i)\) on agents~\#1, \#2, and~\#4 are perpendicular to the plane; their net force on the centroid \(p_{124}\) is zero, producing a pure restoring torque that rotates the plane around \(e_n\) until \(n_{124}\) aligns with \(\bar{n}_d\) (Fig.~\ref{fig:normal_control}).
 
-We show that the angle-constraint terms alone provide only second-order sensitivity to out-of-plane perturbations and are therefore insufficient for maintaining coplanarity in 3-D maneuvering. Consider the representative target square
+\begin{theorem}
+\label{thm:local-stability}
+Consider the four-agent double-integrator system \eqref{eq:agent-dynamics} under the controller \eqref{eq:total-control}. If the initial errors \(e_{12}(0)\), \(e_{14}(0)\), \(e_{\theta_i}(0)\), \(e_{\mathrm{cop}}(0)\), \(e_n(0)\), and \(\tilde v_i(0)\), \(i\in\mathcal V\), are sufficiently close to the equilibrium point, then the formation control law \eqref{eq:total-control} ensures that \(e_{12}(t)\to0\), \(e_{14}(t)\to0\), \(e_{\theta_i}(t)\to0\), \(e_{\mathrm{cop}}(t)\to0\), \(e_n(t)\to0\), and \(\tilde v_i(t)\to0\) exponentially as \(t\to+\infty\).
+\end{theorem}
+
+\begin{proof}
+Since the stability statement concerns only internal formation errors, we work in a co-moving frame and use the representative target square
 \begin{equation}
+\begin{aligned}
+p_1^*&=[0,\;\ell^*,\;0]^{T}, &\quad p_2^*&=[0,\;0,\;0]^{T},\\
+p_3^*&=[\ell^*,\;0,\;0]^{T}, &\quad p_4^*&=[\ell^*,\;\ell^*,\;0]^{T},
+\end{aligned}
 \label{eq:target-square}
-p_1^*=\begin{bmatrix}0\\\ell^*\\0\end{bmatrix},\;
-p_2^*=\begin{bmatrix}0\\0\\0\end{bmatrix},\;
-p_3^*=\begin{bmatrix}\ell^*\\0\\0\end{bmatrix},\;
-p_4^*=\begin{bmatrix}\ell^*\\\ell^*\\0\end{bmatrix},
 \end{equation}
-with \(\ell^*>0\) and target normal \(n_d=[0,0,-1]^T\). Apply a small out-of-plane perturbation to agent~3:
+with \(\bar n_d=[0,0,1]^T\). At this configuration,
 \begin{equation}
-p_3(h)=\begin{bmatrix}\ell^*\\0\\h\end{bmatrix},\qquad |h|\ll 1,
+\label{eq:target-bearings}
+\begin{aligned}
+b_{12}^*&=[0,-1,0]^{T}, &\quad b_{14}^*&=[1,0,0]^{T},\\
+b_{23}^*&=[1,0,0]^{T},  &\quad b_{34}^*&=[0,1,0]^{T},
+\end{aligned}
 \end{equation}
-while \(p_1^*,p_2^*,p_4^*\) remain fixed. The bearing vectors at agent~3 are
-\begin{equation}
-b_{32}(h)=\frac{[-\ell^*,0,-h]^T}{\sqrt{(\ell^*)^2+h^2}},\qquad
-b_{34}(h)=\frac{[0,\ell^*,-h]^T}{\sqrt{(\ell^*)^2+h^2}}.
-\end{equation}
-The interior angle at agent~3 satisfies
-\begin{equation}
-\cos\theta_3(h)=b_{32}^T b_{34}=\frac{h^2}{(\ell^*)^2+h^2},
-\end{equation}
-so the angular error is
-\begin{equation}
-e_{\theta_3}(h)=\arccos\!\left(\frac{h^2}{(\ell^*)^2+h^2}\right)-\frac{\pi}{2}
-=-\frac{h^2}{(\ell^*)^2}+O(h^4).
-\end{equation}
-The remaining three angle errors remain zero to leading order. Hence the angle-based control term responds to the out-of-plane displacement only through \(O(h^2)\).
+and \(b_{32}^*=-b_{23}^*\), \(b_{41}^*=-b_{14}^*\), \(b_{43}^*=-b_{34}^*\). All controlled geometric errors vanish at \eqref{eq:target-square}.
 
-Now evaluate the coplanarity error \(e_{\mathrm{cop}}=b_{31}^{T}n_{234}\). At the perturbed configuration,
-\begin{align}
-b_{31}(h)&=\frac{[-\ell^*,\ell^*,-h]^T}{\sqrt{2(\ell^*)^2+h^2}},\\
-n_{234}(h)&=\frac{b_{32}\times b_{34}}{\|b_{32}\times b_{34}\|}
-=\frac{[h,-h,-\ell^*]^T}{\sqrt{(\ell^*)^2+2h^2}}.
-\end{align}
-A direct computation yields
+Let \(E_i\in\mathbb R^{3\times12}\) be the selection matrix satisfying \(E_i\tilde v=\tilde v_i\), and define \(\Pi_{ij}=E_j-E_i\). For any bearing \(b_{ij}\),
 \begin{equation}
-\label{eq:coplanar-sensitivity}
-e_{\mathrm{cop}}(h)=b_{31}^{T}n_{234}
-=-\frac{h}{\sqrt{2}\,\ell^*}+O(h^3).
-\end{equation}
-Comparing \eqref{eq:coplanar-sensitivity} with the angular error, the coplanarity error is first-order sensitive to the out-of-plane perturbation, whereas the angle errors are only second-order sensitive. Therefore, the angle-constraint control law alone cannot provide a sufficiently strong restoring force against out-of-plane deviations. An explicit coplanarity term is necessary to guarantee coplanarity maintenance during 3-D formation maneuvering.
-
-\subsection{Stability of the Nominal Closed-Loop System}
-
-We now establish local exponential stability of the formation under the control law \eqref{eq:total-control} for the nominal model in which the normal branch is fixed and the reference normal \(\bar n_d\) is constant. The agent dynamics are governed by the double integrator model
-\begin{equation}
-\dot p_i=v_i,\qquad \dot v_i=u_i,\qquad i\in\mathcal V.
-\label{eq:nominal-dynamics}
-\end{equation}
-
-Define the raw internal error vector
-\begin{equation}
-\eta=\bigl[e_{12},\,e_{14},\,e_{\theta_1},\,e_{\theta_2},\,e_{\theta_3},\,e_{\theta_4},\,e_{\mathrm{cop}},\,(e_n^\perp)_1,\,(e_n^\perp)_2\bigr]^{T}\in\mathbb R^{9},
-\label{eq:eta-def}
-\end{equation}
-where \((e_n^\perp)_1,(e_n^\perp)_2\) are the two independent in-plane components of the normal error \(e_n=n_{124}\times\bar n_d\) (the third component vanishes identically because \(e_n\perp n_{124}\) by construction). The velocity error stack is \(\tilde v=[\tilde v_1^{T},\tilde v_2^{T},\tilde v_3^{T},\tilde v_4^{T}]^{T}\in\mathbb R^{12}\) with \(\tilde v_i=v_i-v_c^*\).
-
-\emph{A. Error kinematics.}
-We first derive the time derivatives of each geometric error in terms of \(\tilde v\).
-
-For the distance errors, differentiating \(d_{ij}=\|p_j-p_i\|\) yields
-\begin{equation}
-\dot e_{12}=b_{12}^{T}(\tilde v_2-\tilde v_1),\qquad
-\dot e_{14}=b_{14}^{T}(\tilde v_4-\tilde v_1).
-\label{eq:distance-kin}
-\end{equation}
-
-For the angle errors, we use the bearing derivative formula. For any bearing vector \(b_{ij}=q_{ij}/\|q_{ij}\|\), straightforward differentiation gives
-\begin{equation}
-\dot b_{ij}=\frac{1}{d_{ij}}P_{b_{ij}}(v_j-v_i),\qquad
-P_{b_{ij}}=I_3-b_{ij}b_{ij}^{T},
+\dot b_{ij}=\frac{1}{d_{ij}}P_{b_{ij}}(v_j-v_i)=M_{ij}(p)\tilde v,
 \label{eq:bdot}
 \end{equation}
-where \(P_{b_{ij}}\) projects onto the plane orthogonal to \(b_{ij}\). From \(\cos\alpha_{jik}=b_{ij}^{T}b_{ik}\), differentiating and substituting \eqref{eq:bdot} yields
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_4}
+\caption{(Color online) Coplanarity control action.}
+\label{fig:coplanar_action}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_5}
+\caption{(Color online) Normal-direction control action.}
+\label{fig:normal_control}
+\end{figure}
+where
 \begin{equation}
-\dot\alpha_{jik}=
--\frac{b_{ik}^{T}P_{b_{ij}}(v_j-v_i)}{d_{ij}\sin\alpha_{jik}}
--\frac{b_{ij}^{T}P_{b_{ik}}(v_k-v_i)}{d_{ik}\sin\alpha_{jik}}.
+P_{b_{ij}}=I_3-b_{ij}b_{ij}^T,\qquad
+M_{ij}(p)=\frac{1}{d_{ij}}P_{b_{ij}}\Pi_{ij}.
+\label{eq:Mij-def}
+\end{equation}
+The two distance errors satisfy
+\begin{equation}
+\dot e_{12}=b_{12}^T\Pi_{12}\tilde v,\qquad
+\dot e_{14}=b_{14}^T\Pi_{14}\tilde v.
+\label{eq:distance-derivatives}
+\end{equation}
+For each angle constraint, differentiating \(\cos\alpha_{jik}=b_{ij}^Tb_{ik}\) gives
+\begin{equation}
+\dot e_{\theta_i}=
+-\frac{b_{ik}^{T}M_{ij}(p)+b_{ij}^{T}M_{ik}(p)}
+{\sin\alpha_{jik}}\,\tilde v .
 \label{eq:alphadot}
 \end{equation}
-Since \(e_{\theta_i}=\alpha_{jik}-\pi/2\), we have \(\dot e_{\theta_i}=\dot\alpha_{jik}\) for each \((j,i,k)\in\mathcal A\). Each \(\dot e_{\theta_i}\) is a linear combination of \(\tilde v_1,\dots,\tilde v_4\) with coefficients depending smoothly on the current configuration through the bearing vectors, distances, and sines of the angles.
-
-For the coplanarity error \(e_{\mathrm{cop}}=b_{31}^{T}n_{234}\) where \(n_{234}=(b_{32}\times b_{34})/\|b_{32}\times b_{34}\|\), the time derivative involves \(\dot b_{31}\) and the derivative of the normalized cross product. Both terms are linear in \(\tilde v\) with configuration-dependent coefficients. Similarly, for the normal error \(e_n=n_{124}\times\bar n_d\) with \(n_{124}=(b_{14}\times b_{12})/\|b_{14}\times b_{12}\|\) and constant \(\bar n_d\), the derivative \(\dot e_n=\dot n_{124}\times\bar n_d\) is linear in \(\tilde v_1,\tilde v_2,\tilde v_4\) (agent~3 does not appear in \(n_{124}\)). The two independent components \((e_n^\perp)_1,(e_n^\perp)_2\) are extracted by projection.
-
-Collecting all nine kinematic relations, there exists a smooth matrix function \(C(p)\in\mathbb R^{9\times 12}\) such that
+Next, let \(N_{234}=b_{32}\times b_{34}\), \(n_{234}=N_{234}/\|N_{234}\|\), and let \([x]_\times y=x\times y\). Then
 \begin{equation}
-\dot\eta=C(p)\,\tilde v.
-\label{eq:eta-dot}
+\dot n_{234}=N_3(p)\tilde v,
+\label{eq:n234dot}
+\end{equation}
+where
+\begin{equation}
+\begin{aligned}
+N_3(p)=&\frac{1}{\|b_{32}\times b_{34}\|}P_{n_{234}}\\
+&\times\bigl(-[b_{34}]_\times M_{32}(p)+[b_{32}]_\times M_{34}(p)\bigr).
+\end{aligned}
+\label{eq:N3-def}
+\end{equation}
+Therefore the coplanarity error satisfies
+\begin{equation}
+\dot e_{\mathrm{cop}}
+=\bigl(n_{234}^TM_{31}(p)+b_{31}^TN_3(p)\bigr)\tilde v.
+\label{eq:cop-derivative}
+\end{equation}
+Similarly, with \(N_{124}=b_{12}\times b_{14}\) and \(n_{124}=N_{124}/\|N_{124}\|\),
+\begin{equation}
+\dot n_{124}=N_{124}^{d}(p)\tilde v,
+\label{eq:n124dot}
+\end{equation}
+where
+\begin{equation}
+\begin{aligned}
+N_{124}^{d}(p)=
+&\frac{1}{\|b_{12}\times b_{14}\|}P_{n_{124}}\\
+&\times\bigl(-[b_{14}]_\times M_{12}(p)+[b_{12}]_\times M_{14}(p)\bigr).
+\end{aligned}
+\label{eq:N124d-def}
+\end{equation}
+Let \(E_d\in\mathbb R^{3\times2}\) be an orthonormal basis of the tangent plane orthogonal to \(\bar n_d\), and define \(e_n^\perp=E_d^T(n_{124}\times\bar n_d)\). Within the nominal branch,
+\begin{equation}
+\dot e_n^\perp=-E_d^T[\bar n_d]_\times N_{124}^{d}(p)\tilde v.
+\label{eq:normal-derivative}
 \end{equation}
 
-\emph{B. Velocity error dynamics.}
-Since \(v_c^*\) is constant in the nominal model, \(\dot{\tilde v}_i=\dot v_i=u_i\). Substituting the control law \eqref{eq:total-control} and collecting the terms proportional to the components of \(\eta\) and \(-\tilde v\), we obtain
+\emph{System state and closed-loop form.} Define the raw internal error and velocity error stacks as
 \begin{equation}
-\dot{\tilde v}=-B(p)\,\eta-k_v\tilde v
-\label{eq:v-dot}
+\eta^{\mathrm{raw}}=[e_{12},e_{14},e_{\theta_1},e_{\theta_2},e_{\theta_3},e_{\theta_4},e_{\mathrm{cop}},(e_n^\perp)^T]^T\in\mathbb R^9,
+\label{eq:raw-eta}
 \end{equation}
-where \(B(p)\in\mathbb R^{12\times 9}\) is a smooth matrix function whose columns encode the directions along which each geometric error component generates corrective acceleration. The velocity damping term \(-k_v\tilde v\) is extracted separately.
-
-\emph{C. Linearization at the target square.}
-Evaluating \eqref{eq:eta-dot}--\eqref{eq:v-dot} at the target square \eqref{eq:target-square} and \(\tilde v=0\), we define \(C^*=C(p^*)\) and \(B^*=B(p^*)\). Let \(X=[\eta^{T},\tilde v^{T}]^{T}\in\mathbb R^{21}\); the linearized closed-loop dynamics are
 \begin{equation}
-\dot X=A^*X,\qquad
-A^*=\begin{bmatrix}
-0_{9\times 9} & C^*\\
--B^* & -k_v I_{12}
+\tilde v=[\tilde v_1^T,\tilde v_2^T,\tilde v_3^T,\tilde v_4^T]^T,
+\qquad \tilde v_i=v_i-v_c^*.
+\label{eq:tilde-v-stack}
+\end{equation}
+Collecting \eqref{eq:distance-derivatives}--\eqref{eq:normal-derivative}, the raw error kinematics can be written as
+\begin{equation}
+\dot\eta^{\mathrm{raw}}=C(p)\tilde v,
+\qquad
+C(p)=
+\begin{bmatrix}
+C_d(p)\\
+C_\theta(p)\\
+C_{\mathrm{cop}}(p)\\
+C_n(p)
+\end{bmatrix},
+\label{eq:raw-kinematics}
+\end{equation}
+where
+\begin{align}
+C_d(p)&=
+\begin{bmatrix}
+b_{12}^T\Pi_{12}\\
+b_{14}^T\Pi_{14}
+\end{bmatrix},\label{eq:Cd-def}\\
+C_\theta(p)&=
+\begin{bmatrix}
+-\dfrac{b_{14}^{T}M_{12}+b_{12}^{T}M_{14}}{\sin\alpha_{214}}\\[4pt]
+-\dfrac{b_{21}^{T}M_{23}+b_{23}^{T}M_{21}}{\sin\alpha_{123}}\\[4pt]
+-\dfrac{b_{32}^{T}M_{34}+b_{34}^{T}M_{32}}{\sin\alpha_{234}}\\[4pt]
+-\dfrac{b_{43}^{T}M_{41}+b_{41}^{T}M_{43}}{\sin\alpha_{143}}
+\end{bmatrix},\label{eq:Ctheta-def}\\
+C_{\mathrm{cop}}(p)&=n_{234}^TM_{31}+b_{31}^TN_3(p),\label{eq:Ccop-def}\\
+C_n(p)&=-E_d^T[\bar n_d]_\times N_{124}^{d}(p).\label{eq:Cn-def}
+\end{align}
+On the other hand, substituting the control law \eqref{eq:total-control} into the second-order dynamics gives the velocity-error dynamics. The common desired acceleration term \(\dot v_c^*\) cancels in \(\dot{\tilde v}_i=\dot v_i-\dot v_c^*\), and hence
+\begin{equation}
+\dot{\tilde v}=(-B(p))\eta^{\mathrm{raw}}-k_vI_{12}\tilde v,
+\label{eq:raw-velocity}
+\end{equation}
+where
+\begin{equation}
+(-B(p))=[(-B_d(p)),\,(-B_\theta(p)),\,(-B_{\mathrm{cop}}(p)),\,(-B_n(p))].
+\label{eq:B-blocks}
+\end{equation}
+The blocks are
+\begin{align}
+(-B_d(p))&=
+\begin{bmatrix}
+k_d b_{12} & k_d b_{14}\\
+-k_d b_{12} & 0\\
+0&0\\
+0&-k_d b_{14}
+\end{bmatrix},\label{eq:Bd-def}\\
+(-B_\theta(p))&=\operatorname{blkdiag}\bigl(
+-k_\theta(b_{12}+b_{14}),
+-k_\theta(b_{23}+b_{21}),\notag\\
+&\hspace{4.7em}
+-k_\theta(b_{34}+b_{32}),
+-k_\theta(b_{41}+b_{43})\bigr),\label{eq:Btheta-def}\\
+(-B_{\mathrm{cop}}(p))&=
+\begin{bmatrix}
+0\\0\\-k_{\mathrm{cop}}n_{234}\\0
+\end{bmatrix},\label{eq:Bcop-def}\\
+(-B_n(p))&=
+\begin{bmatrix}
+-k_n[r_1]_\times E_d\\
+-k_n[r_2]_\times E_d\\
+0_{3\times2}\\
+-k_n[r_4]_\times E_d
+\end{bmatrix}.\label{eq:Bn-def}
+\end{align}
+
+
+
+Although \(\eta^{\mathrm{raw}}\in\mathbb R^9\), its angle components are locally dependent at the square. To see this, fix the translational and in-plane rotational freedoms by setting \(p_2=0\) and \((p_1)_x=0\), and introduce the local coordinate \(\xi\in\mathbb R^8\) through
+\[
+\begin{aligned}
+p_1&=[0,\ell^*+\xi_1,\xi_2]^T,\\
+p_3&=[\ell^*+\xi_3,\xi_4,\xi_5]^T,\\
+p_4&=[\ell^*+\xi_6,\ell^*+\xi_7,\xi_8]^T .
+\end{aligned}
+\]
+For
+\begin{equation}
+\hat\eta=[e_{12},e_{14},e_{\theta_1},e_{\theta_2},e_{\theta_4},e_{\mathrm{cop}},(e_n^\perp)^T]^T\in\mathbb R^8,
+\label{eq:hat-eta}
+\end{equation}
+the minimal error map \(\hat h(\xi)=\hat\eta\) satisfies
+\[
+\det D\hat h(0)=-\frac{\sqrt2}{2(\ell^*)^6}\neq0.
+\]
+The corresponding Jacobian \(D\hat h(0)\) is given in Appendix~\ref{app:error-jacobians}. Thus \(\hat\eta\) is a valid local coordinate on the realizable internal-error manifold. Moreover, differentiating the raw error map at the target gives the row relation
+\[
+D e_{\theta_3}(0)+D e_{\theta_1}(0)+D e_{\theta_2}(0)+D e_{\theta_4}(0)=0,
+\]
+so
+\begin{equation}
+e_{\theta_3}=-(e_{\theta_1}+e_{\theta_2}+e_{\theta_4})+O(\|\hat\eta\|^2).
+\label{eq:angle-redundancy-linear}
+\end{equation}
+Consequently, there exists a smooth embedding \(g\) such that \(\eta^{\mathrm{raw}}=g(\hat\eta)\) and
+\begin{equation}
+Dg(0)=S=
+\begin{bmatrix}
+1&0&0&0&0&0&0&0\\
+0&1&0&0&0&0&0&0\\
+0&0&1&0&0&0&0&0\\
+0&0&0&1&0&0&0&0\\
+0&0&-1&-1&-1&0&0&0\\
+0&0&0&0&1&0&0&0\\
+0&0&0&0&0&1&0&0\\
+0&0&0&0&0&0&1&0\\
+0&0&0&0&0&0&0&1
+\end{bmatrix}.
+\label{eq:S-matrix}
+\end{equation}
+Let \(R\in\mathbb R^{8\times9}\) delete the fifth row of \(\eta^{\mathrm{raw}}\). The minimal closed-loop state is
+\begin{equation}
+\hat X=[\hat\eta^T,\tilde v^T]^T\in\mathbb R^{20}.
+\label{eq:minimal-state}
+\end{equation}
+The corresponding minimal closed-loop system is
+\begin{equation}
+\begin{aligned}
+\dot{\hat\eta}&=RC(p(\hat\eta))\tilde v,\\
+\dot{\tilde v}&=(-B(p(\hat\eta)))g(\hat\eta)-k_vI_{12}\tilde v.
+\end{aligned}
+\label{eq:minimal-system}
+\end{equation}
+Evaluating \(C(p)\) and \(-B(p)\) at \eqref{eq:target-square}, and denoting \(C^*=C(p^*)\), \((-B^*)=(-B(p^*))\), yields the linearization
+\begin{equation}
+\dot{\hat X}=\hat A^*\hat X,
+\qquad
+\hat A^*=
+\begin{bmatrix}
+0_{8\times8} & RC^*\\
+(-B^*)S & -k_vI_{12}
 \end{bmatrix}.
 \label{eq:Astar}
 \end{equation}
+The explicit matrices \(C^*\), \(-B^*\), and the reduced product below are given in Appendices~\ref{app:Cstar}--\ref{app:Gstar}.
 
-At the target square, the bearing vectors take the values
-\begin{equation}
-\begin{aligned}
-b_{12}^*&=[0,-1,0]^{T},&\; b_{14}^*&=[1,0,0]^{T},\\
-b_{21}^*&=[0,1,0]^{T}, &\; b_{23}^*&=[1,0,0]^{T},\\
-b_{32}^*&=[-1,0,0]^{T},&\; b_{34}^*&=[0,1,0]^{T},\\
-b_{41}^*&=[-1,0,0]^{T},&\; b_{43}^*&=[0,-1,0]^{T},
-\end{aligned}
-\label{eq:target-bearings}
-\end{equation}
-all interior angles are \(\pi/2\) (hence \(\sin\alpha_i^*=1\)), and the constrained edge lengths are \(d_{12}^*=d_{14}^*=\ell^*\) while the diagonals are \(d_{13}^*=d_{24}^*=\sqrt2\,\ell^*\). Substituting these values into the kinematic formulas yields the entries of \(C^*\). The first two rows, from \eqref{eq:distance-kin}, are
-\begin{equation}
-\begin{aligned}
-\dot e_{12}&=[0,1,0]\tilde v_1+[0,-1,0]\tilde v_2,\\
-\dot e_{14}&=[-1,0,0]\tilde v_1+[1,0,0]\tilde v_4.
-\end{aligned}
-\label{eq:Cstar-dist}
-\end{equation}
-For the angle error at agent~1, \(\dot e_{\theta_1}\) follows from \eqref{eq:alphadot} with \((j,i,k)=(2,1,4)\), \(d_{12}^*=d_{14}^*=\ell^*\), \(\sin\alpha_1^*=1\):
-\begin{equation}
-\begin{aligned}
-\dot e_{\theta_1}
-&=-\frac{1}{\ell^*}b_{14}^{*T}P_{b_{12}^*}(\tilde v_2-\tilde v_1)
- -\frac{1}{\ell^*}b_{12}^{*T}P_{b_{14}^*}(\tilde v_4-\tilde v_1)\\
-&=\frac{1}{\ell^*}[1,-1,0]\tilde v_1
-  -\frac{1}{\ell^*}[1,0,0]\tilde v_2
-  +\frac{1}{\ell^*}[0,1,0]\tilde v_4.
-\end{aligned}
-\label{eq:Cstar-theta1}
-\end{equation}
-The remaining angle error rows, as well as the coplanarity and normal error rows, are computed analogously; their full explicit expressions are collected in Appendix~\ref{app:Cstar}.
-
-Similarly, linearizing the control law at the target square gives the columns of \(-B^*\). For instance, the column corresponding to \(e_{\theta_1}\) receives contributions only from the angle term \(u_1^{\mathrm{ang}}=-k_\theta e_{\theta_1}(b_{12}^*+b_{14}^*)=-k_\theta e_{\theta_1}[1,-1,0]^{T}\); the column for \(e_{12}\) receives contributions from the distance terms on agents~1 and~2; the column for \(e_{\mathrm{cop}}\) receives a contribution only from agent~3 along \([0,0,1]^{T}\) (since \(n_{234}^*=[0,0,-1]^{T}\) and \(u_3^{\mathrm{cop}}=-k_{\mathrm{cop}}e_{\mathrm{cop}}n_{234}^*\)). The complete \(-B^*\in\mathbb R^{12\times 9}\) is given in Appendix~\ref{app:Bstar}.
-
-A crucial structural property is that at the target square, the in-plane (x,y) and out-of-plane (z) channels partially decouple. The distance and angle error kinematics involve only the x- and y-components of velocity (all target bearing vectors lie in the xy-plane), whereas the coplanarity and normal error kinematics involve only the z-components. Correspondingly, the angle and distance control terms generate only xy-plane forces, while the coplanarity and normal terms generate only z-axis forces. This decoupling is responsible for the factorization of the characteristic polynomial derived below.
-
-\emph{D. Angle redundancy (Lemma 1).}
-
-\emph{Lemma 1 (Angular redundancy):} For any four-point configuration sufficiently close to a planar square, the four interior angle errors satisfy
-\begin{equation}
-e_{\theta_1}+e_{\theta_2}+e_{\theta_3}+e_{\theta_4}=O(\|\eta\|^2).
-\label{eq:angle-sum}
-\end{equation}
-Consequently, the Jacobian of the raw error mapping \(\eta\mapsto\eta\) (or equivalently, the matrix \(C^*\)) has rank at most~8 at the target square, and \(e_{\theta_3}\) is locally redundant.
-
-\emph{Proof of Lemma 1:} For any planar quadrilateral, the four interior angles sum to \(2\pi\). Hence \(\sum_{i=1}^4\alpha_i=2\pi\) when the four vertices are coplanar. Substituting \(\alpha_i=\pi/2+e_{\theta_i}\) gives \(\sum_{i=1}^4 e_{\theta_i}=0\). When the vertices are not perfectly coplanar (\(e_{\mathrm{cop}}\neq 0\)), the angles \(\alpha_i\) are defined via the inner products of 3-D bearing vectors. A perturbation analysis (see Appendix~\ref{app:redundancy}) shows that the sum of the four angle errors is \(O(\|\eta\|^2)\), i.e., the linear term vanishes. Therefore, at the linearized level, \(e_{\theta_3}=-(e_{\theta_1}+e_{\theta_2}+e_{\theta_4})\). This establishes the redundancy. \hfill\(\blacksquare\)
-
-\emph{E. Minimal error coordinates.}
-By Lemma~1, we eliminate \(e_{\theta_3}\) and define the minimal internal error vector
-\begin{equation}
-\hat\eta=[e_{12},\,e_{14},\,e_{\theta_1},\,e_{\theta_2},\,e_{\theta_4},\,e_{\mathrm{cop}},\,(e_n^\perp)_1,\,(e_n^\perp)_2]^{T}\in\mathbb R^{8}.
-\label{eq:hat-eta}
-\end{equation}
-Let \(\hat S\in\mathbb R^{9\times 8}\) be the selection matrix that embeds \(\hat\eta\) into \(\eta\) (inserting a zero row at the position of \(e_{\theta_3}\) with the linear redundancy relation), and let \(\hat R\in\mathbb R^{8\times 9}\) be the restriction that deletes the \(e_{\theta_3}\) row. Then \(\hat C^*=\hat R C^*\in\mathbb R^{8\times 12}\) and \(\hat B^*=B^*\hat S\in\mathbb R^{12\times 8}\). The reduced linearized system is
-\begin{equation}
-\dot{\hat X}=\hat A^*\hat X,\qquad
-\hat A^*=\begin{bmatrix}
-0_{8\times 8} & \hat C^*\\
--\hat B^* & -k_v I_{12}
-\end{bmatrix},
-\label{eq:Astar-hat}
-\end{equation}
-with \(\hat X=[\hat\eta^{T},\tilde v^{T}]^{T}\in\mathbb R^{20}\).
-
-\emph{F. Structure matrix and characteristic polynomial.}
 Define the minimal structure matrix
 \begin{equation}
-\hat G^*=\hat C^*(-\hat B^*)\in\mathbb R^{8\times 8}.
+\hat G^*=RC^*(-B^*)S.
 \label{eq:Gstar-def}
 \end{equation}
-Physically, \(\hat G^*\) is the stiffness matrix relating the second derivative of the internal error to the error itself: \(\ddot{\hat\eta}=\hat G^*\hat\eta-k_v\dot{\hat\eta}+O(\|\hat X\|^2)\). Substituting the explicit expressions for \(\hat C^*\) and \(-\hat B^*\) (Appendices~\ref{app:Cstar}--\ref{app:Bstar}) and carrying out the matrix multiplication (Appendix~\ref{app:Gstar}) yields a block-diagonalizable \(\hat G^*\) whose characteristic polynomial factors as
-\begin{multline}
-\label{eq:char-poly}
-\det(\lambda I_8-\hat G^*)=(\lambda+k_n)^2
-\left(\lambda+\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}}\right)
-\left(\lambda+\frac{4k_\theta}{\ell^*}\right)\\
-\times\left(\lambda^2+\frac{2(k_d\ell^*+k_\theta)}{\ell^*}\lambda
-+\frac{2k_d k_\theta}{\ell^*}\right)^2.
-\end{multline}
-The factorization reflects the physical channel separation at the target square: the factor \((\lambda+k_n)^2\) corresponds to the two normal-error components, each governed by the normal control gain \(k_n\) independently; the factor \((\lambda+\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}})\) corresponds to the coplanarity channel with gain \(k_{\mathrm{cop}}\); the factor \((\lambda+\frac{4k_\theta}{\ell^*})\) is the bulk angular mode; and the repeated quadratic factor corresponds to the two coupled angle--distance modes involving the pairs \((e_{\theta_1},e_{14})\) and \((e_{\theta_4},e_{12})\) (or their symmetric equivalents).
-
-\emph{G. Hurwitz verification.} For any positive gains, all factors of the characteristic polynomial have strictly negative roots:
-\begin{enumerate}
-\itemsep0pt\raggedright
-\item \(\lambda+k_n=0\) gives \(-k_n<0\) (double multiplicity);
-\item \(\lambda+\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}}=0\) gives a strictly negative root;
-\item \(\lambda+\frac{4k_\theta}{\ell^*}=0\) gives a strictly negative root;
-\item \(\lambda^2+a\lambda+b\) with \(a=\frac{2(k_d\ell^*+k_\theta)}{\ell^*}>0\) and \(b=\frac{2k_d k_\theta}{\ell^*}>0\) has both coefficients positive, so by Routh--Hurwitz both roots have strictly negative real parts.
-\end{enumerate}
-Hence all eight eigenvalues of \(\hat G^*\) lie strictly in the open left half-plane; \(\hat G^*\) is Hurwitz.
-
-\emph{H. Full system Hurwitz.}
-The characteristic polynomial of \(\hat A^*\) is related to that of \(\hat G^*\) through the block determinant formula. Applying \(\det\begin{bmatrix}\lambda I&-C\\B&(\lambda+k_v)I\end{bmatrix}=\det((\lambda+k_v)I)\det(\lambda I-C\frac{1}{\lambda+k_v}(-B))\) to \eqref{eq:Astar-hat}:
+Using the block determinant formula on \eqref{eq:Astar},
 \begin{equation}
-\begin{aligned}
-\det(\lambda I_{20}-\hat A^*)
-&=\det\!\begin{bmatrix}
-\lambda I_8 & -\hat C^*\\
-\hat B^* & (\lambda+k_v)I_{12}
-\end{bmatrix}\\
-&=(\lambda+k_v)^{12}
-\det\!\Bigl(\lambda I_8-\hat C^*\frac{1}{\lambda+k_v}(-\hat B^*)\Bigr)\\
-&=(\lambda+k_v)^{4}
-\det\!\bigl(\lambda(\lambda+k_v)I_8-\hat G^*\bigr).
-\end{aligned}
+\det(\lambda I_{20}-\hat A^*)=(\lambda+k_v)^4
+\det\!\left(\lambda(\lambda+k_v)I_8-\hat G^*\right).
 \label{eq:block-det}
 \end{equation}
-The factor \((\lambda+k_v)^4\) contributes a stable eigenvalue \(-k_v<0\) with multiplicity four. For each eigenvalue \(\mu_i\) of \(\hat G^*\), the remaining determinant yields the quadratic equation \(\lambda^2+k_v\lambda-\mu_i=0\). For a real \(\mu_i<0\), writing \(\mu_i=-|\mu_i|\), the roots are \(\lambda=\frac{1}{2}(-k_v\pm\sqrt{k_v^2-4|\mu_i|}\,)\), both of which have negative real parts regardless of the sign of the discriminant. For a complex conjugate pair \(\mu_i=\alpha\pm j\beta\) with \(\alpha<0\), substituting into \(\lambda^2+k_v\lambda-(\alpha\pm j\beta)=0\) gives a quartic whose roots all have negative real parts provided \(k_v>0\) and \(\alpha<0\) (see Appendix~\ref{app:complex} for the explicit Routh--Hurwitz verification). Therefore all 20 eigenvalues of \(\hat A^*\) lie in the open left half-plane; \(\hat A^*\) is Hurwitz.
-
-\emph{I. Local exponential stability of the nonlinear system.}
-The nonlinear closed-loop system in minimal coordinates can be written as
-\begin{equation}
-\dot{\hat X}=\hat A^*\hat X+\hat\phi(\hat X),
-\label{eq:nonlinear-pert}
-\end{equation}
-where \(\hat\phi(\hat X)\) collects all terms of second order and higher arising from the nonlinearity of the bearing kinematics, the distance and angle error definitions, and the control law. Since every geometric quantity (bearings, distances, cross products) is a smooth function of the state in a neighborhood of the target configuration, there exist constants \(\delta_0>0\) and \(L>0\) such that
-\begin{equation}
-\|\hat\phi(\hat X)\|\le L\|\hat X\|^2,\qquad\forall\,\|\hat X\|<\delta_0.
-\label{eq:phi-bound}
-\end{equation}
-
-Because \(\hat A^*\) is Hurwitz, for any \(Q=Q^{T}>0\) the Lyapunov equation \(\hat A^{*T}P+P\hat A^*=-Q\) has a unique solution \(P=P^{T}>0\). Choose \(V(\hat X)=\hat X^{T}P\hat X\) as a Lyapunov function candidate. Differentiating along trajectories of \eqref{eq:nonlinear-pert} and using \eqref{eq:phi-bound}:
+Direct calculation gives
 \begin{equation}
 \begin{aligned}
-\dot V(\hat X)
-&=\hat X^{T}(\hat A^{*T}P+P\hat A^*)\hat X+2\hat X^{T}P\hat\phi(\hat X)\\
-&=-\hat X^{T}Q\hat X+2\hat X^{T}P\hat\phi(\hat X)\\
-&\le -\lambda_{\min}(Q)\|\hat X\|^2+2\|P\|\,\|\hat X\|\,\|\hat\phi(\hat X)\|\\
-&\le -\lambda_{\min}(Q)\|\hat X\|^2+2\|P\|L\|\hat X\|^3\\
-&=-\|\hat X\|^2\bigl(\lambda_{\min}(Q)-2\|P\|L\|\hat X\|\bigr).
+\det(\lambda I_8-\hat G^*)
+&=(\lambda+k_n)^2
+\left(\lambda+\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}}\right)
+\left(\lambda+\frac{4k_\theta}{\ell^*}\right)\\
+&\quad\times
+\left(\lambda^2+\frac{2(k_d\ell^*+k_\theta)}{\ell^*}\lambda
++\frac{2k_dk_\theta}{\ell^*}\right)^2.
 \end{aligned}
-\label{eq:Vdot}
+\label{eq:char-poly}
 \end{equation}
-In the neighborhood \(\mathcal U=\{\hat X:\|\hat X\|<r\}\) where
+The repeated quadratic factor in \eqref{eq:char-poly} has positive coefficients and discriminant \(4((k_d\ell^*)^2+k_\theta^2)/(\ell^*)^2>0\). Thus all roots of \eqref{eq:char-poly} are real and strictly negative for \(k_d,k_\theta,k_{\mathrm{cop}},k_n>0\) and \(\ell^*>0\). Denote these roots by \(\mu_i\), \(i=1,\ldots,8\). From \eqref{eq:block-det}, the eigenvalues of \(\hat A^*\) consist of four roots \(-k_v\) and the roots of
+\[
+\lambda^2+k_v\lambda-\mu_i=0,
+\qquad i=1,\ldots,8.
+\]
+Since \(\mu_i<0\), each quadratic is \(\lambda^2+k_v\lambda+|\mu_i|\), whose roots have strictly negative real parts. In summary, \(\hat A^*\) is Hurwitz for all positive gains. Since the minimal system \eqref{eq:minimal-system} is smooth near the target square, the indirect Lyapunov method implies local exponential convergence of all controlled geometric errors and velocity tracking errors for the representative target square.
+
+It remains to show that the conclusion does not depend on the particular representative \eqref{eq:target-square}. The preceding calculation was carried out after choosing a convenient inertial basis in which the selected branch is \(\bar n_d^*=[0,0,1]^T\). This coordinate choice is without loss of generality. Let \(P^\dagger=(p_1^\dagger,\ldots,p_4^\dagger)\) be any target square with side length \(\ell^*\) and selected branch \(\bar n_d^\dagger\). Then there exist a translation \(c\in\mathbb R^3\) and a rotation \(Q\in SO(3)\) such that
 \begin{equation}
-r=\min\!\Bigl(\delta_0,\;\frac{\lambda_{\min}(Q)}{4\|P\|L}\Bigr),
-\label{eq:radius}
+p_i^\dagger=Qp_i^*+c,\quad i=1,\ldots,4,
+\qquad \bar n_d^\dagger=Q\bar n_d^*.
+\label{eq:rigid-transform}
 \end{equation}
-the term in parentheses satisfies \(\lambda_{\min}(Q)-2\|P\|L\|\hat X\|\ge\frac{1}{2}\lambda_{\min}(Q)\), yielding
+If the inertial frame has already been chosen so that \(\bar n_d^\dagger=\bar n_d^*\), then \(Q\) reduces to an in-plane rotation satisfying \(Q\bar n_d^*=\bar n_d^*\).
+For every relative vector \(q_{ij}=p_j-p_i\),
+\[
+q_{ij}^\dagger=Qq_{ij}^*,\qquad
+d_{ij}^\dagger=d_{ij}^*,\qquad
+b_{ij}^\dagger=Qb_{ij}^*.
+\]
+Hence the distance and angle errors are invariant under \eqref{eq:rigid-transform}. The plane normals and the centered vectors in the normal controller satisfy
 \begin{equation}
-\dot V(\hat X)\le -\frac{\lambda_{\min}(Q)}{2\lambda_{\max}(P)}V(\hat X).
-\label{eq:Vdot-final}
+n_{234}^\dagger=Qn_{234}^*,\quad
+n_{124}^\dagger=Qn_{124}^*,\quad
+r_i^\dagger=Qr_i^*.
+\label{eq:normal-coordinate-transform}
 \end{equation}
-By the comparison lemma, \(V(\hat X(t))\le V(\hat X(0))e^{-\alpha t}\) with \(\alpha=\lambda_{\min}(Q)/(2\lambda_{\max}(P))>0\). Using the quadratic bounds \(\lambda_{\min}(P)\|\hat X\|^2\le V(\hat X)\le\lambda_{\max}(P)\|\hat X\|^2\), we obtain the exponential estimate
+Therefore \(e_{\mathrm{cop}}=b_{31}^Tn_{234}\) is unchanged. If the tangent basis used to express the normal error is transported as \(E_d^\dagger=QE_d\), then
 \begin{equation}
-\|\hat X(t)\|\le Me^{-\alpha t}\|\hat X(0)\|,\qquad
-M=\sqrt{\frac{\lambda_{\max}(P)}{\lambda_{\min}(P)}}\ge 1.
-\label{eq:exp-bound}
+(e_n^\perp)^\dagger=(E_d^\dagger)^T(n_{124}^\dagger\times\bar n_d^\dagger)
+=E_d^T(n_{124}^*\times\bar n_d^*)=e_n^{\perp *},
+\label{eq:normal-error-coordinate-transform}
 \end{equation}
-
-\emph{J. Extension to arbitrary target squares.}
-The analysis above was performed at the specific target square \eqref{eq:target-square} with normal \(\bar n_d=[0,0,-1]^{T}\). Any other target square \(p^\diamond\in\mathcal S(\ell^*,\bar n_d)\) in the same fixed branch is related to \eqref{eq:target-square} by a rigid-body transformation (translation plus rotation about the \(\bar n_d\) axis). Since all bearing vectors, distances, interior angles, the coplanarity error, and the normal error are invariant under rigid-body motions, and the control law \eqref{eq:total-control} is constructed entirely from these invariant quantities, the closed-loop Jacobian \(\hat A^*\) is identical at every \(p^\diamond\in\mathcal S(\ell^*,\bar n_d)\) up to an orthogonal change of basis that does not affect eigenvalues. Hence the Hurwitz property and the local exponential stability established at \eqref{eq:target-square} carry over to the entire family of target squares in the same branch.
-
-\emph{Theorem 1 (Local exponential stability):} Consider the nominal closed-loop system consisting of the four-agent dynamics \eqref{eq:agent-dynamics} and the control law \eqref{eq:total-control}, with fixed normal branch \(\bar n_d\), constant desired velocity \(v_c^*\), and positive gains \(k_\theta,k_d,k_v,k_{\mathrm{cop}},k_n>0\). Let the target square be any configuration in \(\mathcal S(\ell^*,\bar n_d)\). There exists a neighborhood \(\mathcal U\) of the target square and constants \(M\ge 1,\;\alpha>0\) such that for any initial condition satisfying \(\hat X(0)\in\mathcal U\), the minimal error state converges exponentially:
+where the equivariance \(Q(a\times b)=(Qa)\times(Qb)\) has been used.
+The velocity errors transform as \(\tilde v^\dagger=(I_4\otimes Q)\tilde v^*\). Since all terms in \eqref{eq:raw-kinematics} and \eqref{eq:raw-velocity} are built from \(b_{ij}\), \(n_{234}\), \(n_{124}\), \(r_i\), and scalar internal errors, the linearized matrices at \(P^\dagger\) satisfy
 \begin{equation}
-\|\hat X(t)\|\le Me^{-\alpha t}\|\hat X(0)\|,\qquad\forall t\ge 0.
-\label{eq:thm1-bound}
+C^\dagger=C^*(I_4\otimes Q^T),\qquad
+(-B^\dagger)=(I_4\otimes Q)(-B^*).
+\label{eq:CB-coordinate-transform}
 \end{equation}
-In particular, all geometric errors and velocity errors converge to zero exponentially, and the formation converges to \(\mathcal S(\ell^*,\bar n_d)\).
-
-\emph{Proof:} The construction in paragraphs~A--J above, together with the detailed matrix computations deferred to Appendices~\ref{app:Cstar}--\ref{app:complex}, constitutes the complete proof. \hfill\(\blacksquare\)
-
-\subsection{Undirected Normal Branch Selection}
-
-In the nominal model analyzed above, the normal branch \(\bar n_d\) is treated as fixed. We now specify how this branch is selected in practice and verify that, once correctly initialized, it remains fixed in a neighborhood of the target square. Let the two candidate normal directions be \(\mathcal N_d=\{n_d,-n_d\}\); the branch is selected by
+Consequently,
+\[
+\hat G^\dagger=RC^\dagger(-B^\dagger)S
+=RC^*(-B^*)S=\hat G^*,
+\]
+and, in the minimal coordinates,
 \begin{equation}
-\bar n_d=\operatorname*{arg\,max}_{\eta\in\mathcal N_d}\left(n_{124}^{T}\eta\right),
+\hat A^\dagger=T_Q\hat A^*T_Q^{-1},\qquad
+T_Q=\operatorname{diag}(I_8,I_4\otimes Q).
+\label{eq:A-coordinate-transform}
 \end{equation}
-where \(n_{124}\) is the current reference-plane normal defined in \eqref{eq:normal-124}. To prevent chattering, a hysteresis threshold \(\delta_h\in(0,1)\) is used: the branch is updated only when the alignment measure \(n_{124}^T n_d\) crosses \(\pm\delta_h\).
+Thus \(\hat A^\dagger\) and \(\hat A^*\) have the same spectrum. Since \(\hat A^*\) is Hurwitz, \(\hat A^\dagger\) is also Hurwitz, and the same local exponential stability result holds for every representative in \(\mathcal S(\ell^*,n_d)\) within the fixed branch. This completes the proof.
+\end{proof}
 
-\emph{Proposition 1 (Branch invariance):} Let the initial branch be correctly selected as \(s^*\in\{+1,-1\}\) satisfying \(\bar n_d=s^*n_d\). There exists a neighborhood \(\mathcal U_{sw}\) of the target square such that, if the trajectory remains within \(\mathcal U_{sw}\), the hysteresis rule never triggers a branch switch. Hence the actual controller reduces to the fixed-branch controller considered in Theorem~1.
-\emph{Proof:} At the target square, \(s^*n_{124}^T n_d=1\). By continuity of \(n_{124}(p)\), there exists a neighborhood where \(|s^*n_{124}(p)^T n_d-1|<\varepsilon\) with \(0<\varepsilon<1-\delta_h\). The hysteresis update criterion then permanently evaluates to \(s^*\), so no switch occurs. \hfill\(\blacksquare\)
+\subsection{Application}
+\label{subsec:quadrotor-application}
+
+This subsection outlines how the proposed geometric formation controller can be embedded into a quadrotor-based capture-net system. As illustrated in Fig.~\ref{fig:cable_square_measurements}, the four QUAVs carry an elastic net while the formation layer uses local geometric measurements to generate the desired translational accelerations. The simplified QUAV dynamics are first introduced, then the elastic cable force and the resulting lumped disturbances are included, and finally an LESO-based compensation law is used to recover the nominal acceleration command.
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.85\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_7}
+\caption{(Color online) Cable-connected square formation with local measurements.}
+\label{fig:cable_square_measurements}
+\end{figure}
+
+Following the simplified QUAV model used in \cite{li2025localInfo}, the low-level controller is separated into a position loop and an attitude loop. Let \(p_i=[p_{h,i}^T,p_{z,i}]^T\), where \(p_{h,i}=[p_{x,i},p_{y,i}]^T\in\mathbb R^2\) is the horizontal position and \(p_{z,i}\in\mathbb R\) is the altitude. The corresponding velocities are denoted by \(v_{h,i}\) and \(v_{z,i}\). The nominal horizontal channel is
+\begin{equation}
+\begin{aligned}
+\dot p_{h,i}&=v_{h,i},\\
+\dot v_{h,i}&=-gA_{\psi_i}\Theta_{h,i},
+\end{aligned}
+\label{eq:quadrotor-nominal-horizontal}
+\end{equation}
+and the nominal altitude channel is
+\begin{equation}
+\begin{aligned}
+\dot p_{z,i}&=v_{z,i},\\
+\dot v_{z,i}&=g-\frac{f_i}{m_i}.
+\end{aligned}
+\label{eq:quadrotor-nominal-altitude}
+\end{equation}
+Here, \(g\in\mathbb R\) is the gravitational constant, \(f_i\in\mathbb R\) is the total thrust, \(m_i\in\mathbb R\) is the quadrotor mass, and \(\phi_i,\theta_i,\psi_i\) denote roll, pitch, and yaw, respectively. Moreover,
+\begin{equation}
+\begin{aligned}
+A_{\psi_i}&=R_{\psi_i}
+\begin{bmatrix}
+0&1\\
+-1&0
+\end{bmatrix},\qquad
+\Theta_{h,i}=
+\begin{bmatrix}
+\phi_i\\
+\theta_i
+\end{bmatrix},\\
+R_{\psi_i}&=
+\begin{bmatrix}
+\cos\psi_i&-\sin\psi_i\\
+\sin\psi_i&\cos\psi_i
+\end{bmatrix}.
+\end{aligned}
+\label{eq:horizontal-attitude-map}
+\end{equation}
+
+The capture net is modeled as a set of massless elastic cables connecting selected quadrotor pairs. Let \(\mathcal E_s\) denote the cable graph and \(l_{ij}^0\) the rest length of cable \((i,j)\in\mathcal E_s\). The cable direction and stretching rate are
+\begin{equation}
+b_{ij}=\frac{p_j-p_i}{\|p_j-p_i\|},\qquad
+\dot d_{ij}=b_{ij}^T(v_j-v_i).
+\label{eq:cable-kinematics}
+\end{equation}
+A unilateral spring-damper approximation gives the tension magnitude
+\begin{equation}
+T_{ij}=
+\begin{cases}
+k_s(d_{ij}-l_{ij}^0)+c_s\dot d_{ij}, & d_{ij}>l_{ij}^0,\\
+0, & d_{ij}\le l_{ij}^0,
+\end{cases}
+\label{eq:cable-tension}
+\end{equation}
+where \(k_s>0\) and \(c_s>0\) are the cable stiffness and damping coefficients. The resultant cable force on quadrotor \(i\) is
+\begin{equation}
+F_i^{s}=\sum_{j\in\mathcal N_i^s}T_{ij}b_{ij},
+\label{eq:cable-force}
+\end{equation}
+where \(\mathcal N_i^s=\{j\mid (i,j)\in\mathcal E_s\}\).
+
+Let \(\bar d_i\) collect aerodynamic disturbances, modeling errors, and other unmodeled effects. The cable-induced acceleration is included in the lumped disturbance
+\begin{equation}
+d_i=\frac{1}{m_i}F_i^s+\bar d_i,\qquad
+d_{h,i}=S_hd_i,\quad d_{z,i}=S_zd_i,
+\label{eq:lumped-quadrotor-disturbance}
+\end{equation}
+where \(S_h=[I_2\;0_{2\times1}]\) and \(S_z=[0_{1\times2}\;1]\). The translational dynamics then become
+\begin{equation}
+\begin{aligned}
+\dot p_{h,i}&=v_{h,i},\\
+\dot v_{h,i}&=-gA_{\psi_i}\Theta_{h,i}+d_{h,i},
+\end{aligned}
+\label{eq:quadrotor-horizontal}
+\end{equation}
+and
+\begin{equation}
+\begin{aligned}
+\dot p_{z,i}&=v_{z,i},\\
+\dot v_{z,i}&=g-\frac{f_i}{m_i}+d_{z,i}.
+\end{aligned}
+\label{eq:quadrotor-altitude}
+\end{equation}
+
+To compensate for the lumped disturbance, the formation controller \eqref{eq:total-control} provides the nominal acceleration command \(u_i\), and the LESO supplies the lumped-disturbance estimate \(\hat\Delta_i\). The compensated acceleration command is
+\begin{equation}
+u_i^c=u_i-\hat\Delta_i.
+\label{eq:compensated-outer-command}
+\end{equation}
+
+For each quadrotor \(i\in\mathcal V\) and each coordinate axis \(\sigma\in\{x,y,z\}\), define
+\begin{equation}
+x_{1,i\sigma}=p_{i\sigma},\qquad
+x_{2,i\sigma}=v_{i\sigma},\qquad
+y_{i\sigma}=p_{i\sigma}.
+\label{eq:leso-state-definition}
+\end{equation}
+Let \(u_{i\sigma}^c\) denote the \(\sigma\)-axis component of \(u_i^c\). For LESO design, the translational channel is written as
+\begin{equation}
+\begin{aligned}
+\dot x_{1,i\sigma}&=x_{2,i\sigma},\\
+\dot x_{2,i\sigma}&=u_{i\sigma}^c+\Delta_{i\sigma},\\
+y_{i\sigma}&=x_{1,i\sigma},
+\end{aligned}
+\label{eq:leso-plant-form}
+\end{equation}
+where
+\begin{equation}
+\Delta_i=d_i+\varepsilon_i
+\label{eq:lumped-disturbance}
+\end{equation}
+is the lumped acceleration disturbance, and \(\varepsilon_i\) represents residual attitude-tracking and thrust-allocation errors. Treating \(\Delta_{i\sigma}\) as an extended state, i.e., \(x_{3,i\sigma}=\Delta_{i\sigma}\), the LESO is designed as
+\begin{equation}
+\begin{aligned}
+e_{i\sigma}&=z_{1,i\sigma}-y_{i\sigma},\\
+\dot z_{1,i\sigma}&=z_{2,i\sigma}-\beta_{01}e_{i\sigma},\\
+\dot z_{2,i\sigma}&=z_{3,i\sigma}+u_{i\sigma}^c-\beta_{02}e_{i\sigma},\\
+\dot z_{3,i\sigma}&=-\beta_{03}e_{i\sigma},
+\end{aligned}
+\label{eq:leso-design}
+\end{equation}
+where \(z_{1,i\sigma}\), \(z_{2,i\sigma}\), and \(z_{3,i\sigma}\) estimate \(p_{i\sigma}\), \(v_{i\sigma}\), and \(\Delta_{i\sigma}\), respectively. The observer gains \(\beta_{01},\beta_{02},\beta_{03}>0\) are selected such that the observer error dynamics are sufficiently fast compared with the formation dynamics.
+
+Stacking the disturbance estimates gives
+\begin{equation}
+\hat\Delta_i=
+\begin{bmatrix}
+z_{3,ix}&z_{3,iy}&z_{3,iz}
+\end{bmatrix}^{T}.
+\label{eq:leso-disturbance-stack}
+\end{equation}
+The compensation law \eqref{eq:compensated-outer-command} then recovers the nominal acceleration model \(\dot p_i=v_i\), \(\dot v_i=u_i\) when \(z_{3,i\sigma}\) accurately estimates \(\Delta_{i\sigma}\).
+
+The compensated acceleration command is decomposed into its horizontal and vertical components. The horizontal component is assigned to the horizontal position channel as
+\begin{equation}
+u_{h,i}^{d}=S_hu_i^c.
+\label{eq:horizontal-command}
+\end{equation}
+According to \eqref{eq:quadrotor-nominal-horizontal}, the desired roll and pitch are obtained by inverting the horizontal channel:
+\begin{equation}
+\Theta_{h,i}^{d}=-\frac{1}{g}A_{\psi_i}^{-1}u_{h,i}^{d}.
+\label{eq:roll-pitch-command}
+\end{equation}
+The vertical component is assigned to the altitude channel, which determines the desired total thrust through
+\begin{equation}
+u_{z,i}^{d}=S_zu_i^c,
+\qquad
+f_i^{d}=m_i(g-u_{z,i}^{d}).
+\label{eq:altitude-thrust-command}
+\end{equation}
+The desired yaw \(\psi_i^d\) is prescribed independently. The attitude loop tracks \(\phi_i^d\), \(\theta_i^d\), and \(\psi_i^d\), and then generates the rotor speeds through the standard allocation map of the quadrotor. The resulting control structure of the QUAVs is shown in Fig.~\ref{fig:quav_control_structure}.
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_6}
+\caption{(Color online) Control structure of a single QUAV.}
+\label{fig:quav_control_structure}
+\end{figure}
 
 \section{Simulations}
-\emph{To be completed.} Numerical simulations will validate the proposed formation control scheme under two comparisons: (i) the full controller versus the controller without the coplanarity term, to verify the necessity established in Section~III-B; (ii) the controller with and without the undirected normal term, to illustrate branch selection and the handling of the reflection ambiguity.
+\emph{To be completed.} Numerical simulations will validate the proposed formation control scheme through two comparisons. The first compares the full controller with the controller without the coplanarity term, and the second compares the controller with and without the undirected normal term.
 
 \section{Conclusion}
-This paper addressed the distributed formation control problem of four agents forming a planar square in 3-D space. For a concyclic square, unsigned angle and distance constraints specify the in-plane shape and scale but leave the plane orientation as a free degree of freedom in 3-D. To prescribe the orientation, an undirected plane-normal control scheme was introduced: by treating \(\pm n_d\) as equivalent target orientations and selecting the locally closer branch, the controller avoids the singularity inherent in a raw cross product formulation while ensuring the formation plane aligns with the target plane. A coplanarity constraint was further incorporated and shown, via a perturbation analysis, to provide first-order sensitivity to out-of-plane deviations, whereas angle-based terms provide only second-order sensitivity, establishing its necessity for maintaining coplanarity. A five-term distributed controller was proposed, and local exponential stability of the nominal closed-loop system was established by constructing minimal internal error coordinates and proving Hurwitzness of the linearized system.
+This paper addressed the distributed formation control problem of four agents forming a planar square in 3-D space. For a concyclic square, unsigned angle and distance constraints specify the in-plane shape and scale but leave the plane orientation as a free degree of freedom in 3-D. To prescribe the orientation, an undirected plane-normal control scheme was introduced. By treating \(\pm n_d\) as equivalent target orientations and selecting the locally closer branch, the controller avoids the singularity inherent in a raw cross product formulation while ensuring the formation plane aligns with the target plane. A coplanarity constraint was further incorporated and shown, via a perturbation analysis, to provide first-order sensitivity to out-of-plane deviations, whereas angle-based terms provide only second-order sensitivity, establishing its necessity for maintaining coplanarity. A five-term distributed controller was proposed, and local exponential stability of the nominal closed-loop system was established by constructing minimal internal error coordinates and proving Hurwitzness of the linearized system.
 
-Future work includes experimental validation, extension to formations with more agents, analysis of the hybrid dynamics arising from branch switching under time-varying normal references, and incorporation of disturbance compensation for operation in realistic environments.
-
-\begin{thebibliography}{1}
-\bibliographystyle{IEEEtran}
-
-\bibitem{chen2021angleRigidity}
-L. Chen, M. Cao, and C. Li, ``Angle rigidity and its usage to stabilize multiagent formations in 2-D,'' \textit{IEEE Trans. Autom. Control}, vol. 66, no. 8, pp. 3667--3681, Aug. 2021, doi: 10.1109/TAC.2020.3025539.
-
-\bibitem{chen2022stabilizing}
-L. Chen, Q. Yang, M. Shi, Y. Li, and M. Feroskhan, ``Stabilizing angle rigid formations with prescribed orientation and scale,'' \textit{IEEE Trans. Ind. Electron.}, vol. 69, no. 11, pp. 11654--11665, Nov. 2022, doi: 10.1109/TIE.2021.3120476.
-
-\bibitem{chen2023angleConstrained}
-L. Chen, J. Xiao, R. C. H. Lin, and M. Feroskhan, ``Angle-constrained formation maneuvering of unmanned aerial vehicles,'' \textit{IEEE Trans. Control Syst. Technol.}, vol. 31, no. 4, pp. 1733--1746, Jul. 2023, doi: 10.1109/TCST.2023.3240286.
-
-\bibitem{chen2023angleRigidity3D}
-L. Chen and M. Cao, ``Angle rigidity for multiagent formations in 3-D,'' \textit{IEEE Trans. Autom. Control}, vol. 68, no. 10, pp. 6130--6145, Oct. 2023, doi: 10.1109/TAC.2023.3237799.
-
-\bibitem{li2025localInfo}
-J. Li, L. Chen, and C. Li, ``Multi-agent distributed formation control using local information measurements,'' \textit{Sci. China Technol. Sci.}, vol. 68, no. 7, Art. no. 1720402, 2025, doi: 10.1007/s11431-024-2896-5.
-
-\bibitem{wang2025esoMultiUAV}
-R. Wang, T. Mei, W. Ma, and W. Hao, ``Disturbance rejection control for multi-UAV formations based extended state observer,'' in \textit{Proc. 40th Youth Acad. Annu. Conf. Chin. Assoc. Autom.}, 2025, pp. 2144--2149, doi: 10.1109/YAC66630.2025.11150314.
-
-\bibitem{ren2026observer}
-W. Ren, G.-R. Duan, P. Li, and H. Kong, ``Observer-based active fault/disturbance compensation control for fully actuated systems,'' \textit{Sci. China Inf. Sci.}, vol. 69, no. 5, Art. no. 152202, 2026, doi: 10.1007/s11432-025-4817-2.
-
-\end{thebibliography}
+Future work includes experimental validation, extension to formations with more agents, analysis of the hybrid dynamics arising from branch switching, and incorporation of disturbance compensation for operation in realistic environments.
 
 \appendices
 \section{Explicit Linearized Matrices and Supplementary Calculations}
+
+\subsection{Local error-coordinate Jacobians}
+\label{app:error-jacobians}
+
+This subsection records the Jacobians used to remove the redundant angle error \(e_{\theta_3}\). With the local coordinate \(\xi\) defined in the proof of Theorem~\ref{thm:local-stability}, the minimal error map \(\hat h(\xi)=\hat\eta\) satisfies
+\begin{equation}
+\resizebox{\columnwidth}{!}{$
+J_{sq}=D\hat h(0)=
+\begin{bmatrix}
+1&0&0&0&0&0&0&0\\
+0&0&0&0&0&1&0&0\\
+-\frac{1}{\ell^*}&0&0&0&0&0&\frac{1}{\ell^*}&0\\
+0&0&0&-\frac{1}{\ell^*}&0&0&0&0\\
+\frac{1}{\ell^*}&0&\frac{1}{\ell^*}&0&0&-\frac{1}{\ell^*}&-\frac{1}{\ell^*}&0\\
+0&-\frac{\sqrt2}{2\ell^*}&0&0&-\frac{\sqrt2}{2\ell^*}&0&0&\frac{\sqrt2}{2\ell^*}\\
+0&-\frac{1}{\ell^*}&0&0&0&0&0&0\\
+0&-\frac{1}{\ell^*}&0&0&0&0&0&\frac{1}{\ell^*}
+\end{bmatrix}.
+$}
+\label{eq:Jsq}
+\end{equation}
+Since \(\det J_{sq}=-\sqrt2/(2(\ell^*)^6)\neq0\), the minimal error vector is a valid local coordinate.
+
+For the raw error map \(h_{\mathrm{raw}}(\xi)=\eta^{\mathrm{raw}}\), the Jacobian is
+\begin{equation}
+\resizebox{\columnwidth}{!}{$
+J_{\mathrm{raw}}=Dh_{\mathrm{raw}}(0)=
+\begin{bmatrix}
+1&0&0&0&0&0&0&0\\
+0&0&0&0&0&1&0&0\\
+-\frac{1}{\ell^*}&0&0&0&0&0&\frac{1}{\ell^*}&0\\
+0&0&0&-\frac{1}{\ell^*}&0&0&0&0\\
+0&0&-\frac{1}{\ell^*}&\frac{1}{\ell^*}&0&\frac{1}{\ell^*}&0&0\\
+\frac{1}{\ell^*}&0&\frac{1}{\ell^*}&0&0&-\frac{1}{\ell^*}&-\frac{1}{\ell^*}&0\\
+0&-\frac{\sqrt2}{2\ell^*}&0&0&-\frac{\sqrt2}{2\ell^*}&0&0&\frac{\sqrt2}{2\ell^*}\\
+0&-\frac{1}{\ell^*}&0&0&0&0&0&0\\
+0&-\frac{1}{\ell^*}&0&0&0&0&0&\frac{1}{\ell^*}
+\end{bmatrix}.
+$}
+\label{eq:Jraw}
+\end{equation}
+The fifth row, corresponding to \(e_{\theta_3}\), satisfies
+\begin{equation}
+J_{\mathrm{raw}}^{(5)}+J_{\mathrm{raw}}^{(3)}
++J_{\mathrm{raw}}^{(4)}+J_{\mathrm{raw}}^{(6)}=0.
+\label{eq:Jraw-row-relation}
+\end{equation}
+Thus, to first order, \(e_{\theta_3}=-(e_{\theta_1}+e_{\theta_2}+e_{\theta_4})\). This row relation gives the embedding matrix \(S=Dg(0)\) in \eqref{eq:S-matrix}, while the matrix \(R\) in \eqref{eq:Astar} simply removes the fifth row of \(\eta^{\mathrm{raw}}\).
 
 \subsection{The matrix \(C^*\)}
 \label{app:Cstar}
@@ -599,7 +818,7 @@ At the target square \eqref{eq:target-square} with the bearing vectors \eqref{eq
 (\dot e_n^\perp)_2&=\frac{1}{\ell^*}[0,0,-1\;|\;0,0,0\;|\;0,0,0\;|\;0,0,1]\,\tilde v.\notag
 \end{align}
 
-Observe the structural decoupling: rows 1--6 involve only the \(x\)- and \(y\)-components of \(\tilde v\), whereas rows 7--9 involve only the \(z\)-components. This separation is fundamental to the factorization of the characteristic polynomial.
+Observe that rows 1--6 depend only on the in-plane components of \(\tilde v\), whereas rows 7--9 depend only on the out-of-plane components. This structural decoupling is fundamental to the factorization of the characteristic polynomial.
 
 \subsection{The matrix \(-B^*\)}
 \label{app:Bstar}
@@ -631,84 +850,66 @@ The linearized control matrix \(-B^*\in\mathbb R^{12\times 9}\) encodes the acce
 \mathrm{col}((e_n^\perp)_2)&=\frac{k_n\ell^*}{3}\,[0,0,1\;|\;0,0,1\;|\;0,0,0\;|\;0,0,-2]^{T}.\notag
 \end{align}
 
-Again, note the structural decoupling: columns 1--6 generate only \(xy\)-plane forces, while columns 7--9 generate only \(z\)-axis forces.
-
-\subsection{Angle redundancy: Perturbation analysis}
-\label{app:redundancy}
-
-\emph{Proof of Lemma~1 (angle redundancy).} For a non-coplanar quadrilateral \(\{1,2,3,4\}\) in 3-D, the four ``interior angles'' \(\alpha_i\) are defined via \eqref{eq:angle-definition} using the 3-D bearing vectors. Let \(\varepsilon=e_{\mathrm{cop}}\) measure the degree of non-coplanarity. At a nearly planar configuration, the four vertices can be projected onto their best-fit plane; the projected angles \(\bar\alpha_i\) satisfy \(\sum_i\bar\alpha_i=2\pi\). The difference between the 3-D angle \(\alpha_i\) and its planar projection \(\bar\alpha_i\) is \(O(\varepsilon^2)\), because \(b_{ij}^{T}b_{ik}\) differs from its planar counterpart by a term of order \(O(\varepsilon^2)\) (the bearing deviation from the plane enters quadratically through the inner product). Hence
-\begin{equation}
-\sum_{i=1}^4\alpha_i=2\pi+O(\|\eta\|^2).
-\end{equation}
-Substituting \(\alpha_i=\pi/2+e_{\theta_i}\) yields \(\sum_{i=1}^4 e_{\theta_i}=O(\|\eta\|^2)\). At the linearized level, \(e_{\theta_3}=-(e_{\theta_1}+e_{\theta_2}+e_{\theta_4})\). Therefore the raw error Jacobian \(C^*\) has rank at most 8, with the redundancy occurring in the angle subspace. \hfill\(\blacksquare\)
+Again, columns 1--6 generate only in-plane forces, while columns 7--9 generate only out-of-plane forces.
 
 \subsection{Computation of \(\hat G^*\) and its characteristic polynomial}
 \label{app:Gstar}
 
-The minimal structure matrix \(\hat G^*=\hat C^*(-\hat B^*)\) is of dimension \(8\times 8\). The selection matrices are
+The minimal structure matrix is \(\hat G^*=R C^*(-B^*)S\), where \(R\) removes the row corresponding to \(e_{\theta_3}\) and \(S\) is given in \eqref{eq:S-matrix}. Direct multiplication gives
 \begin{equation}
-\begin{aligned}
-\hat R&=\begin{bmatrix}
-I_{4} & 0_{4\times 1} & 0_{4\times 4}\\
-0_{4\times 4} & 0_{4\times 1} & I_{4}
-\end{bmatrix}\in\mathbb R^{8\times 9},\\[2pt]
-\hat S&=\begin{bmatrix}
-I_{4} & 0_{4\times 4}\\
-0_{1\times 4} & 0_{1\times 4}\\
-0_{4\times 4} & I_{4}
-\end{bmatrix}\in\mathbb R^{9\times 8},
-\end{aligned}
-\end{equation}
-where \(\hat R\) removes the 5th row (corresponding to \(e_{\theta_3}\)) and \(\hat S\) fills the 5th column with the linear redundancy relation \(e_{\theta_3}=-(e_{\theta_1}+e_{\theta_2}+e_{\theta_4})\) from Lemma~1.
-
-Because of the xy/z channel decoupling at the target square, \(\hat G^*\) is block diagonal:
-\begin{equation}
-\hat G^*=\begin{bmatrix}
-\hat G^*_{xy} & 0_{5\times 3}\\
-0_{3\times 5} & \hat G^*_{z}
-\end{bmatrix},
-\end{equation}
-where \(\hat G^*_{xy}\in\mathbb R^{5\times 5}\) governs the in-plane (angle + distance) dynamics and \(\hat G^*_{z}\in\mathbb R^{3\times 3}\) governs the out-of-plane (coplanarity + normal) dynamics.
-
-\textbf{Out-of-plane block:} From the z-component rows of \(\hat C^*\) and z-component columns of \(-\hat B^*\):
-\begin{itemize}
-\itemsep0pt
-\item The \((e_{\mathrm{cop}})\) row of \(\hat C^*\) multiplied by the \((e_{\mathrm{cop}})\) column of \(-\hat B^*\) (agent~3, z-component) yields the scalar \(-\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}}\).
-\item The two normal-error rows of \(\hat C^*\) multiplied by the normal-error columns of \(-\hat B^*\) produce \(\hat G^*_{n}=-k_n I_2\). The coupling between \(e_{\mathrm{cop}}\) and the normal errors vanishes at the target because the z-velocities of agents~1,2,4 induced by normal control produce equal and opposite contributions that cancel in \(\dot e_{\mathrm{cop}}\) (the coplanarity error only senses the mean out-of-plane velocity of \(\{1,2,3,4\}\)).
-\end{itemize}
-Hence \(\hat G^*_{z}=\operatorname{diag}(-\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}},-k_n,-k_n)\).
-
-\textbf{In-plane block:} The 5-D subspace involves the distance errors \(e_{12},e_{14}\) and the angle errors \(e_{\theta_1},e_{\theta_2},e_{\theta_4}\) (with \(e_{\theta_3}\) eliminated via Lemma~1). Direct computation of the relevant rows of \(\hat C^*\) and columns of \(-\hat B^*\) yields
-\begin{equation}
-\hat G^*_{xy}=
+\resizebox{\columnwidth}{!}{$
+\hat G^*=
 \begin{bmatrix}
-0 & 0 & 0 & \frac{k_\theta}{\ell^*} & -\frac{k_\theta}{\ell^*}\\[2pt]
-0 & 0 & -\frac{k_\theta}{\ell^*} & 0 & \frac{k_\theta}{\ell^*}\\[2pt]
--\frac{k_d}{\ell^*} & 0 & -\frac{2k_\theta}{\ell^*} & \frac{k_\theta}{\ell^*} & \frac{k_\theta}{\ell^*}\\[2pt]
-\frac{k_d}{\ell^*} & 0 & \frac{k_\theta}{\ell^*} & -\frac{2k_\theta}{\ell^*} & -\frac{k_\theta}{\ell^*}\\[2pt]
-0 & -\frac{k_d}{\ell^*} & -\frac{k_\theta}{\ell^*} & -\frac{k_\theta}{\ell^*} & -\frac{2k_\theta}{\ell^*}
+-2k_d&0&k_\theta&k_\theta&0&0&0&0\\
+0&-2k_d&k_\theta&0&k_\theta&0&0&0\\
+\frac{k_d}{\ell^*}&\frac{k_d}{\ell^*}&-\frac{2k_\theta}{\ell^*}&\frac{k_\theta}{\ell^*}&\frac{k_\theta}{\ell^*}&0&0&0\\
+\frac{k_d}{\ell^*}&-\frac{k_d}{\ell^*}&0&-\frac{3k_\theta}{\ell^*}&-\frac{k_\theta}{\ell^*}&0&0&0\\
+-\frac{k_d}{\ell^*}&\frac{k_d}{\ell^*}&0&-\frac{k_\theta}{\ell^*}&-\frac{3k_\theta}{\ell^*}&0&0&0\\
+0&0&0&0&0&-\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}}&-\frac{\sqrt2}{3}k_n&-\frac{\sqrt2}{3}k_n\\
+0&0&0&0&0&0&-k_n&0\\
+0&0&0&0&0&0&0&-k_n
 \end{bmatrix}.
+$}
 \end{equation}
-Computing \(\det(\lambda I_5-\hat G^*_{xy})\) gives the quintic factor
+
+The \(xy\)- and \(z\)-channels are block upper triangular. The out-of-plane diagonal entries contribute
+\[
+(\lambda+k_n)^2\left(\lambda+\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}}\right).
+\]
+For the in-plane block, direct computation gives
 \[
 \left(\lambda+\frac{4k_\theta}{\ell^*}\right)
-\left(\lambda^2+\frac{2(k_d\ell^*+k_\theta)}{\ell^*}\lambda+\frac{2k_d k_\theta}{\ell^*}\right)^2,
+\left(\lambda^2+\frac{2(k_d\ell^*+k_\theta)}{\ell^*}\lambda+\frac{2k_d k_\theta}{\ell^*}\right)^2.
 \]
-which, when multiplied by the three out-of-plane factors, yields the characteristic polynomial \eqref{eq:char-poly}.
+Multiplying these factors yields \eqref{eq:char-poly}.
 
-\subsection{Complex eigenvalue verification}
-\label{app:complex}
+\begin{thebibliography}{1}
+\bibliographystyle{IEEEtran}
 
-For a complex conjugate pair \(\mu=\alpha\pm j\beta\) with \(\alpha<0\), substituting \(\lambda^2+k_v\lambda-\mu=0\) into the block determinant \eqref{eq:block-det} yields a quadratic whose roots are determined by the quartic
-\begin{equation}
-(\lambda^2+k_v\lambda-\alpha-j\beta)(\lambda^2+k_v\lambda-\alpha+j\beta)=0.
-\end{equation}
-Expanding and applying the Routh--Hurwitz criterion to the resulting quartic \(\lambda^4+2k_v\lambda^3+(k_v^2-2\alpha)\lambda^2-2k_v\alpha\lambda+(\alpha^2+\beta^2)=0\), all coefficients are strictly positive when \(\alpha<0\) and \(k_v>0\). The Hurwitz determinants satisfy
-\begin{align}
-\Delta_1&=2k_v>0,\\
-\Delta_2&=2k_v(k_v^2-2\alpha)+2k_v\alpha>0,\notag\\
-\Delta_3&>0,\qquad\Delta_4>0,\notag
-\end{align}
-where the positivity of \(\Delta_3,\Delta_4\) follows from the positivity of all coefficients and \(\alpha<0\). Hence all roots have negative real parts. \hfill\(\blacksquare\)
+\bibitem{chen2021angleRigidity}
+L. Chen, M. Cao, and C. Li, ``Angle rigidity and its usage to stabilize multiagent formations in 2-D,'' \textit{IEEE Trans. Autom. Control}, vol. 66, no. 8, pp. 3667--3681, Aug. 2021, doi: 10.1109/TAC.2020.3025539.
+
+\bibitem{chen2022stabilizing}
+L. Chen, Q. Yang, M. Shi, Y. Li, and M. Feroskhan, ``Stabilizing angle rigid formations with prescribed orientation and scale,'' \textit{IEEE Trans. Ind. Electron.}, vol. 69, no. 11, pp. 11654--11665, Nov. 2022, doi: 10.1109/TIE.2021.3120476.
+
+\bibitem{chen2023angleConstrained}
+L. Chen, J. Xiao, R. C. H. Lin, and M. Feroskhan, ``Angle-constrained formation maneuvering of unmanned aerial vehicles,'' \textit{IEEE Trans. Control Syst. Technol.}, vol. 31, no. 4, pp. 1733--1746, Jul. 2023, doi: 10.1109/TCST.2023.3240286.
+
+\bibitem{chen2023angleRigidity3D}
+L. Chen and M. Cao, ``Angle rigidity for multiagent formations in 3-D,'' \textit{IEEE Trans. Autom. Control}, vol. 68, no. 10, pp. 6130--6145, Oct. 2023, doi: 10.1109/TAC.2023.3237799.
+
+\bibitem{li2025localInfo}
+J. Li, L. Chen, and C. Li, ``Multi-agent distributed formation control using local information measurements,'' \textit{Sci. China Technol. Sci.}, vol. 68, no. 7, Art. no. 1720402, 2025, doi: 10.1007/s11431-024-2896-5.
+
+\bibitem{wang2025esoMultiUAV}
+R. Wang, T. Mei, W. Ma, and W. Hao, ``Disturbance rejection control for multi-UAV formations based extended state observer,'' in \textit{Proc. 40th Youth Acad. Annu. Conf. Chin. Assoc. Autom.}, 2025, pp. 2144--2149, doi: 10.1109/YAC66630.2025.11150314.
+
+\bibitem{ren2026observer}
+W. Ren, G.-R. Duan, P. Li, and H. Kong, ``Observer-based active fault/disturbance compensation control for fully actuated systems,'' \textit{Sci. China Inf. Sci.}, vol. 69, no. 5, Art. no. 152202, 2026, doi: 10.1007/s11432-025-4817-2.
+
+\bibitem{khalil2002nonlinear}
+H.~K.~Khalil, \textit{Nonlinear Systems}, 3rd~ed.\hfill Upper Saddle River, NJ, USA:\hfill Prentice-Hall, 2002.
+
+\end{thebibliography}
 
 \end{document}
