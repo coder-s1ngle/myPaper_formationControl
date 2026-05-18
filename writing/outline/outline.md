@@ -277,3 +277,178 @@
 - 加上绳索和LESO，给出捕捉case
 
 ### 5 Conclusion and discussion
+
+
+
+def plot_3d_trajectory(agent_list, target_history=None, dt_sim=1/500,
+                       t_snapshots=None):
+    """
+    Publication-quality 3-D trajectory plot for formation-control paper.
+
+    Features
+    --------
+    - UAV trajectories (solid)
+    - Formation-shape snapshots drawn as semi-transparent filled quads
+      with edge wireframes
+    - Time labels auto-positioned relative to formation centroid
+    - Orthographic projection, clean pane-less style, balanced aspect
+
+    Parameters
+    ----------
+    agent_list : list[Agent]
+        Four QUAV agents with ``history_pos`` populated (NED frame).
+    dt_sim : float
+        Simulation time step (1 / 500 s by default).
+    t_snapshots : list[float] or None
+        Times at which to draw formation snapshots.  When None a
+        reasonable default is chosen automatically.
+    """
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+    # ── colour palette (colourblind-friendly) ──
+    c_uav = ["#2166AC", "#D6604D", "#4DAF4A", "#9467BD"]
+    c_edge = "#D62728"
+    c_face = "#CCCCCC"
+
+    # ── NED → ENU ──
+    pos_enu = [ned2enu_pos(np.array(a.history_pos)) for a in agent_list]
+
+    # ── raw data ranges ──
+    all_x = np.concatenate([p[:, 0] for p in pos_enu])
+    all_y = np.concatenate([p[:, 1] for p in pos_enu])
+    all_z = np.concatenate([p[:, 2] for p in pos_enu])
+
+    x_min_data, x_max_data = np.min(all_x), np.max(all_x)
+    y_min_data, y_max_data = np.min(all_y), np.max(all_y)
+    z_min_data, z_max_data = np.min(all_z), np.max(all_z)
+
+    rx = x_max_data - x_min_data
+    ry = y_max_data - y_min_data
+    rz = z_max_data - z_min_data
+
+    # ── balance extreme aspect ratios ──
+    r_max = max(rx, ry, rz, 1e-6)
+    min_frac = 0.25
+    rxv = max(rx, min_frac * r_max)
+    ryv = max(ry, min_frac * r_max)
+    rzv = 0.6 * max(rz, min_frac * r_max)
+    mid_x = 0.5 * (x_min_data + x_max_data)
+    mid_y = 0.5 * (y_min_data + y_max_data)
+    mid_z = 0.5 * (z_min_data + z_max_data)
+
+    xlim_lo = mid_x - 0.5 * rxv
+    xlim_hi = mid_x + 0.5 * rxv
+    ylim_lo = mid_y - 0.5 * ryv
+    ylim_hi = mid_y + 0.5 * ryv
+    zlim_lo = mid_z - 0.5 * rzv
+    zlim_hi = mid_z + 0.5 * rzv
+
+    # ── margins (percentage of balanced range) ──
+    mx = 0.06 * rxv
+    my = 0.06 * ryv
+    mz = 0.10 * rzv
+
+    # ── figure ──
+    fig = plt.figure(figsize=(6.5, 4.0), dpi=300)
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_proj_type('ortho')
+    ax.view_init(elev=15, azim=25)
+
+    # ── box aspect from balanced ranges ──
+    ax.set_box_aspect((rxv, ryv, rzv))
+
+    # ── UAV trajectories ──
+    for idx, (p, c) in enumerate(zip(pos_enu, c_uav)):
+        ax.plot(p[:, 0], p[:, 1], p[:, 2],
+                color=c, linewidth=0.5, linestyle='--', dashes=(4, 3),
+                label=f'UAV {idx+1}')
+
+    # ── default snapshot times ──
+    if t_snapshots is None:
+        T_end = len(pos_enu[0]) * dt_sim
+        t_snapshots = np.linspace(0, T_end, 6)
+
+    # ── formation snapshots ──
+    for si, ts in enumerate(t_snapshots):
+        idx_t = min(int(round(ts / dt_sim)), len(pos_enu[0]) - 1)
+        verts = np.array([p[idx_t] for p in pos_enu])          # (4, 3)
+
+        # filled quad
+        poly = Poly3DCollection([list(verts)],
+                                facecolor=c_face, edgecolor='none',
+                                alpha=0.25, zorder=2)
+        ax.add_collection3d(poly)
+
+        # edge wireframe (perimeter)
+        for (i, j) in [(0, 1), (1, 2), (2, 3), (3, 0)]:
+            ax.plot([verts[i, 0], verts[j, 0]],
+                    [verts[i, 1], verts[j, 1]],
+                    [verts[i, 2], verts[j, 2]],
+                    color=c_edge, linewidth=1.0, zorder=3)
+
+        # net grid (井字形 thin lines representing lightweight capture net)
+        v0, v1, v2, v3 = verts
+        for frac in (1/3, 2/3):
+            # lines parallel to edges 0-1 / 3-2 (one direction)
+            p_a = v0 + frac * (v1 - v0)  # point on edge 0→1
+            p_b = v3 + frac * (v2 - v3)  # point on edge 3→2
+            ax.plot([p_a[0], p_b[0]], [p_a[1], p_b[1]], [p_a[2], p_b[2]],
+                    color="#000000", linewidth=0.4, alpha=0.6, zorder=2)
+            # lines parallel to edges 0-3 / 1-2 (other direction)
+            p_c = v0 + frac * (v3 - v0)  # point on edge 0→3
+            p_d = v1 + frac * (v2 - v1)  # point on edge 1→2
+            ax.plot([p_c[0], p_d[0]], [p_c[1], p_d[1]], [p_c[2], p_d[2]],
+                    color="#000000", linewidth=0.4, alpha=0.6, zorder=2)
+
+        # time label — below formation, staggered left/right
+        cx, cy, cz = verts[:, 0].mean(), verts[:, 1].mean(), verts[:, 2].mean()
+        sign_x = -1.0 if si % 2 == 0 else +1.0
+        label_dx = sign_x * 0.08 * rxv
+        label_dy = 0.02 * ryv
+        label_dz = 0.7 * rzv  #-0.15
+        ax.text(cx + label_dx, cy + label_dy, cz + label_dz,
+                rf'$t={ts:.0f}\,\mathrm{{s}}$',
+                fontsize=5.0, color='#333333',
+                ha='center', va='top', zorder=5)
+
+    # ── limits ──
+    ax.set_xlim(xlim_lo - mx, xlim_hi + mx)
+    ax.set_ylim(ylim_lo - my, ylim_hi + my)
+    ax.set_zlim(zlim_lo - mz, zlim_hi + mz)
+
+    # ── axis labels ──
+    ax.set_xlabel('X[m]', fontsize=6, labelpad=-3)
+    ax.set_ylabel('Y[m]', fontsize=6, labelpad=2)
+    ax.set_zlabel('Z[m]', fontsize=6, labelpad=-12)
+
+    # ── ticks (per-axis lengths compensate 3-D projection foreshortening) ──
+    ax.tick_params(labelsize=6, pad=2, direction='out', length=6)
+    ax.xaxis.set_tick_params(length=1,pad = -2)
+    ax.yaxis.set_tick_params(length=3,pad = -1)
+    ax.zaxis.set_tick_params(length=100,pad = -4.5)
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=4, integer=True))
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=4, integer=True))
+    ax.zaxis.set_major_locator(MaxNLocator(nbins=4, integer=True))
+
+    # ── clean style ──
+    for axis in [ax.xaxis, ax.yaxis, ax.zaxis]:
+        axis._axinfo['grid'].update(color='#cccccc', alpha=0.4, linewidth=0.28)
+    for pane in [ax.xaxis.pane, ax.yaxis.pane, ax.zaxis.pane]:
+        pane.set_visible(False)
+    for spine in [ax.xaxis.line, ax.yaxis.line, ax.zaxis.line]:
+        spine.set_linewidth(0.6)
+        spine.set_color('black')
+
+    # ── legend ──
+    ax.legend(fontsize=4, ncol=4, loc='upper left',
+              bbox_to_anchor=(0.01, 0.75), framealpha=0.85,
+              edgecolor='gray', handlelength=1.0, handletextpad=0.3,
+              columnspacing=0.6, borderpad=0.2, labelspacing=0.15)
+
+    # ── layout: manual margins to keep axis labels visible ──
+    fig.subplots_adjust(left=0.15, right=0.85, bottom=0.15, top=0.85)
+
+    # ── save ──
+    save_path = os.path.join(output_dir, 'trajectory_3d.pdf')
+    fig.savefig(save_path, dpi=300, bbox_inches='tight', pad_inches=0.05)
+    plt.close(fig)

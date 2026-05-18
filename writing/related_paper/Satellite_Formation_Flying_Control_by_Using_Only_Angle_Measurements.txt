@@ -1,0 +1,1448 @@
+Satellite Formation Flying Control by Using Only Angle Measurements
+JIANQING LI Hangzhou Dianzi University, Hangzhou, China
+LIANGMING CHEN Nanyang Technological University, Singapore
+MING CAO , Fellow, IEEE University of Groningen, Groningen, The Netherlands
+CHAOYONG LI , Member, IEEE Zhejiang University, Hangzhou, China
+This article investigates a practical formation control problem of multisatellite system, in which a group of small satellites are required to reach and maintain a desired geometric configuration under communication and measurement constraints. Toward this goal, we consider each satellite uses its local coordinate system and senses its neighboring satellites to obtain angle measurements. A formation control scheme using only the angle measurements is proposed to form the desired configuration. Moreover, the triangular and polygonal configuration cases are considered, in which the sum of interior angles of polygons being a constant is utilized to guarantee the stability of the determined final configuration. In particular, motivated by formation rigidity principles which mean that satellites' formation is seen as a multipoint framework that needs to be rigid to guarantee the uniqueness of the shape, we propose a formation determination
+Manuscript received 2 February 2022; revised 8 June 2022; accepted 16 August 2022. Date of publication 22 August 2022; date of current version 12 April 2023.
+DOI. No. 10.1109/TAES.2022.3200345
+Refereeing of this contribution was handled by S. Sukumar.
+This work was supported in part by the NSFC 62088101 Autonomous Intelligent Unmanned Systems and in part by the Zhejiang Provincial Natural Science Foundation of China under Grant LY22A020007 and Grant LR20F030003.
+Authors` addresses: Jianqing Li is with the College of Communication Engineering, Hangzhou Dianzi University, Hangzhou, 310018, China, E-mail: (jianqing@hdu.edu.cn.). Liangming Chen is with School of Mechanical and Aerospace Engineering, Nanyang Technological University, Singapore, 639798 E-mail: (liangmingchen2018@gmail.com.). Ming Cao is with Faculty of Science and Engineering, University of Groningen, Groningen, 9747 AG, The Netherlands, E-mail: (m.cao@rug.nl.). Chaoyong Li is with the College of Electrical Engineering, Zhejiang University, Hangzhou, 310027, China, E-mail: (chaoyong@zju.edu.cn.). (Corresponding authors: Liangming Chen; Chaoyong Li.)
+0018-9251 © 2022 IEEE
+
+approach to construct a rigid square configuration and prove that, compared with existing schemes, the inter-satellite relative positions and the knowledge of the communication topology are not needed for the proposed formation control law. Moreover, since the angle measurements are scalars and sensed with respect to the local coordinate system, the proposed angle-based formation control law is more robust against the misalignment on satelltes' coordinate systems. Simulation results are presented to illustrate the performance of the proposed control laws.
+I. INTRODUCTION
+Satellite formation flying has been of growing interest to environmental measurement and Earth observation due to its large geographic coverage and rich sensing functionalities. In particular, the technological development of small satellites enables satellite formations to excel in their modularity, low cost, and distributed functionality [1]. In order to take advantage of satellite formations to implement space missions, several formation configurations have been extensively studied for engineering applications, such as a triangular formation for detecting gravitational waves [2] and tracking of a missile launch [3], and a hexagonal regular formation for building large antennas [4].
+In satellite formation control, the position-based control approach is widely used to maintain the formation configurations. Satellites measure their own positions and velocities through the global positioning system or inertial navigation system. The desired formation can be achieved by the feedback control of the individual satellite's absolute position without communication between each other [5]. Under a properly designed communication topology and sensing topology, the displacement-based formation control, which requires that satellites obtain relative positions with respect to their neighbors, is applied to improve the robustness of formation keeping. During the last decade, the displacement-based formation control has been widely applied to satellite formation control that can be either centralized or decentralized [6], [7]. To achieve the desired formation configuration, the consensus theory is usually taken to design the formation control law [8], [9], [10].
+In recent years, the bearing-based formation control, which determines the desired formation by sensing the relative bearings with respect to neighbors [11], [12], has been extensively studied for multiagent systems. For satellite formation control, the line of sight (LOS) vector acquired by vision-based sensors and star trackers can be used as the bearing measurements for control. Gurfil [13] studied the cyclic pursuit formation problem where each satellite tracks the LOS to a single neighboring satellite so as to form a cyclic formation. Since each satellite only acquires the information from one neighboring satellite in the cyclic topology, the cyclic satellite formation needs the minimal number of communication connections and measurements in which the information interaction among the satellites is effectively reduced.
+However, the position-based, displacement-based, and bearing-based formation control require the measurements to be in a global coordinate frame or a common coordinate frame shared by all the agents [14], which means the
+
+IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. 59, NO. 2 APRIL 2023
+
+1439
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+orientations of the coordinate frames of all satellites need to be aligned with each other. To relax this restriction, some formation control schemes based on distance or angle measurements are investigated [15], [16]. In the distance-based formation control, the agents measure relative positions of their neighbors with respect to their own local coordinate systems. To ensure the uniqueness of the desired formation, the distance rigidity, in which the constraints on those desired distances are sufficient for the maintenance of the distances of any pair of agents, is used to describe the desired configuration [17]. In particular, the angle-based formation control attracted much attention due to the fact that the angle measurements are cheaper and more accessible [14]. More importantly, angle measurements can be taken from bearings defined and measured in satellites' local coordinate systems without a common sense of orientation. Basiri [18] first presented the result on provably stable angle-only formation control for a triangular formation case. Further, Bishop [19] developed a distributed control law for triangular formation control using a mixture of distance and angle information. This mixture allows the agents to have heterogeneous sensing capabilities. Since the angle measurements are scalars and are invariant to motions including formations' translations, rotations, and scalings, a new angle rigidity scheme was developed to solve the formation control problem by using angle constraints [20]. Note that the existing angle-based control results have focused on the angle-based control for single-integrator agent models. Thus, it is necessary to investigate more realistic applications of angle-based formation control.
+From the practical point of view, unique features of the small satellite formation are threefold. First, less and lower cost computational instruments are essential for the satellite formation control because small satellites are constrained by size and power consumption. Second, the previous studies on formation control requires that satellites sense measurements with respect to the global coordinate frame or have the common orientations of local coordinate frames. This demands for the precise attitude control of all satellites. Third, there is no enough infrastructure for all-to-all communication among small satellites. Moreover, technical challenges arise from communication delays and topology switching. These arguments motivate us to look for a cheaper and more reliable formation control scheme.
+In this article, we consider the circular satellite formation control problem, where only angle measurements are available to each satellite. The angle measurements can be obtained by star trackers or cameras [21], [22]. Moreover, a satellite formation control scheme for the practical dynamics is proposed, in which the knowledge of the positions of neighboring satellites and communication topology are unnecessary to construct the formation control law. In particular, the orientations of the local measurement coordinate systems of all satellites are unnecessary to be aligned to each other.
+The contributions of this article are summarized as follows. 1) In our proposed formation control scheme, only
+
+Fig. 1. LVLH coordinate system.
+the angle measurements are required to construct the control law, which implies that an individual satellite does not need to acquire its relative position information with respect to other satellites. 2) Compared with the bearing-based formations where all satellites should have a common coordinate frame or a preset coordinate frame, the proposed anglebased formation control law is robust to the misalignment in satellites' measurement coordinate frames, in the sense that each satellite is allowed to use different coordinate frames to obtain the measurements. 3) For the angle-based formation control, we provide a specific construction for the square configuration, in which the square formation can be uniquely determined by only sensing one angle measurement of neighbors.
+The rest of this article is organized as follows. Section II introduces the satellite formation control problem. Section III presents the main results with different configurations. Section IV shows the simulation results examining the performance of the proposed formation control.
+II. PROBLEM FORMULATION
+In this article, we investigate the relative motion control of a group of n satellites flying on orbits relative to a circular reference orbit such that a satellite formation is obtained and maintained. The dynamic equations of relative motions are expressed in the local vertical local horizontal (LVLH) frame o-xyz [23], as shown in Fig. 1. The reference origin of this coordinate system is set on the circular reference orbit.
+Let In  Rn×n, 0m×n  Rm×n, and 1n  Rn×1 be the identity matrix, zero matrix, and column vector with all ones, respectively. Let · denote the Euclidean norm of a vector.
+A. Circular Formation Control For the n satellites in 3-D, let pi  R3 and vi  R3 be the
+position and velocity of satellite i  {1, 2, . . ., n} expressed in LVLH. As described in [23], the relative dynamics of the
+
+1440
+
+IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. 59, NO. 2 APRIL 2023
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+Fig. 2. LOS angle measurements.
+
+ith satellite are described by
+
+p i vi
+
+=
+
+03 I3
+12
+
+pi vi
+
++
+
+03 I3
+
+ui
+
+(1)
+
+where
+
+
+
+
+
+1
+
+=
+
+
+
+3r2 0
+
+0 0
+
+0 0 ,
+
+0 0 -r2
+
+
+
+
+
+0 2r 0
+
+2 =  -2r 0 0 
+
+0 00
+
+r  R denotes the constant angular rate of the circular reference orbit, and ui  R3 denotes the control input.
+Using the above relative motion model, we will show that when the satellites' initial conditions satisfy some technical relations, each satellite's motion forms a stable relative circular orbit with respect to the reference origin [23]. The following assumptions are made for all satellites.
+
+ASSUMPTION 1 All satellites are initially on their relative circular flying orbits with different radii and maintain the same direction of angular momentum of relative orbits.
+
+ASSUMPTION 2 The satellites do not communicate with each other and are each equipped with a sensor that provides relative LOS local bearing (or angle) measurements only.
+
+ASSUMPTION 3 The initial satellite positions are separate and noncollinear, i.e., cos pi j (0), pik (0) = ±1, i = j = k, where pik = pk - pi, and <> denotes the subtended angle formed by the corresponding two vectors.
+
+Assumption 1 ensures that all satellites have the same direction of motion (i.e., clockwise or counterclockwise) and their relative orbits are coplanar. Assumption 2 implies that there is no requirement on the communication topology. For the local sensing, satellites sense the relative LOS angles of their neighboring satellites with respect to their local coordinate systems. The noncollinear condition of Assumption 3 guarantees the formation will not become collinear for a small t > 0, and the collision will not happen for t > 0.
+Under Assumptions 1­3, satellite i measures the LOS angle i j  [0, 2 ) with respect to its neighboring satellite j in its own coordinate frame as shown in Fig. 2. The origin of the measurement coordinate system is assumed to be fixed
+
+at the center of mass of the satellite. The xsi , ysi , and zsi axes form a right-hand frame, where the zsi axis is parallel to the angular momentum of the relative orbits. Then, the angle i
+in the xsi ­ysi plane can be obtained as follows:
+
+i = i j - ik
+
+(2)
+
+where i j and ik are measured counterclockwise from the xsi -axis of the local coordinate frame.
+In this work, we aim to achieve a desired geometric configuration in which all satellites operate around the reference origin with the identical radius, maintain a constant distance from each other, and thus form the circular formation of satellites. The circular formation problem is formally defined as follows.
+
+PROBLEM 1 (ANGLE-BASED CIRCULAR FORMATION CONTROL) Consider a group of n  3 satellites with relative dynamics defined in (1) under Assumptions 1­3. Find a formation control law for each satellite using only relative LOS angle measurements such that the circular formation is achieved.
+
+It should be pointed out that circular formation has been extensively studied in the open literature [24], [25]; however, what cultivated in Problem 1 lean towards solving the underlying problem with the least communication and measurement requirements, which still lacks rigorous development and sufficient study. In particular, each satellite knows its own position and velocity and does not consider the constraints of any other satellites when executing its own control law.
+
+B. Angle-Based Formation Configuration
+
+As shown in Fig. 1, we employ a convex polygon to con-
+struct the desired circular formation configuration for this group of n  3 satellites. In the convex polygon formation, satellites spread in a common circle and measure only the
+relative LOS vector toward their neighboring satellites. Let i denote the angle subtended at satellite i by the other two neighboring satellites. Then, the interior angle i defined in Fig. 2 can be calculated by
+
+cos i = ziTj zik
+
+(3)
+
+where zi j = (p j - pi )/ p j - pi  R3 is the LOS bearing
+
+between satellites i and j.
+
+Let i  (0,  ) be the desired steady-state angles of the
+
+sciornevdecxopnovleyxgpoonl.ySgionnc,eitfioallroewthsethinatterioin=r 1angil=es
+
+of (n
+
+the de- 2) .
+
+Then, the objective of the angle-based formation control
+
+problem can be converted to the realization of the desired
+
+angle constraints as follows:
+
+tlim+(i(t ) - i) = 0.
+
+(4)
+
+For example, in our desired configuration defined by the convex polygon construction, a group of three satellites can form a triangular formation in a common circle. Then, the triangular formation can be completely determined by i, i  {1, 2, 3}. In fact, there is a redundant angle for this
+
+LI ET AL.: SATELLITE FORMATION FLYING CONTROL BY USING ONLY ANGLE MEASUREMENTS
+
+1441
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+solve Problem 1 by using triangular formation control, the formation control laws for satellites 1­3 are proposed to be
+
+ui = vi - 1 pi - 2vi -k1(i -i )(zi(i+1) +zi(i-1) )-k2(vi -vi ) (5)
+where k1 and k2 are positive scalar gains, i is the desired angle, and vi  R3 is the desired velocity of satellite i. zi(i+1) = z31 when i = 3 and zi(i-1) = z13 when i = 1.
+In the relative circular orbit, satellite i's desired velocity and its derivative can be given by
+
+vi = d × pi
+
+vi = d × p i = d × vi
+
+(6)
+
+ where d = [± 3/2, 0, ±1/2]T r  R3 is the prearranged angular velocity vector, which can be calculated by vd (t ) = d × pd (t ), where vd (t ) and pd (t ) are analytical solutions
+
+to the relative circular orbit and can be found in [23]. The
+
+sign of d depends on the initial direction of the angular momentum of the satellite motion. It is easy to see that the
+
+angular rate of the reference orbit determines the angular
+
+velocity of the flying satellites. As a result, once the ref-
+
+erence orbit is determined, the flying orbital periods of all
+
+satellites are identical with respect to the reference center.
+
+Then, to solve Problem 1, we first check the dynamics
+
+described by interior angles. From (3), according to [26],
+
+the angle dynamics of each satellite can be given by
+
+Fig. 3. Two configurations with a group of four satellites. (a) Square formation configuration. (b) Rectangle formation configuration.
+configuration determination; namely, once 1 and 2 are fixed, it holds that 3 =  - 1 - 2.
+For a group of four satellites, the circular formation becomes the square configuration as shown in Fig. 3(a). In this example, the square configuration in Fig. 3(a) is the desired formation; however, the rectangular configuration in Fig. 3(b) has the same interior angles i =  /2, i  {1, 2, 3, 4}, as the realized formation. As a result, both of the configurations in Fig. 3(a) and (b) are possible formation solutions to (4). This implies that the two configurations in Fig. 3 are not angle rigid [26] because they both have the same interior angles and radii with respect to the reference origin. The solution to the square formation control will be discussed later.
+III. MAIN RESULTS
+In this section, the solutions to the circular formation control problem with different configurations are presented.
+A. Triangular Formation Control
+Consider that a group of n = 3 satellites initially operate in their own circular orbits with different radii. To
+
+ 1
+
+=
+
+- [Z13(v3 l13
+
+- v1 )]T z12 sin 1
+
+-
+
+z1T3Z12(v2 - v1 ) l12 sin 1
+
+ 2
+
+=
+
+- [Z23(v3 l23
+
+- v2 )]T z21 sin 2
+
+-
+
+z2T3Z21(v1 - v2 ) l21 sin 2
+
+ 3
+
+=
+
+- [Z31(v1 l31
+
+- v3 )]T z32 sin 3
+
+-
+
+z3T1Z32(v2 - v3 ) l32 sin 3
+
+(7)
+
+where Zi j = I3 - zi jziTj, and li j is the distance between satellites i and j.
+Define ei = i - i and i = vi - vi; then the angle error dynamics can be rewritten as follows:
+
+e1 = (z1T2P13 + z1T3P12 )1 - z1T3P122 - z1T2P133 e2 = -z2T3P211 + (z2T1P23 + z2T3P21 )2 - z2T1P233 e3 = -z3T2P311 - z3T1P322 + (z3T2P31 + z3T1P32 )3 (8)
+
+where
+
+Pi j
+
+=
+
+Zi j li j sin i
+
+ R3×3.
+
+(9)
+
+Now, the convergence of formation control law (5) is analyzed as follows.
+
+THEOREM 1 Consider a group of three satellites with the
+relative dynamics given by (1) under Assumptions 1­3. If
+the initial errors ei(0) and i(0), for i = 1, 2, 3, locate in a neighborhood U of the origin, then the triangular formation control law (5) ensures that i(t )  i and vi(t )  vi(t ) asymptotically as t  +.
+
+1442
+
+IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. 59, NO. 2 APRIL 2023
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+PROOF With the formation control laws (5), the velocity error dynamics can be expressed as follows:
+i = -k1(i - i )(zi(i+1) + zi(i-1) ) - k2(vi - vi ). (10)
+Particularly, since 1 + 2 + 3 =  , the satellite 3's velocity error dynamics can be rewritten as
+3 = -k1(1 - 1 + 2 - 2 )(z31 + z32 ) - k2(v3 - v3). (11)
+
+Since 1 + 2 + 3 =  , we use the reduced angle error er = [1 - 1, 2 - 2]T to construct the angle error dynamics. Then within a neighborhood of the origin U, the
+overall error dynamics can be obtained by linearization of
+(8), (10), and (11) about the origin
+
+er 
+
+= H (, v)
+
+er 
+
+=
+
+02 H1 H2 H3
+
+er 
+
+(12)
+
+where
+
+H1 =
+
+z1T2P13 + z1T3P12 -z1T3P12 -z1T2P13 -z2T3P21 z2T1P23 + z2T3P21 -z2T1P23
+
+er =0
+
+=0
+
+
+
+
+
+-k1(z12 + z13 )
+
+0
+
+H2 = 
+
+0
+
+-k1(z21 + z23 )  .
+
+k1(z31 + z32 ) k1(z31 + z32 ) er=0
+=0
+
+H3 = -k2I9
+
+To analyze the convergence of the formation, we con-
+struct a rotational LVLH frame that rotates around the
+constant angular momentum of relative orbits with the angle velocity d . It holds that pi = R(dt )p¯ i, where R(dt ) is the orthogonal rotation matrix. Therefore, v¯i = d × p¯ i = RT vi, and we have the following transformation:
+
+er ¯
+
+=
+
+I2 02×9 09×2 RkT
+
+er 
+
+(13)
+
+where Rk = I3  R(dt ),  is the Kronecker product, and (¯·) denotes the vector expressed in the rotational LVLH
+
+frame.
+
+Then, (12) can be transformed to the following linear
+
+time-invariant system:
+
+er ¯
+
+= H¯ (, p¯ )
+
+er ¯
+
+(14)
+
+where p¯  = [p¯ 1T , p¯ 2T , . . . , p¯ nT ]T , p¯ i T is the stable position vector, and H¯ is the constant matrix of H by replacing its pi with the rotation transformation.
+Let  be an eigenvalue of H¯ . Using a formula for
+the determinant of a partitioned matrix, we can obtain the characteristic equation associated with H¯ as
+
+det(I - H¯ (, v))
+
+= |I9 - H¯ 3||I2 - H¯ 1(I9 - H¯ 3)-1H¯ 2|
+
+=
+
+(
+
++
+
+k2 )9|I2
+
+-
+
+
+
+1 +
+
+k2
+
+H¯ 1H¯ 2|
+
+= ( + k2 )7[4 + 2k23 + (k22 - k1q1 - k1q4 )2
+
+- (q1k1k2 + q4k1k2 ) + k12(q1q4 - q2q3)] (15)
+
+where
+
+q1
+
+=
+
+-
+
+sin 1 l13
+
+-
+
+sin 1 l12
+
+-
+
+sin 3 l13
+
+q2
+
+=
+
+sin 2 l12
+
+-
+
+sin 3 l13
+
+q3
+
+=
+
+sin 1 l21
+
+-
+
+sin 3 l23
+
+q4
+
+=
+
+-
+
+sin 2 l23
+
+-
+
+sin 2 l21
+
+-
+
+sin 3 l23
+
+.
+
+Now, we pay attention to the coefficients of the second polynomial roots of (15) by using the condition of Routh­ Hurwitz criteria. Note that q1 < 0 and q4 < 0; hence, all coefficients of the second polynomial are positive and we obtained the following set of inequalities:
+
+2k2(k22 - k1q1 - k1q4 ) + k1k2q1 + k1k2q4
+
+= 2k23 - k1k2q1 - k1k2q4 > 0
+
+(16)
+
+- (q1k1k2 + q4k1k2 )[k2(2k22 - k1q1 - k1q4 )]
+
+- 4k12k22(q1q4 - q2q3 ) > 0
+
+(17)
+
+where inequality (17) is calculated in Appendix A. By
+examining the above Routh­Hurwitz conditions for the
+fourth-order polynomial [27], the second polynomial roots of (15) have negative real parts so that H¯ is Hurwitz.
+According to [28], Theorem 4.7] and (13), it can be concluded that er and  asymptotically converge to zero when the initial errors locate in U.
+
+REMARK 1 It should be pointed out that the proposed formation control law has fewer requirements than the existing results on distributed formation control. For satellite formation systems, the communication delay and topology constraints on formation process are not considered. For each individual satellite, there is no need for the measurement of the position and velocity of neighboring satellites; in other words, the communication among satellites is unnecessary.
+
+REMARK 2 Note that the triangular configuration has redundant angle information for the configuration determination. Since 1 + 2 + 3 =  , we can assume that satellite 1 maintains its own relative orbit, and then satellite 2 and satellite 3 execute the triangular formation control laws to construct the desired configuration with satellite 1. In this way, the relative flying radii of all satellites can be determined to be the flying radius of satellite 1.
+
+REMARK 3 We use contradiction to explain that the formation will not become collinear under (5) and Assumption 3. According to the Hurwitz of H , there exist positive constants  and  such that the following inequality holds when the initial states are in the neighborhood of the desired states
+
+r (t )   r (0) e-t , t  0
+
+(18)
+
+where r = [erT , T ]T .
+
+LI ET AL.: SATELLITE FORMATION FLYING CONTROL BY USING ONLY ANGLE MEASUREMENTS
+
+1443
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+satellite is only required to move toward the interior of the formation at some direction.
+
+Fig. 4. Local measurement coordinate with misalignment.
+
+Since e12  er 2  r (t ) 2 and e1 + e2 + e3 = 0, we have
+
+|ei|   r (0) , i  {1, 2}
+
+|e3|  2 er  2 r (0) .
+
+(19)
+
+Therefore
+
+i - r (0)  i(t )  i + r (0) , i  {1, 2} 3 - 2 r (0)  3(t )  3 + 2 r (0) . (20)
+Because  is bounded away from zero and  , there must be a positive time T such that (20) holds for t  [0, T ). Let T  be the first time that the collinearity happens in [T, ) [26]. Then, i(T ) will be zero or  . But there is no collinearity happening in [0, T ); in view of (20), i(t ) is bounded away from zero or  which implies a contradiction. Therefore, T  can be extended to infinity. This proves that
+no collinearity will happen in [0, ) given that the initial
+state is reasonably close to the desired state.
+
+REMARK 4 A situation may arise in which there exists a misalignment angle  in satellite i's local measurement coordinate. This may result from the installation error of
+sensors. As shown in Fig. 4 , the black arrows (solid) denote
+the original measurement coordinate s which is aligned with the other satellites' coordinate frames, and the black
+arrows (dashed) denote the misalignment measurement co-
+ordinate s. Then, the control component zi j + zik described in s
+becomes R( )(zi j + zik ). Using this new control component, the formation control law can be described as
+ui = vi - 1 pi - 2vi -k1(i -i )R( )(zi(i+1) +zi(i-1) )-k2(vi -vi ). (21)
+
+Note that although the bearing vector is affected by the
+misalignment, the angle measurement is not affected by the misalignment, i.e., i is measured precisely. In fact, the sum of the two bearings zi j + zik points toward the bisector of the interior angle i of satellite i, if there is no misalignment. When there is a small misalignment, the pointing direction is still along the interior angle i. Thus, our proposed anglebased formation control law is said to be robust since each
+
+REMARK 5 It is worth noting that collision avoidance is
+an important issue for satellites' formation flying in engi-
+neering practices. However, if the initial formation satisfies
+some constraints, then no collision will occur during the
+evolution. In what follows, we show the collision analysis
+by taking the first three satellites' formation as an example. Since H¯ is Hurwitz, there exists a unique positive defi-
+nite matrix Pc  R15×15 such that
+
+H¯ T Pc + PcH¯ = -Qc
+
+(22)
+
+for arbitrary positive definite matrix Qc  R15×15. Consider the Lyapunov function candidate
+
+Vc = rT Pcr.
+
+(23)
+
+Then
+
+Vc
+
+=
+
+-rT Qcr
+
+
+
+min(Qc ) min(Pc )
+
+Vc.
+
+(24)
+
+It follows that
+
+r
+
+2
+
+Vc(t )
+
+
+
+V (0) e . c
+
+-
+
+min (Qc max (Pc
+
+) )
+
+t
+
+min (Pc ) min (Pc )
+
+(25)
+
+Since r 2 =
+
+2 i=1
+
+e2i
+
++
+
+3 i=1
+
+i
+
+2, we have
+
+i(t )   (t ) 
+
+V (0) e . c
+
+-
+
+min (Qc ) 2max (Pc )
+
+t
+
+min (Pc )
+
+(26)
+
+Let di j = pi - p j , and then we have [26]
+
+t
+
+t
+
+di j (t ) = di j (0)+ di j ( )d = di j (0) + ziTj v j - vi d
+
+0
+
+0
+
+t
+
+ di j (0) -
+
+ j + i d
+
+0
+
+ di j (0) - 4
+
+Vc(0) max (Pc ) min (Pc ) min (Qc )
+
+1 - e . -
+
+min (Qc ) 2max (Pc )
+
+t
+
+(27)
+
+Therefore, if
+
+di j (0) > 4
+
+Vc (0) min (Pc )
+
+max (Pc ) min (Qc )
+
++
+
+(Li
+
++
+
+Lj)
+
+(28)
+
+where Li is the radius of the satellite i (if the satellite is
+not central symmetric, then Li represents the largest radius of the satellite); then di j (t ) > Li + L j for all t > 0, i.e., no collision will happen between satellites i and j.
+Because di j (0) is bounded away from Li + L j, and by choosing the initial states r (0), Vc(0) to be sufficiently small, one has that (28) holds for t > 0.
+
+B. Polygonal Formation Control
+In this subsection, we extend the formation control law to solve the polygonal formation control problem. The desired formation configuration is shown in Fig. 5 and the corresponding assumption is given as follows.
+
+1444
+
+IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. 59, NO. 2 APRIL 2023
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+Denote e = [e1, e2, . . . , en]T  Rn and  = [1T , 2T , . . . , nT ]T  R3n; then the dynamics of error
+system are given by
+
+Fig. 5. Polygonal formation configuration.
+
+ASSUMPTION 4 The desired polygonal formation configuration is convex and all satellites have the same flying radius with respect to reference origin.
+
+In the convex polygonal formation configuration (n >
+
+3), the sum of all interior angles satisfies
+
+n i=1
+
+i
+
+=
+
+(n
+
+-
+
+2). To construct the desired formation, we propose the
+
+following polygonal formation control law:
+
+ui = vi - 1 pi - 2vi
+
+-
+
+k1
+
+(i - i sin i
+
+)
+
+(zi(i+1)
+
++
+
+zi(i-1) )
+
+-
+
+k2 (vi
+
+-
+
+vi ).
+
+(29)
+
+The following presents the convergence analysis under the proposed formation control law (29).
+
+THEOREM 2 Consider a group of n satellites with relative
+dynamics given by (1) under Assumptions 1­4. If the ini-
+tial errors ei(0) and i(0), for i = 1, 2, . . . , n, locate in a neighborhood U of the origin, then the polygonal formation control law (29) ensures that i(t )  i and vi(t )  vi(t ) asymptotically as t  +.
+
+PROOF First, with the control law (29), the closed-loop angle dynamics of each satellite can be given by
+
+ei = (ziT(i+1)Pi(i-1) + ziT(i-1)Pi(i+1) )i - ziT(i+1)Pi(i-1)i-1 - ziT(i-1)Pi(i+1)i+1
+
+(30)
+
+where Pi j  R3×3 is defined in (9).
+
+e 
+
+= A()
+
+e 
+
+=
+
+0B C -K2
+
+e 
+
+(31)
+
+where
+
+··· ··· ··· ··· ··· ··· ···
+
+B =  · · · 0 Bi(i-1) Bii Bi(i+1) 0 · · · 
+
+··· ··· ··· ··· ··· ··· ···
+
+Bi(i-1) = - ziT(i-1)Pi(i+1)  R1×n Bi(i+1) = - ziT(i+1)Pi(i-1)  R1×n
+Bii = - Bi(i-1) - Bi(i+1)  R1×n
+
+C = - k1diag
+
+zi(i-1) + zi(i+1) sin i
+
+, i = 1, 2, . . . , n.
+
+Similarly, we can obtain the characteristic equation as-
+
+sociated with A as
+
+det(I - A)
+
+= |I + K2||I - B(I + K2)-1C|
+
+=
+
+(
+
++
+
+k2 )3n|I
+
+-
+
+
+
+1 +
+
+k2
+
+BC|
+
+= ( + k2)2n+1|(I + K2) - BC|
+
+(32)
+
+where, unnumbered equation shown at the bottom of this page.
+Note that the determinant |(I + K2) - BC| is equivalent to the characteristic equation associated with
+
+M=
+
+0 BC
+
+I -K2
+
+.
+
+(33)
+
+Because BC has zero row sums and is a symmetric matrix, M has exactly one zero eigenvalue and all other eigenvalues have negative real parts. Moreover, A has exactly one zero eigenvalue and all other eigenvalues have negative real parts.
+Define  (t ) = [eT , T ]T , the solution of (31) to the initial state  (0) is given by
+
+n
+
+ (t ) = ekt kskT  (0)
+
+(34)
+
+k=1
+
+where k  R4n and skT  R1×4n are right eigenvector and left eigenvector of A, respectively.
+
+
+
+-g1n - g12 g12
+
+0
+
+0 ···
+
+BC = 
+
+g21 0 ...
+
+-g21 - g23 g23
+
+0 ...
+
+g32 -g32 - g34 g34 · · ·
+
+...
+
+...
+
+... . . .
+
+
+
+g1n
+
+0
+0 ...
+
+
+
+gn1
+
+···
+
+···
+
+0 gn(n-1) -gn1 - gn(n-1)
+
+gi j
+
+=
+
+k1 . li j
+
+LI ET AL.: SATELLITE FORMATION FLYING CONTROL BY USING ONLY ANGLE MEASUREMENTS
+
+1445
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+Fig. 7. Three satellites with triangular formation control law. (a) Interior angle with triangular formation control. (b) Angle trajectories.
+
+Let 1 = [Tp , Tq ]T and s1T = [sTp , sqT ], where p and sp are n × 1 column vectors; it follows that
+
+0B C -K2
+
+p q
+
+=
+
+0 0 4n×1
+
+(36)
+
+sTp , sqT
+
+0B C -K2
+
+= [0, 0]1×4n .
+
+(37)
+
+From (37), it follows that sTp B - sqT K2 = 0, one can obtain by expanding
+
+n
+sipbi j + k2sqj = 0, j = 1, 2, . . . , 3n (38)
+i=1
+
+Fig. 6. Square formation construction. (a) Square formation with sequential construction. (b) Square formation with two angles
+measurements. (c) Square formation with angle rigid construction.
+
+Assume that 1 = 0. It then follows from (34) that
+
+lim
+t +
+
+
+
+(t
+
+)
+
+=
+
+1s1T
+
+
+
+(0)
+
+(35)
+
+where bi j is the entry on the ith row and jth column of B, and sip and sqi are the ith entry of sp and sq, respectively.
+Note that all the column sums of B are zero. Therefore,
+by solving the above algebraic equations, we have
+
+s1p = s2p = · · · = snp = 
+
+sq1 = sq2 = · · · = sq3n = 0
+
+(39)
+
+where  is a constant. Then, we have
+
+where 1 and s1T are the right eigenvector and left eigenvector associated with zero eigenvalue, respectively.
+
+1s1 =
+
+psTp 0n×3n qsTp 03n×3n
+
+1446
+
+IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. 59, NO. 2 APRIL 2023
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+Fig. 8. Six satellites with polygonal formation control law. (a) Interior angle with polygonal formation control. (b) Angle trajectories.
+
+=
+
+p1nT 0n×3n q1nT 03n×3n
+
+.
+
+(40)
+
+From the above results, it is obvious that
+
+lim  (t ) = 
+t +
+
+p1nT 0n×3n q1nT 03n×3n
+
+e(0) (0)
+
+n
+
+=  1 ei(0).
+
+(41)
+
+i=1
+
+Because
+
+n i=1
+
+ei
+
+(0)
+
+=
+
+0
+
+from
+
+Assumption
+
+4,
+
+it
+
+follows
+
+that  (t ) converges asymptotically to zero, which completes
+
+the proof.
+
+REMARK 6 In fact, although the desired polygon formation is achieved, the flying radius of the formation is ambiguous when all satellites converge to the formation stability. To determine the flying radius, by using the rule of the sum of interior angles, the motion scheme for the polygon formation is that one satellite maintains the desired circular orbit without the control input, and its flying radius (r1 = p1 ) is the desired radius r. Then, the rest of satellites construct the desired polygon configuration under the polygonal formation control law. As a result, the flying radii of all satellites converge to the desired radius r at the steady state.
+
+C. Square Formation Control
+As discussed in the Section II-B and Fig. 3, the convex polygon construction is unable to solve circular formation with square configuration. In this subsection, we discuss the construction and control for square formation with four satellites.
+First, Fig. 6(a) shows a construction scheme that satellites 1­3 construct a triangle configuration 123 (black dashed) with 213 = 231 =  /4 and 2 =  /2, and then satellite 4 senses the LOS angle of satellites 1 and 3 to establish the interior angle 4 =  /2 (green dashed). However, in this case, it is obvious that the satellite 4's position cannot be uniquely determined since 4 is also reached
+(red dashed) when satellite 4 moves along the arc 143. As a result, this construction cannot uniquely determine the square configuration. In order to guarantee the angle rigidity under the square formation, we still maintain the triangle configuration 123. Then, satellite 4 can attain two desired angles 142 = 243 =  /4 established with the other three satellites, as shown in Fig. 6(b). This construction ensures that the formation is angle rigid with each satellite sensing two angles. However, the increasing number of measured angles will raise the measuring burden of the sensor in this construction case.
+Thus, according to the redundant angle of the triangle configuration, we proposed a construction satisfying angle rigidity, in which each satellite only measures one angle with two other satellites. As shown in Fig. 6(c), satellites 1 and 3 establish 312 and 134 to construct the isosceles right triangle 123, and satellites 2 and 4 establish 2 and 4 to construct the isosceles right triangle 341. Then, the aim of square formation control is to satisfy the following forms:
+
+t
+
+lim
++
+
+e312
+
+=
+
+t lim+(312
+
+-
+
+ /4)
+
+=
+
+0
+
+lim
+t +
+
+e2
+
+=
+
+t lim+(2
+
+-
+
+ /2)
+
+=
+
+0
+
+t
+
+lim
++
+
+e134
+
+=
+
+t lim+(134
+
+-
+
+ /4)
+
+=
+
+0
+
+lim
+t +
+
+e4
+
+=
+
+t lim+(4
+
+-
+
+ /2)
+
+=
+
+0.
+
+(42)
+
+In view of the above objective, the square formation control laws are proposed as follows:
+
+u1 = T1 - k1(312 - 312 )(z12 + z13 ) u2 = T2 - k1(2 - 2 )(z21 + z23 ) u3 = T3 - k1(134 - 134 )(z31 + z34 ) u4 = T4 - k1(4 - 4 )(z43 + z41 )
+(43)
+
+where Ti = vi - 1 pi - 2vi - k2(vi - vi). The following theorem presents the convergence anal-
+ysis of the square formation control.
+
+THEOREM 3 Consider a group of four satellites with rela-
+tive dynamics given by (1) under Assumptions 1­3. If the initial errors ei(0) and i(0), for i = 1, 2, 3, 4, locate in a neighborhood U of the origin, then the square formation
+
+LI ET AL.: SATELLITE FORMATION FLYING CONTROL BY USING ONLY ANGLE MEASUREMENTS
+
+1447
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+control laws (43) ensure that formation errors e(t ) and (t ) asymptotically converge to zero.
+
+PROOF According to the proposed construction in Fig. 4(c), the angle error dynamics are given by
+
+e312 = (z1T2P13 + z1T3P12 )1 - z1T3P122 - z1T2P133 e2 = -z2T3P211 + (z2T1P23 + z2T3P21 )2 - z2T1P233 e134 = -z3T4P311 - z3T1P344 + (z3T4P31 + z3T1P34 )3 e4 = -z4T3P411 + (z4T1P43 + z4T3P41 )4 - z4T1P433.
+
+(44)
+
+The velocity error dynamics
+
+1 = -k1(312 - 312 )(z12 + z13 ) - k2(v1 - v1 ) 2 = -k1(2 - 2)(z21 + z23 ) - k2(v2 - v2) 3 = -k1(134 - 134 )(z31 + z34 ) - k2(v3 - v3 ) 4 = -k1(4 - 4)(z41 + z43) - k2(v4 - v4). (45)
+Let e = [e312, e2, e134, e4]T . Then, within a neighborhood of the origin U, the error dynamics for satellites 1­4 can be obtained by linearization about the origin
+
+e 
+
+= S(, v)
+
+e 
+
+=
+
+0 S1 S2 -K2
+
+e 
+
+(46)
+
+where
+
+S1 =
+
+
+
+z1T2
+
+P13 +z1T3P12 -z1T3P12
+
+-z2T3P21 z2T1P23 +z2T3P21
+
+-z3T4P31
+
+0
+
+z3T4
+
+-z1T2P13 -z2T1P23 P31 +z3T1P34
+
+0
+
+0 -z3T1P34
+
+
+
+-z4T3P41
+
+0
+
+-z4T1P43 z4T1P43 +z4T3P41 er=0
+
+
+
+
+
+=0
+
+z12 + z13 0
+
+0
+
+S2 = -k1 
+
+0 0
+
+z21 + z23 0 0 z31 + z34
+
+0
+
+0 0
+
+
+
+0
+
+0
+
+0 z41 + z43 er=0
+
+=0
+
+K2 = k2I12.
+
+Similarly, S¯ can be acquired by applying the coordinate
+transformation in the proof of Theorem 1 to (46). Then, one can obtain the characteristic equation associated with S¯ as
+
+det(I - S¯ ) = ( + k2)9|(I + K2) - S¯1S¯2|. (47)
+
+Since 312 = 134 =  /4 and 2 = 4 =  /2, it follows that S¯1S¯2 can be calculated as
+
+
+
+
+
+S¯ 1 S¯ 2
+
+=
+
+k1 l
+
+
+
+-
+
+1+ 2
+2
+2 1
+
+2
+
+2
+
+1 -2 0
+
+1
+
+2 2+ 2
+
+2
+
+-
+
+1+ 2
+
+2
+
+0
+
+0 1
+
+
+
+(48)
+
+2+ 2 2
+
+0
+
+2 2
+
+-2
+
+where l is the edge length of the desired square configura-
+
+tion.
+It can be concluded that the eigenvalues of S¯1S¯2 have negative real parts by numerical calculation. Then, S¯ is
+
+Hurwitz stable. Therefore, the formation errors e and 
+
+locally and asymptotically converge to zero.
+
+IV. SIMULATIONS
+In order to illustrate the performance of the proposed formation control laws, several simulations are performed to implement the typical formation configurations mentioned in [3] and [4]. In the relative circular orbit, for each satellite, the required initial conditions for forming a flying circular orbit are given by
+
+vyi(0) = -2r pxi(0),
+
+vxi (0)
+
+= 
+
+r
+
+pyi (0)/2
+
+pzi(0) = 3pxi(0), vzi(0) = 3vxi(0)
+
+(49)
+
+where r = 9.96 × 10-4rad/s is determined by the orbit radius of the circular reference orbit, which is selected to be 7378 km.
+
+A. Triangular Formation Case
+We first consider the triangular formation case where the three satellites initially are spaced in their own orbits with different radii (r1 = 620 m, r2 = 420 m, r3 = 500 m). Then, let the desired configuration be the equilateral triangle, i.e., 1 = 2 = 3 =  /3.
+By applying the triangular formation control law (5) with k1 = 5 and k2 = 1, the simulation results are shown in Fig. 7. In Fig. 7(a), the initial states of the three satellites form an arbitrary triangle (black dashed) and the solid lines depict the trajectories of each satellite as the formation converges to the desired configuration (red dashed). Fig. 7(b) shows that the interior angles i all tend to  /3 at the steady state, which demonstrates that the three satellites reach the desired formation configuration.
+
+B. Polygonal Formation Case
+In this case, we consider a hexagonal formation configuration with a group of six satellites. Particularly, in order to illustrate the determination of the flying radius, the motion strategy specified in Remark 6 is carried out. To this end, satellite 1 is settled as the uncontrolled satellite, and then satellites 2­6 execute the polygonal formation control law (29) to construct the hexagonal formation configuration.
+The simulation results are shown in Fig. 8. It can be seen that the motion satellite 1 remains unchanged (dark blue solid line), while the trajectories of satellites 2­6 are close to the relative circular orbit of satellite 1 and construct a hexagonal configuration (red dashed), i.e., the six satellites are evenly spaced in the final circular formation.
+
+C. Square Formation Case
+In this case, we perform the polygonal formation control law (29) (i = 1, 2, 3, 4) and the square formation control law (43) to form the desired square formation configuration for comparison. The selection of the control gains is similar to case 1.
+The comparison results are shown in Figs. 9 and 10. In Fig. 9, the satellites converge to a steady formation (red dashed) with desired interior angles (1 = 2 = 3 = 4 =  /2), but this configuration is a rectangle where l12 = l34 = 643 m and l14 = l23 = 748 m. Conversely, by
+
+1448
+
+IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. 59, NO. 2 APRIL 2023
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+Fig. 9. Four satellites with polygonal formation control law. (a) Interior angle with polygonal formation control. (b) Angle trajectories.
+
+Fig. 10. Four satellites with square formation control law. (a) Interior angle with square formation control. (b) Angle trajectories.
+
+executing the square formation control law, the desired interior angles can be achieved (312 = 314 =  /4 and 2 = 4 =  /2) and that the edges of the final configuration are equivalent (l = 1073 m), which implies that the steady configuration is a square (red dashed). This result demonstrates that our proposed square formation control is applicable.
+
+D. Uncertainties Case
+The purpose of this case is to consider a more realistic simulation when the LOS measurement and the navigation information cannot be precisely obtained.
+First, we consider the effect of uncertainties on the relative LOS measurements for the equilateral triangle formation. Suppose that there exists an error in the LOS measurements, which modeled as a zero-mean Gaussian noise with the standard deviation of 2. The simulation results are shown in Fig. 11. To intuitively draw a conclusion, the variations of the radii of the relative circular orbits are depicted in Fig. 11(a). It is seen that the radii of relative circular orbits and the interior angles converge to a neighborhood of the desired values, where the fluctuation arises from the measurement noise. The proposed angle-based formation control law can guarantee a stable formation under the existence of LOS measurement noise.
+
+Fig. 11. Triangular formation with LOS uncertainties. (a) Radii of the relative circular orbits. (b) Angle trajectories.
+
+LI ET AL.: SATELLITE FORMATION FLYING CONTROL BY USING ONLY ANGLE MEASUREMENTS
+
+1449
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+APPENDIX A
+
+In view of (17), it becomes
+
+-(q1k1k2 + q4k1k2 )[k2(2k22 - k1q1 - k1q4 )] - 4k12k22(q1q4 - q2q3 )
+= k22[-2k1k22(q1 + q4 ) + k12(q1 - q4 )2 + 4k12q2q3]. (50)
+
+According to the law of sines, we have
+
+l23 sin 1
+
+=
+
+l13 sin 2
+
+=
+
+l12 sin 3
+
+=
+
+d
+
+(51)
+
+so that the last two terms of (50) can be written as
+
+k12(q1 - q4 )2 + 4k12q2q3
+
+= k12 d2
+
+l23 + l23 + l12 - l13 - l13 - l12 2 l13 l12 l13 l23 l12 l23
+
++ 4k12 d2
+
+l23 - l12 l12 l23
+
+l13 - l12 . l12 l13
+
+(52)
+
+Now, there are two cases to determine the positivity of the above equation. First, if l12 is the maximal side or minimal side, we have
+
+Fig. 12. Triangular formation with navigation uncertainties. (a) Radii of the relative circular orbits. (b) Angle trajectories.
+
+l23 - l12 l12 l23 = l223 - l122
+l12l23
+
+l13 - l12 l12 l13 l123 - l122 > 0 l12l13
+
+(53)
+
+Second, we consider the effect of uncertainties on the absolute navigation sensors. Suppose that the uncertainties of absolute navigation sensors are in the order of 10%. The results of the simulation are depicted by Fig. 12. From Fig. 12(a), we see that the radii of relative orbits roughly reach a consensus. The interior angles virtually converge to the neighborhood around the desired angles, while the angles present in a secular oscillatory, as shown in Fig. 12(b). It is clear that the accuracy of the formation is affected by the uncertainties on the absolute orbital state.
+V. CONCLUSION
+In this article, we exploit satellite formation control problem with the purpose to mitigate the position/communication requirements that are inevitable with traditional treatments in the same venue. More specifically, for the triangular formation configuration, we demonstrate that the desired configuration can be determined by any two satellites attaining the expected angles, while, for the polygonal formation configuration, the determination for the formation flying radius is intricate in the sense that one satellite's relative orbit is fixed and the others construct the desired formation shape. In addition, in order to ensure the rigidity of the eventual configuration, a simple construction strategy is proposed allowing that each satellite only senses one angle. Simulation results demonstrate that all satellites can form the desired formation configurations while maintaining their own desired motions.
+
+so that k12(q1 - q4)2 + 4k12q2q3 > 0. Second, if l12 is the middle side, let a = l23/l12 - l12/l23,
+b = l13/l12 - l12/l13, c = l23/l13 - l13/l23. Then, we have
+
+a  0, b  0, c  0, a  0, b  0, c  0,
+
+l13 l23
+
+ l12  l12
+
+ l23  l13
+
+.
+
+(54)
+
+It follows that
+
+b(a - c)  0.
+
+(55)
+
+From (52), we obtain the following inequality:
+
+k12(q1 - q4 )2 + 4k12q2q3
+
+= k12 d2[(a + b - c)2 + 4ac]
+
+= k12 d2[a2 + b2 + c2 + 2ab + 2ac - 2bc]
+
+= k12 d2[(a + c)2 + b2 + 2b(a - c)]
+
+ 0.
+
+(56)
+
+With the above two cases for l12, one has inequality (17).
+
+REFERENCES
+
+[1] D. Selva, A. Golkar, O. Korobova, I. L. I. Cruz, P. Collopy, and O. L. de Weck, "Distributed earth satellite systems: What is needed to move forward?," J. Aerosp. Inf. Syst., vol. 14, no. 8, pp. 412­438, 2017.
+[2] J. Bik, P. Visser, and O. Jennrich, "LISA satellite formation control," Adv. Space Res., vol. 40, no. 1, pp. 25­34, 2007.
+[3] G. Qi, I. M. Ross, and K. T. Alfriend, "Triangle formation design in eccentric orbits using pseudospectral optimal control," in Proc. AIAA/AAS Astrodynamics Specialist Conf. Exhibit, 2013, Art. no. 7360.
+
+1450
+
+IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS VOL. 59, NO. 2 APRIL 2023
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+[4] D. Izzo and L. Pettazzi, "Autonomous and distributed motion planning for satellite swarm," J. Guid. Control Dyn., vol. 30, no. 2, pp. 449­459, 2015.
+[5] M. Shouman, M. Bando, and S. Hokamoto, "Output regulation control for satellite formation flying using differential drag," J. Guid. Control Dyn., vol. 42, no. 10, pp. 2220­2232, 2019.
+[6] M. Sabatini, R. Volpe, and G. B. Palmerini, "Centralized visual based navigation and control of a swarm of satellites for on-orbit servicing," Acta Astronautica, vol. 171, pp. 323­334, 2020.
+[7] B. Wu, D. Wang, and E. K. Poh, "Decentralized sliding-mode control for attitude synchronization in spacecraft formation," Int. J. Robust Nonlinear Control, vol. 23, pp. 1183­1197, 2013.
+[8] R. Schlanbusch, R. Kristiansen, and P. J. Nicklasson, "Spacecraft formation reconfiguration with collision avoidance," Automatica, vol. 47, no. 7, pp. 1443­1449, 2011.
+[9] W. Ren and R. W. Beard, "Decentralized scheme for spacecraft formation flying via the virtual structure approach," J. Guid. Control Dyn., vol. 27, no. 1, pp. 73­82, 2004.
+[10] Z. Dang and Y. Zhang, "Control design and analysis of an innerformation flying system," IEEE Trans. Aerosp. Electron. Syst., vol. 51, no. 3, pp. 1621­1634, Jul. 2015.
+[11] R. Zheng and D. Sun, "Rendezvous of unicycles: A bearings-only and perimeter shortening approach," Syst. Control Lett., vol. 62, no. 5, pp. 401­407, 2013.
+[12] S. Zhao and D. Zelazo, "Bearing rigidity and almost global bearingonly formation stabilization," IEEE Trans. Autom. Control, vol. 61, no. 5, pp. 1255­1268, May 2016.
+[13] P. Gurfil and D. Mishne, "Cyclic spacecraft formations: Relative motion control using line-of-sight measurements only," J. Guid. Control Dyn., vol. 30, no. 1, pp. 214­226, 2007.
+[14] K.-K. Oh, M.-C. Park, and H.-S. Ahn, "A survey of multi-agent formation control," Automatica, vol. 53, pp. 424­440, 2015.
+[15] M. Cao, C. Yu, and B. D. Anderson, "Formation control using rangeonly measurements," Automatica, vol. 47, no. 4, pp. 776­781, 2011.
+[16] L. Chen, M. Cao, C. Li, X. Cheng, and Y. Kapitanyuk, "Multi-agent formation control using angle measurements," in Proc. Amer. Control Conf., 2019, pp. 59­64.
+[17] K. K. Oh and H. S. Ahn, "Distance-based undirected formations of single-integrator and double-integrator modeled agents in ndimensional space," Int. J. Robust Nonlinear Control, vol. 24, pp. 1809­1820, 2014.
+[18] M. Basiri, A. N. Bishop, and P. Jensfelt, "Distributed control of triangular formations with angle-only constraints," Syst. Control Lett., vol. 59, no. 2, pp. 147­154, 2010.
+[19] A. N. Bishop, T. H. Summers, and B. D. O. Anderson, "Control of triangle formations with a mix of angle and distance constraints," in Proc. IEEE Int. Conf. Control Appl., 2012, pp. 825­830.
+[20] G. Jing, G. Zhang, H. W. J. Lee, and L. Wang, "Angle-based shape determination theory of planar graphs with application to formation stabilization," Automatica, vol. 105, pp. 117­129, 2019.
+[21] A. Rogers, K. Anderson, A. Mracek, R. Zenick, and C. Gramling, "An integrated vision-based system for spacecraft attitude and topology determination for formation flight missions," in Proc. 18th Annu. AIAA/USU Conf. Small Satellites, 2004.
+[22] R. Alonso, J. Crassidis, and J. Junkins, "Vision-based relative navigation for formation flying of spacecraft," in Proc. AIAA Guid. Navigation Control Conf. Exhibit, 2000, Art. no. 4439.
+[23] K. Alfriend, S. R. Vadali, P. Gurfil, J. How, and L. Breger, Spacecraft Formation Flying: Dynamics, Control and Navigation, vol. 2. Amsterdam, The Netherlands: Elsevier, 2009.
+[24] C. Wei, X. Wu, B. Xiao, J. Wu, and C. Zhang, "Adaptive leaderfollowing performance guaranteed formation control for multiple spacecraft with collision avoidance and connectivity assurance," Aerosp. Sci. Technol., vol. 120, 2022, Art. no. 107266.
+[25] M. Zhuang, L. Tan, K. Li, and S. Song, "Fixed-time formation control for spacecraft with prescribed performance guarantee under input saturation," Aerosp. Sci. Technol., vol. 119, 2021, Art. no. 107176.
+[26] L. Chen, M. Cao, and C. Li, "Angle rigidity and its usage to stabilize multi-agent formations in 2D," IEEE Trans. Autom. Control, vol. 66, no. 8, pp. 3667­3681, Aug. 2021.
+
+[27] N. Erawaty et al., "Stability analysis for Routh-Hurwitz conditions using partial pivot," J. Phys.: Conf. Ser., vol. 1341, no. 6, 2019, Art. no. 062017.
+[28] H. K. Khalil and J. W. Grizzle, Nonlinear Syst., vol. 3. Upper Saddle River, NJ, USA: Prentice Hall, 2002.
+Jianqing Li received the Ph.D. degree in aerospace science and technology from the Harbin Institute of Technology, Harbin, China, in 2018.
+He was a Postdoctoral Researcher with the College of Electrical Engineering, Zhejiang University, Hangzhou, China. He is currently a Professor with the College of Communication Engineering, Hangzhou Dianzi University, Hangzhou, China. His recent research focuses on motion planning of multiagent systems, and dynamics and control of spacecraft.
+Liangming Chen received the B.E. degree in automation from Southwest Jiaotong University, Chengdu, China, in 2015. From 2015 to 2021, he enrolled jointly in the Ph.D. program of systems and control with the Harbin Institute of Technology, Harbin, China, and the University of Groningen, Groningen, the Netherlands.
+From 2021 to 2022, he was a Research Fellow with the School of Mechanical and Aerospace Engineering, Nanyang Technological University (NTU), Singapore. He is currently a Research Fellow with the School of Electrical and Electronic Engineering, NTU. His current research interests include formation control and distributed localization.
+Ming Cao (Fellow, IEEE) received the bachelor's and master's degrees from Tsinghua University, Beijing, China, in 1999 and 2002, respectively, and the Ph.D. degree from Yale University, New Haven, CT, USA, in 2007, all in electrical engineering.
+He is currently a Professor of systems and control with the Engineering and Technology Institute (ENTEG), and the Director of Jantina Tammes School of Digital Society, University of Groningen, Groningen, the Netherlands, where he started as an Assistant Professor in 2008. From 2007 to 2008, he was a Postdoctoral Research Associate with the Department of Mechanical and Aerospace Engineering, Princeton University, Princeton, NJ, USA. He worked as a Research Intern in 2006 with the Mathematical Sciences Department, IBM T. J. Watson Research Center, Yorktown Heights, NY, USA. His main research interests include autonomous agents and multiagent systems, decision making dynamics, and complex networks. Dr. Cao is the 2017 and inaugural recipient of the Manfred Thoma medal from the International Federation of Automatic Control (IFAC) and the 2016 recipient of the European Control Award sponsored by the European Control Association (EUCA). He is a Senior Editor for Systems and Control Letters, an Associate Editor for IEEE TRANSACTIONS ON AUTOMATIC CONTROL, IEEE TRANSACTIONS ON CIRCUITS AND SYSTEMS, and IEEE Circuits and Systems Magazine.
+Chaoyong Li (Member, IEEE) received the Ph.D. degree in aerospace engineering from the Harbin Institute of Technology, Harbin, China, in 2008.
+He was a Postdoctoral Researcher and Research Scientist with the University of Central Florida, Orlando, FL, USA, and Intelligent Fusion Technology Inc., Germantown, MD, USA, respectively. Since 2015, he has been with the College of Electrical Engineering, Zhejiang University, Hangzhou, China, as a Research Professor. His recent research focuses on distributed control and optimization of multiagent systems.
+
+LI ET AL.: SATELLITE FORMATION FLYING CONTROL BY USING ONLY ANGLE MEASUREMENTS
+
+1451
+
+Authorized licensed use limited to: HANGZHOU DIANZI UNIVERSITY. Downloaded on March 23,2026 at 07:37:12 UTC from IEEE Xplore. Restrictions apply.
+
+

@@ -1,0 +1,126 @@
+================================================================================
+论文精读: Li J, Chen L, Cao M, Li C. "Satellite Formation Flying Control by
+           Using Only Angle Measurements." IEEE TAES, 2023, 59(2): 1439-1451.
+================================================================================
+
+## 核心贡献
+仅用角度测量实现卫星编队控制——不需要相对位置、不需要通信拓扑、不需要
+坐标系统对齐。证明了仅角度信息的formation control对坐标失准具有鲁棒性。
+
+## 论文结构
+Section II: Problem Formulation
+  A. Circular Formation Control (含系统动力学和假设)
+  B. Angle-Based Formation Configuration (角度约束描述)
+Section III: Main Results
+  A. Triangular Formation Control
+  B. Polygonal Formation Control
+  C. Square Formation Control ← 对你论文最关键
+Section IV: Simulations
+Section V: Conclusion
+
+## 系统模型
+LVLH坐标系下的Clohessy-Wiltshire相对运动方程:
+  [ṗ_i; v̇_i] = [[0, I]; [Ω1, Ω2]] [p_i; v_i] + [[0]; [I]] u_i
+其中Ω1, Ω2含有参考轨道角速率r（与你的double integrator不同）
+
+## 关键假设 (Assumptions 1-3)
+Assumption 1: All satellites initially on relative circular orbits with different
+  radii, same angular momentum direction. (保证共面)
+Assumption 2: No communication between satellites. Each equipped with LOS
+  bearing/angle sensor only.
+Assumption 3: Initial positions non-collinear, cos∠(p_ij, p_ik) ≠ ±1.
+  (保证编队不会退化)
+
+## 角度测量 (LOS angle, 关键创新点)
+- 每个卫星在自己的局部坐标系∑_i中测量邻居的LOS角φ_ij ∈ [0,2π)
+- 内角: α_i = φ_ij - φ_ik (差值，消去坐标系旋转影响！)
+- cos α_i = z_ij^T z_ik, z_ij = (p_j-p_i)/‖p_j-p_i‖
+- 因为角度是标量且通过差值获取，对局部坐标系的旋转不敏感
+  → Robust to coordinate misalignment (Remark 4, Fig. 4)
+
+## 三角形编队控制 (III.A)
+Desired: α_i → α_i* (三个内角)
+冗余性: α_1 + α_2 + α_3 = π → 只需控制两个角度
+
+控制律(5):
+  u_i = v̇_i* - ω₁p_i - ω₂v_i - k₁(α_i - α_i*)(z_i(i+1) + z_i(i-1)) - k₂(v_i - v_i*)
+  其中 v_i* = ω_d × p_i（期望圆轨道速度）
+
+稳定性: 线性化 → 9维误差状态 → 旋转坐标变换消去时变 → Hurwitz
+碰撞避免分析 (Remark 5): Lyapunov给出有界性保证 (Remark 5)
+
+Remark 4: 坐标失准鲁棒性 — 即使局部坐标系有失准角δ，控制方向
+R(δ)(z_ij+z_ik)仍沿内角平分线，因为内角α_i不受坐标旋转影响
+
+## 多边形编队控制 (III.B)
+n>3卫星的凸多边形(共圆)编队
+每个卫星只需测一个内角(两个邻居)
+α_i* = (n-2)π/n (正多边形)
+
+控制律(29):
+  u_i = v̇_i* - ω₁p_i - ω₂v_i - k₁(α_i-α_i*)/sinα_i * (z_i(i+1)+z_i(i-1)) - k₂(v_i-v_i*)
+  注意多了 1/sinα_i 项(因为多边形内角可以偏离π/2较远)
+
+稳定性: 特征方程含一个零特征值(旋转对称性)
+通过左/右特征向量分析证明误差渐近收敛
+
+Remark 6: 半径确定 — 一个卫星保持原有轨道(fixed radius)，其他卫星
+构建多边形 → 所有卫星收敛到相同半径
+
+## 正方形编队控制 (III.C) — 与你论文最直接相关！
+### 核心问题 (Fig. 3)
+四个卫星共圆的"正方形"配置:
+  - 所有内角α_i = π/2
+  - 但这同时满足正方形和矩形(Fig. 3a vs 3b)
+  → NOT angle rigid!
+
+### 为什么不是 angle rigid？
+圆上四点，内角α_i=π/2，边长可以不同：
+  l12 = l34 ≠ l14 = l23 → 矩形也满足α_i = π/2
+  即 Figs. 3(a) square 和 3(b) rectangle 都满足角度约束
+  → 这就是你论文中的 "reflection ambiguity" 的前身！
+
+### 解决方案: 两个等腰直角三角形构造 (Fig. 6c)
+目标角度约束:
+  α_312 = π/4   (卫星1的角，由2-1-3)
+  α_2   = π/2   (卫星2的角，由1-2-3)
+  α_134 = π/4   (卫星3的角，由1-3-4)
+  α_4   = π/2   (卫星4的角，由1-4-3)
+注意角度编号变了！不是简单的1-2-3-4循环
+
+每个卫星只需测一个角度，且整个配置是angle rigid的
+
+控制律(43):
+  u_1 = T_1 - k₁(α_312 - π/4)(z_12 + z_13)
+  u_2 = T_2 - k₁(α_2 - π/2)(z_21 + z_23)
+  u_3 = T_3 - k₁(α_134 - π/4)(z_31 + z_34)
+  u_4 = T_4 - k₁(α_4 - π/2)(z_43 + z_41)
+  其中 T_i = v̇_i* - ω₁p_i - ω₂v_i - k₂(v_i - v_i*)
+
+关键区别: 不使用1→2→3→4→1的循环角度，而是用
+  三角形123 (via 312, 2) + 三角形341 (via 134, 4)
+  → 打破对称性，避免矩形解！
+
+## 仿真
+- 三角形: r1=620m, r2=420m, r3=500m → 等边三角形 (k1=5, k2=1)
+- 多边形(六边形): 卫星1保持轨道，2-6构建正六边形
+- 正方形对比: polygonal law → 矩形(l12=643m≠l14=748m); square law → 正方形(l=1073m)
+- 测量噪声/导航不确定性鲁棒性验证
+
+## 写作手法
+- Problem Formulation 分 A/B 两个subsection（因为是卫星特定动力学）
+- 假设用 ASSUMPTION 1/2/3（全大写）
+- Definition 1: Angle rigidity
+- Definition 2: Similarity and congruence
+- Theorem → Proof → Remark 结构
+- 所有稳定性证明用线性化+Hurwitz
+- 矩阵推导放入正文（非Appendix），因为篇幅允许（IEEE期刊双栏13页）
+- 图注不加 "(Color online)"（IEEE TAES风格）
+
+## 与你论文的关系
+1. 直接前驱 — 识别了共圆正方形角度约束的非唯一性问题
+2. 解决方案不同 — 本文用改变角度分配(π/4, π/2混合)，你论文用undirected normal
+3. 都是2-D设定，你扩展到3-D需要coplanarity控制
+4. 你论文的 "reflection ambiguity" 是本文 "rectangle ambiguity" 在3-D中的推广
+
+================================================================================

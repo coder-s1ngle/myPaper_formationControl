@@ -1,4 +1,69 @@
 {
+    // LaTeX compiler configuration
+    "latex-workshop.latex.tools": [
+        {
+            "name": "pdflatex",
+            "command": "E:\\texlive\\2026\\bin\\windows\\pdflatex.exe",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "%DOCFILE%"
+            ]
+        },
+        {
+            "name": "xelatex",
+            "command": "E:\\texlive\\2026\\bin\\windows\\xelatex.exe",
+            "args": [
+                "-synctex=1",
+                "-interaction=nonstopmode",
+                "-file-line-error",
+                "%DOCFILE%"
+            ]
+        },
+        {
+            "name": "bibtex",
+            "command": "E:\\texlive\\2026\\bin\\windows\\bibtex.exe",
+            "args": [
+                "%DOCFILE%"
+            ]
+        }
+    ],
+    // Build recipes. XeLaTeX is preferred for Chinese documents.
+    "latex-workshop.latex.recipes": [
+        {
+            "name": "XeLaTeX",
+            "tools": [
+                "xelatex"
+            ]
+        },
+        {
+            "name": "XeLaTeX -> BibTeX -> XeLaTeX*2",
+            "tools": [
+                "xelatex",
+                "bibtex",
+                "xelatex",
+                "xelatex"
+            ]
+        }
+    ],
+    // Build on save.
+    "latex-workshop.latex.autoBuild.run": "onSave",
+    // Built-in PDF preview.
+    "latex-workshop.view.pdf.viewer": "tab",
+    // Clean generated files.
+    "latex-workshop.latex.clean.fileTypes": [
+        "*.aux",
+        "*.bbl",
+        "*.blg",
+        "*.idx",
+        "*.ind",
+        "*.lof",
+        "*.lot",
+        "*.out",
+        "*.toc",
+        "*.log"
+    ],
     "python-envs.defaultEnvManager": "ms-python.python:conda",
     "python-envs.defaultPackageManager": "ms-python.python:conda"
 }

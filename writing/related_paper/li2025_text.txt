@@ -1,0 +1,1437 @@
+=== PAGE 1 ===
+SCIENCECHINA
+Technological Sciences
+Print-CrossMark
+July
+2025, Vol. 68, Iss. 7, 1720402:1–1720402: 15
+https://doi.org/ 10.1007/ s11431-024-2896-5
+c⃝Science China Press 2025 tech.scichina.com link.springer.com.RESEARCH PAPER .
+Multi-agent distributed formation control using local information
+measurements
+Jianqing LI1, Liaofei CHEN2*& Chaoyong LI3
+1Space Information Research Institute and Zhejiang Key Laboratory of Space Information Sensing and Transmission, Hangzhou Dianzi University,
+Hangzhou 310018, China
+2College of Communication Engineering, Hangzhou Dianzi University, Hangzhou 310018, China
+3College of Electrical Engineering, Zhejiang University, Hangzhou 310027, China
+Received November 18, 2024; accepted February 8, 2025; published online May 28, 2025
+Abstract This
+paper investigates formation control in multi-agent systems to adjust deformation and scaling for obstacle avoid-
+ance using local information. A well-known issue with angle-based formation control is the existence of size ambiguity. In-
+troducing additional controlled variables can potentially mitigate this problem. Therefore, unlike purely angle-based formation
+control methods that can only adjust deformation, our approach can also control scaling by introducing distance measurements.
+Speciﬁcally, all agents use their local coordinate systems and sense neighboring agents to obtain angle measurements, with only
+one agent measuring the distance to its neighbor. In the proposed formation control scheme, angle measurements are used to
+control the desired shape, while distance measurements regulate the formation scaling. Di ﬀerent formation control strategies for
+triangular and polygonal conﬁgurations are discussed, utilizing angle rigidity to ensure the stability of the ﬁnal shape in polygonal
+conﬁgurations with only one distance measurement used for formation scaling. Additionally, by relaxing the condition of angular
+rigidity and utilizing the concept of formation rigidity, we propose a formation determination method to construct a rigid square
+conﬁguration, in which a pair of distances measured by one agent are used to control the formation’s scaling. Finally, using a
+simpliﬁed model of a quadrotor unmanned aerial vehicle (QUA V), simulation results validate the e ﬀectiveness of the proposed
+formation control scheme through several examples.
+Keywords angle measurements, distance measurements, formation control, rigid formation, multi-agent systems
+Citation: Li
+J Q, Chen L F, Li C Y. Multi-agent distributed formation control using local information measurements. Sci China Tech Sci, 2025, 68(7): 1720402,
+https://doi.org /10.1007 /s11431-024-2896-5
+1
+Introduction
+In recent years, collaborative control of multi-agent systems
+has attracted widespread attention, with formation control is-
+sues receiving extensive research due to their signiﬁcance
+across multiple application domains [1,2]. Examples include
+unmanned aerial vehicle (UA V) search and rescue [3], collab-
+orative transport of ground robots [4], and satellite formation
+ﬂying [5].
+A key focus is addressing which variables need to be
+sensed and actively controlled to achieve desired formations
+*
+Corresponding author (email: liaofei@hdu.edu.cn)in multi-agent systems, as mentioned in ref. [6]. Sensors
+used for formation control typically include the global posi-
+tioning system (GPS), radar, and cameras, which can mea-
+sure positions, inter-agent distances, and bearings, respec-
+tively. The existing formation control methods are catego-
+rized based on the sensors and control variables used, includ-
+ing position-based, displacement-based (consensus-based)
+[7, 8], direction-based, distance-based, and angle-based ap-
+proaches. However, a disadvantage of position-based forma-
+tion control is that it typically requires a global coordinate
+system shared among the agents [9]. In displacement-based
+methods, agents measure the relative positions of their neigh-
+bors in a common reference coordinate system, necessitating
+
+=== PAGE 2 ===
+Li
+J Q, et al. Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:2
+that all agents have a shared sense of direction [10, 11]. This
+implies that the local coordinate frames of all agents need to
+be aligned [12]. Achieving perfect alignment of all agents’
+coordinate systems is challenging due to the presence of sen-
+sor measurement noise and interference. When there is a
+misalignment in the agents’ coordinate frames, the forma-
+tion shape speciﬁed by relative positions may be distorted
+and exhibit non-zero translational velocity [13, 14]. In ref.
+[15], the theory of bearing rigidity was established, but it
+still requires agents to know a global reference frame. In con-
+trast, distance /angle-based formation methods that rely solely
+on local information from multi-agent systems have become
+popular, even though they increase the complexity of their
+design and analysis.
+Over the past few decades, distance rigidity has been ex-
+tensively studied both as a mathematical topic in graph the-
+ory[16] and as an engineering problem in the application
+of multi-agent system formations. Distance rigidity [17] is
+deﬁned based on the property that distances within a multi-
+point framework remain invariant under translational and ro-
+tational motions. Without requiring coordinate frame align-
+ment, the desired formation shape described by distances was
+achieved using local relative position measurements in ref.
+[18]by employing distance rigidity theory. Moreover, a the-
+ory based on bearing rigidity was proposed [15, 19]. Agents
+maintain their relative orientation with respect to their neigh-
+bors to ensure the stability of the formation. However, meth-
+ods solely based on bearings become ambiguous due to the
+lack of measurement for formation size. To address this,
+a bearing-based approach within the leader-follower frame-
+work was introduced [20, 21], but it requires that the ma-
+neuvering strategies of two leaders be pre-planned. With the
+advancement of sensor technology, angle measurements can
+be easily obtained through omnidirectional radar or vision-
+based cameras, which are cheaper, more reliable, and more
+accessible than distance measurements [22, 23]. Since angle
+measurements are scalars and do not change with motion, in-
+cluding translation, rotation, and scaling [24, 25], the theory
+of angle rigidity was established in ref. [26]. By assigning
+appropriate angle constraints to the agents, the desired for-
+mation shape can be achieved. However, a resulting issue
+is that the angles do not change with the scaling of the for-
+mation. When relying solely on angle information for con-
+trol, the size of the formation becomes ambiguous when the
+multi-agent system stabilizes. To address this issue, a con-
+trol algorithm for multi-agent systems was designed in ref.
+[27], which determines the formation shape through angle
+constraints while still using relative position measurements
+in the global coordinate system to scale the formation. Re-
+cently, the formation control method combining angle and
+distance has been studied in refs. [28, 29], and a formation
+control scheme with directed graph distance measurements
+and angle constraints has been proposed. However, thesemethods impose complex directed graph distance constraints
+and angle measurements, increasing the di ﬃculty of forma-
+tion rigidity design. In many cases, it is necessary to ma-
+nipulate the formation scale, such as to avoid obstacles [30],
+and the variation in pairwise distances between agents during
+scaling complicates the control algorithm.
+Motivated by the work above, we propose a formation
+scaling control law based on angle and distance to address
+formation maintenance during obstacle avoidance. This ap-
+proach requires each agent to measure only the angle infor-
+mation of its neighbors, with only one agent responsible for
+measuring distance information. Angle rigidity ensures the
+stability of the ﬁnal formation shape, while distance control
+manages the scaling of the formation. The contributions of
+this paper are summarized as follows.
+(1) Compared with ref. [26], this addresses the issue of
+ambiguity in controlling the formation size using only an-
+gle information. In ref. [26], when the formation system is
+stable, all angle constraints are satisﬁed. However, because
+angles do not change with scaling motions, the overall size
+of the formation is ambiguous and cannot be controlled arbi-
+trarily. Additionally, to relax an angular rigidity constraint in
+ref.[26], we discuss a method using a square formation case
+to control the scaling by weighting a pair of distances in two
+diﬀerent directions.
+(2) Diﬀ erent from the rigidity formation methods that
+combine angle and distance-directed graph in refs. [28, 29],
+the scaling transformation of the formation in this paper is
+controlled by a single agent, eliminating the need to change
+a large number of desired distances between di ﬀerent agents
+and thereby simplifying the complexity of the control algo-
+rithm during the process of expansion and contraction mo-
+tion.
+(3) This work represents a preliminary step in address-
+ing the problem of formation maintenance, deformation, and
+scaling control based on local information. Due to the di ﬃ-
+culty in constructing a Lyapunov function, we have currently
+proven the local convergence of the closed-loop nonlinear
+formation under double integrator dynamics. In view of this,
+we provide su ﬃcient conditions to ensure the stability of the
+double integrator formation, which o ﬀers valuable guidance
+for future research.
+The remainder of this paper is organized as follows. Sec-
+tion2introduces the agent formation control problem. Sec-
+tion3presents the main results with diﬀ erent conﬁgurations.
+Section 4shows the simulation results examining the perfor-
+mance of the proposed formation control law.
+Notations: An undirected graph, denoted as G=(V,E),
+consists of a vertex set V={1,2,..., n}and an edge set
+E ⊆ V × V with m=|E|. The set of neighbors of vertex i
+is denoted as Ni,{j∈ V : (i,j)∈ E}. An orientation of
+an undirected graph is the assignment of a direction to each
+edge. An oriented graph is an undirected graph together with
+
+=== PAGE 3 ===
+Li J Q, et al. Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:3
+an orientation.
+2 Problem formulation
+For the nmobile agents moving in the plane, we deﬁne the
+set of agent indexes as V={1,2,· · ·,n}. The dynamics of
+each agent ican be described as
+˙pi=vi,
+˙vi=ui,∀i∈ V, (1)
+where pi∈R2denotes the position of agent iin the ﬁxed
+global coordinate system, vi∈R2is the velocity and ui∈R2
+is the control input.
+The following assumptions are made for all agents to
+achieve the desired formation conﬁguration.
+Assumption 1 All agents are already on the same plane
+when the formation needs to deform and scale.
+Assumption 2 Each agent is equipped with a sensor to
+measure LOS (Line of Sight).
+Assumption 3 The initial positions of the agents are in-
+dependent and non-collinear.
+Assumption 1 ensures that the formation is in a two-
+dimensional plane. Assumption 2 requires each agent to
+measure the directional angle of its neighbor with respect to
+its local coordinate system. Assumption 3 guarantees that the
+angle bisector direction exists and is unique.
+Under Assumptions 1 and 2, each agent ican measure the
+angleθi j∈[0,2) relative to j∈ N iin its local coordinate
+frame∑
+i, as shown in Figure 1. The local coordinate system
+satisﬁes the right-hand frame. Then, the angle αiin the xi-yi
+plane can be given by
+αi=θi j−θik, (2)
+whereαi∈[0,2) is the interior angle of the triangle formed
+byj,iandk.
+As shown in Figure 1, the agent ican measure the LOS
+angle of its neighbors. Then, the interior angle αican be cal-
+culated by
+cosαi=z⊤
+i jzik, (3)
+where zi j=pj−pi
+∥pj−pi∥, which starts from i, points toward j.
+Letα∗
+i∈(0,) be the desired steady-state angles of the
+formation as shown in Figure 2(a). The angle-based forma-
+tion problem becomes the realization of the desired angle
+constraint:
+lim
+t→+∞(αi(t)−α∗
+i)=0. (4)
+Deﬁnition 1 (Angle rigidity and global angle rigidity, ref.
+[26, Deﬁnition 2, Deﬁnition 3] )We give our description of the uniqueness of the frame-
+work based on graph theory.
+Deﬁnition 2 (Similarity and congruence) If two frame-
+works G1=(V1,E1,W1) and G2=(V2,E2,W2) satisfy
+the following conditions: (1) They have the same topological
+structure (i.e., there exists a graph isomorphism f:V1→
+V2, such that for every edge ( i,j)∈ E 1, there is an edge
+(f(i),f(j))∈ E 2). (2) For each pair of corresponding edges
+e1i∈ E 1ande2i∈ E 2, their weights satisfy w1i=k·w2i, where
+kis a ﬁxed proportional constant; then it can be said that the
+two frameworks are similar if k,1, denoted as G1∼ G 2and
+we say that two frameworks are congruent if k=1, that is,
+G1,G2.
+However, a problem arises when relying solely on the con-
+straints of eq. (4); it cannot e ﬀectively control the formation
+scale. For instance, we observed that the angles used to con-
+strain the conﬁguration in Figure 2(a) and (b) both satisfy
+eq.(4), but they do not determine the distances between the
+agents. When the system is stable, it satisﬁes the angular
+rigidity as deﬁned in Deﬁnition 1, but the actual framework
+Gis not congruent with the desired framework G∗. In other
+words, achieving the desired shape may result in the agents’
+formation scale being either too large or too small, that is,
+similarity as deﬁned in Deﬁnition 2.
+A triangle can be uniquely determined given its three an-
+gles and any one side. Therefore, for triangular forma-
+tions, we can achieve the expansion and contraction of the
+Figure 1 (Color online) The angle measurements.
+Figure 2 Uncertainty in formation scale based solely on angle con-
+trol.
+
+=== PAGE 4 ===
+Li J Q, et al.Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:4
+formation by controlling the distance between any two agents
+while maintaining angle constraints. In this case, we specif-
+ically choose the distance d13between agent #1 and agent
+#3.
+As shown in Figure 3(a), d13will change while agent #1
+and agent #2 remain stationary, and agent #3 moves along the
+straight line where the angle bisector of \132 lies. Then, in
+Figure 3(b), let us take the formation reduction as an exam-
+ple. Agent #3 moves inward along the angle bisector, causing
+d13to decrease. However, to ensure the constraints of the de-
+sired interior angles of the triangle, agent #1 and agent #2
+will also move along the bisectors of their respective angles.
+As a result, the scale of the entire agent formation is reduced.
+To obtain d13, we make the following assumption.
+Assumption 4 Agent #3 can measure the distances be-
+tween itself and the other agents. The other agents do not
+need to measure distance information.
+Problem 1 Consider three agents with double-integrator
+dynamics described by eq. (1). The objective is to design
+a control law uifor each agent ito facilitate the expansion
+and contraction of the formation while ensuring its stability.
+Then, extend the results to nagents. The stability of the entire
+agent system during formation maneuvers can be described
+as follows:
+lim
+t→+∞(αi(t)−α∗
+i)=0,
+lim
+t→+∞(vi(t)−v∗
+c)=0,
+lim
+t→+∞(
+di j(t)−d∗
+i j)
+=0,(5)
+whereα∗
+idetermines the desired formation shape, v∗
+cdeter-
+mines the desired velocity of the formation, and d∗
+i jdenotes
+the desired distance between the agent iandj.
+3 Main results
+In this section, we introduce the agent formation control law
+and the stability analysis of the system. First, we present
+the formation control law for triangle conﬁgurations. Next,
+we extend it to the formation control of nagents using angle
+Figure 3 (Color online) The triangular formation motion strategy
+based on distance and angle.rigidity. Finally, we discuss a construction scheme for the
+square formation.
+3.1 Triangle formation control
+We ﬁrst consider the desired triangle formation and scaling.
+The formation control laws for agent #1 to #3 are proposed
+as follows:
+u1=˙v∗
+c−k1(v1−v∗
+c)−k2(α1−α∗
+1)(z12+z13),
+u2=˙v∗
+c−k1(v2−v∗
+c)−k2(α2−α∗
+2)(z21+z23),
+u3=˙v∗
+c−k1(v3−v∗
+c)−k2(
+α3−α∗
+3)
+(z31+z32)
++k3(
+d13−d∗
+13)
+(z31+z32),(6)
+where ˙v∗
+c∈R2is the desired acceleration, α∗
+iis the desired
+interior angle of the desired triangle conﬁguration, d∗
+13is the
+desired distance between agent #1 and agent #3, and k1,k2
+andk3are positive scalar gains.
+Before presenting the stability analysis, we ﬁrst provide a
+lemma.
+Lemma 1 For a matrix Mof the form
+M=0n×nIn
+Hn×n−kIn,
+where Iis the identity matrix and kis a positive constant. If
+the submatrix His Hurwitz and the eigenvalues λofHsat-
+isfy the inequality(
+k2Re [λ]+Im2[λ])
+<0, then the matrix
+Mis also Hurwitz.
+Proof. The characteristic polynomial of Mcan be ex-
+pressed as
+|λI2n−M|=λIn−In
+−H(λ+k)In
+=|(λ+k)In|λIn−(−In)(−H)
+λ+k
+=|λ(λ+k)In−H|. (7)
+We assume that λ1,λ2, ... ,λnare the neigenvalues of H.
+For any H, there always exists an n×nunitary matrix Usuch
+that
+H=Uλ1∗ · · · ∗
+0λ2· · · ∗
+............
+0 0 · · ·λnU−1. (8)
+Substituting eq. (8)into|λ(λ+k)In−H|, one has
+|λ(λ+k)In−H|
+=(
+λ2+kλ−λ1)(
+λ2+kλ−λ2)
+· · ·(
+λ2+kλ−λn)
+. (9)
+
+=== PAGE 5 ===
+Li
+J Q, et al. Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:5
+For any real eigenvalue λi,i∈ {1,2,..., n}, since His
+Hurwitz,λiis negative. Therefore, the roots of equation(
+λ2+kλ−λi)
+=0 have negative real parts.
+For any pair of complex conjugate eigenvalues, assuming
+λ1andλ2are a pair of complex conjugate eigenvalues of
+H, the polynomial(
+λ2+kλ−λ1)(
+λ2+kλ−λ2)
+can be ex-
+pressed as follows:
+(
+λ2+kλ−λ1)(
+λ2+kλ−λ2)
+=λ4+2kλ3+[
+k2−(λ1+λ2)]
+λ2
+−k(λ1+λ2)λ+λ1λ2. (10)
+Then we have the Hurwitz determinant
+H1=a3a10 0
+a4a2a00
+0a3a10
+0a4a2a0, (11)
+where
+a4=1,
+a3=2k,
+a2=k2−(λ1+λ2),
+a1=−k(λ1+λ2),
+a0=λ1λ2.(12)
+Since k>0 and Re[
+λj]
+<0,j∈ {1,2}, one has
+λ1+λ2=2 Re[
+λj]
+<0, (13)
+λ1λ2=Re2[
+λj]
++Im2[
+λj]
+>0, (14)
+where we obtained a4,a3,a2,a1anda0are all positive. Now,
+in view of the various orders of leading principal minor de-
+terminants of H1, we have
+∆1=a3=2k>0, (15)
+∆2=a3a1
+a4a2
+=2k[
+k2−(λ1+λ2)]
++k(λ1+λ2)
+=2k3−2kRe[
+λj]
+>0, (16)
+∆3=a1∆2−a0a3a1
+0a3
+=−2kRe[
+λj](
+2k3−2kRe[
+λj])
+−4k2λ1λ2
+=−4k2(
+k2Re[
+λj]
++Im2[
+λj])
+, (17)
+∆4=a0∆3. (18)
+In view of eq. (17), the roots of the quartic polyno-
+mial in eq. (10) have negative real parts if and only if(
+k2Re[
+λj]
++Im2[
+λj])
+<0,j∈ {1,2}. As a result, the roots
+of the polynomial (9)have negative real parts if and only if(
+k2Re [λ i]+Im2[λi])
+<0,i∈ {1,2,...,n}.
+The lemma has been proved.
+The theorem for triangular formation goes as follows.
+Theorem 1 Consider a group of three agents with
+double-integrator dynamics given by eq. (1)under Assump-
+tions 1–4. If the initial error di j(0)−d∗
+i j,αi(0)−α∗
+iand
+vi(0)−v∗
+c, for i=1,2,3,j∈ N i, are near the equilibrium
+point, the formation control law (6)ensures that di j(t)→d∗
+i j,
+αi(t)→α∗
+iandvi(t)→v∗
+casymptotically as t→+∞.
+Proof. At ﬁrst, sinced(cosαi)
+dt=−(sinαi)˙αiand
+from
+eq.(3), the interior angle dynamics of each agent can be given
+by
+˙α1=−z⊤
+13Pz12(v2−v1)
+d12sinα1−z⊤
+12Pz13(v3−v1)
+d13sinα1,
+˙α2=−z⊤
+23Pz21(v1−v2)
+d21sinα2−z⊤
+21Pz23(v3−v2)
+d23sinα2,
+˙α3=−z⊤
+32Pz31(v1−v3)
+d31sinα3−z⊤
+31Pz32(v2−v3)
+d32sinα3,(19)
+where Pzi
+j=I2−zi jz⊤
+i j∈R2×2.
+Deﬁne ei=αi−α∗
+i, then we have the angle error dynamics
+as follows:
+˙ei=−Njik(
+vk−vj)
+−Nki j(
+vj−vk)
+, (20)
+where Njik=z⊤
+i jPzik
+diksinαjik∈R1×2,∀j,i,k∈
+{1,2,3}.
+Second, the velocity error dynamics of vi−v∗
+ccan be de-
+rived from eq. (6); one has
+˙vi−˙v∗
+c=−k1(vi−v∗
+c)−k2(αi−α∗
+i)(zi(i−1)+zi(i+1)).(21)
+Particularly, since α1+α2+α3=, the agent #3’s velocity
+error dynamics can be rewritten as
+˙v3−˙v∗
+c=−k1(v3−v∗
+c)+k3(
+d13−d∗
+13)
+(z31+z32)
+−k2(α∗
+1−α1+α∗
+2−α2)(z31+z32). (22)
+Finally, we analyze the dynamic error of relative distance.
+Since d2
+13=p⊤
+13p13, we have
+2d13˙d13=˙p⊤
+13p13+p⊤
+13˙p13, (23)
+then
+˙d13=z⊤
+13[(v3−v∗
+c)−(v1−v∗
+c)]. (24)
+We deﬁne the system state variables
+X=[d13−d∗
+13,e1,e2,v⊤
+1−v∗⊤
+c,v⊤
+2−v∗⊤
+c,v⊤
+3−v∗⊤
+c]⊤,(25)
+
+=== PAGE 6 ===
+Li
+J Q, et al. Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:6
+where X∈R9. According to eqs. (19)– (24), we have the
+closed loop system as follows:
+˙X=AX=03×3R1
+R2−k1I6X, (26)
+where R1∈R3×6,R2∈R6×3, and
+R1=−z⊤
+130 z⊤
+13
+N312+N213 −N312 −N213
+−N321 N32+N123−N123, (27)
+R2=0 −k2(z12+z13) 0
+0 0 −k2(z21+z23)
+k3(z31+z32)k2(z31+z32)k2(z31+z32).(28)
+Then, we linearize R1andR2near the equilibrium X=0
+to analyze the stability of the system:
+˙X=¯AX=03×3¯R1
+¯R2−k1I6X, (29)
+where ¯Ais the linearization of the system matrix near the
+origin. For convenience, the symbol (¯ ·) denotes that the vari-
+able is assigned a value at X=0below. Next, we prove that
+system (29)is stable by analyzing the eigenvalues of ¯A, and
+prove that ¯Ais Hurwitz. Let λbe an eigenvalue of ¯A, then
+we have characteristic equation as follows:
+λI9−¯A=λI3−¯R1
+−¯R2(λ+k1)I6
+=(λ+k1)3λ(λ+k1)I3−¯R1¯R2. (30)
+From eq. (30), we ﬁnd that −k1is the triple root of ¯A, also,
+−k1<0. Then, we analyze the eigenvalues of matrix ¯R1¯R2.
+Let¯G1=¯R1¯R2, one has
+¯G1=[¯G11¯G12¯G13]
+, (31)
+where ¯G1i∈R3×1is the ith column of ¯G1,i∈ {1,2,3}. By
+using Pzi jzi j=0, we have Njikzik=0 and Njikzki=0. Then
+we can simplify to obtain
+¯G11=k3z⊤
+13(z31+z32)
+−k3N213z32
+−k3N123z31, (32)
+¯G12=k2z⊤
+13(z12+z32)
+−k2(N312z13+N213z12+N213z32)
+k2(N321z13−N123z31), (33)¯G13=k2z⊤
+13(z31+z32)
+k2(N312z23−N213z32)
+−k2(N321z23+N123z21+N123z31). (34)
+Simplifying further by using cos αjik=z⊤
+i jzik, one has
+¯G1=
+−k3(1+cosα3)−k2(cosα3−cosα1)−k2(1+cosα3)
+−k3f13 −k2(g1+f13) −k2(f13−f12)
+−k3f23 −k2(f23−f21) −k2(g2+f23),
+(35)
+where fi j=sinαj
+di
+jandgi=(sinαi)(
+1
+di
+j+1
+dik)
+,i,j,k∈
+{1,2,3},
+andj,k∈ N i.
+Letp=1+cosα3andq=cosα3−cosα1, eq. (35)can
+be rewritten as
+¯G1=−k3p −k2q −k2p
+−k3f13−k2(g1+f13)−k2(f13−f12)
+−k3f23−k2(f23−f21)−k2(g2+f23). (36)
+Then, letλ1be an eigenvalue of ¯G1, one has
+λ1I−¯G1
+=λ1+k3p k 2q k2p
+k3f13λ1+k2(g1+f13)k2(f13−f12)
+k3f23 k2(f23−f21)λ1+k2(g2+f23)
+=a3λ3
+1+a2λ2
+1+a1λ1+a0, (37)
+where
+a3=1,
+a2=k2f13+k2f23+k2g1+k2g2+k3p,
+a1=k2
+2f13f21+k2
+2f12f23+k2
+2f13g2
++k2
+2f23g1+k2
+2(g1g2−f12f21)
++k2k3f13(p−q)+k2k3g1p+k2k3g2p,
+a0=k2
+2k3[f12f23(p−q)+f13g2(p−q)
++(g1g2−f12f21)p].(38)
+Now, we focus on the coe ﬃcients of the roots of the cu-
+bic polynomial of eq. (37)by using the condition of Routh-
+Hurwitz criteria. Considering p>0,p−q>0, and
+g1g2−f12f21>0, we can get that a3,a2,a1anda0are all
+positive. Then, we obtained the Hurwitz determinant
+H=a2a30
+a0a1a2
+0 0 a0, (39)
+
+=== PAGE 7 ===
+Li J Q, et al. Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:7
+one has
+∆1=a2>0, (40)
+∆2=a2a3
+a0a1=a2a1−a3a0>0, (41)
+∆3=a0∆2>0, (42)
+where inequality (41)is calculated in Appendix. By checking
+the above Routh-Hurwitz conditions, we obtained the charac-
+teristic roots of eq. (37) all have negative real parts. There-
+fore, ¯G1is Hurwitz.
+In summary, ¯Ais Hurwitz under the Lemma, and it can be
+concluded that the agent formation system is exponentially
+stable when the initial errors are located near the equilibrium
+point.
+Remark 1 It should be pointed out that, for the proposed
+control law, the number of distance measurements is reduced.
+When it is necessary to control expansion and contraction to
+avoid obstacles, it is not necessary for each agent to measure
+distance information, nor is it necessary for a large number
+of agents to measure distance information.
+Remark 2 In view of Figure 4, note that the local bear-
+ings of each agent can be misaligned. Even if the agents lose
+their global sense of direction in certain complex environ-
+ments, it will not a ﬀect the completion of the formation. The
+local bearing misalignment does not a ﬀect the interior an-
+gleαiand the distance di jmeasurements. Regardless of the
+bearing orientation, the agents’ formation motion is always
+toward the angular bisector zi j+zikof the interior angle αi,
+and the direction of zi j+zikis constant.
+3.2 Polygonal formation
+In this subsection, we will give the polygonal formation con-
+trol law of nagents. We consider a formation of nagents and
+expand the team scale of the formation through the method
+shown in Figure 5. For agent i,i>3, each agent needs to
+measure two angles α∗
+j1i j2andα∗
+j2i j3relative to three neighbor
+agents j1,j2,j3<i,j1,j2,j3∈ N i. We have an angle set
+A={(j1,i,j2),(j2,i,j3)}.
+Assumption 5 When using the above method to expand
+the team scale of the formation, we assume that the desired
+positions of agent i>3, agent j1, agent j2and agent j3are
+not in a circle, α∗
+j1i j2andα∗
+j2i j3are not zero or .
+Remark 3 When Assumption 5 holds and the formation
+conﬁguration is constructed in the manner depicted in Figure
+5, the formation is angularly rigid, and the analysis of angle
+rigidity can be found in ref. [26].
+To solve the problem proposed in Section 2, the formation
+control laws are designed as
+Figure 4 (Color online) The local bearings are not aligned.
+Figure 5 (Color online) Expansion of formation team scale.
+ui=˙v∗
+c−k1(vi−v∗
+c)+k3(
+d13−d∗
+13)(
+zi j+zik)
+−k2∑
+(j,i,k)∈A(
+αjik−α∗
+jik)(
+zi j+zik)
+, (43)
+where k1andk2are positive scalar gains, k3is a positive con-
+stant if i=3, and k3=0 otherwise.
+Theorem 2 Consider a group of nagents with double-
+integrator dynamics given by eq. (1)under Assumptions
+1−5. If the initial error di j(0)−d∗
+i j,αi(0)−α∗
+iandvi(0)−v∗
+c
+are near the equilibrium point, the formation control law (43)
+ensures that di j(t)→d∗
+i j,αi(t)→α∗
+iandvi(t)→v∗
+casymp-
+totically as t→+∞.
+Proof. The system state variables are deﬁned as
+X=[d13−d∗
+13,e1,e2,e41,e42,..., en1,en2,v⊤
+1−v∗⊤
+c,
+v⊤
+2−v∗⊤
+c,v⊤
+3−v∗⊤
+c,...,v⊤
+n−v∗⊤
+c]⊤∈R4n−3.(44)
+According to the previous foreshadowing, we directly give
+the closed-loop dynamics
+˙X=BX=0(2n−3)×(2 n−3) S1
+S2 −k1I2nX, (45)
+where S1∈R(2n−3)×2 n,S2∈R2n×(2n−3), and
+S1
+
+=== PAGE 8 ===
+Li J Q, et al.Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:8
+=−z⊤
+130 z⊤
+130 · · ·0
+N312+N213 −N312 −N213 0 · · ·0
+−N321 N32+N123−N123 0 · · ·0
+−N241 −N142 0N241+N142· · ·0
+0 −N342 −N243N342+N243· · ·0
+· · · · · · · · · · · · · · · · · ·,
+(46)
+S2
+=0 −k2(z12+z13) 0 · · ·0
+0 0 −k2(z21+z33)· · ·0
+k3(z31+z32)k2(z31+z32)k2(z31+z32)· · ·0
+· · · · · · · · · · · · · · ·.
+(47)
+Then, we linearize S1andS2near the equilibrium X=0to
+analyze the stability of the system, one has
+˙X=¯BX=0(2n−3) ×(2n− 3)¯S1
+¯S2 −k1I2nX. (48)
+We have the characteristic equation as follows:
+λI4n−3−¯B=λI2n−3 −¯S1
+−¯S2(λ+k1)I2n
+=(λ+k1)3λ(λ+k1)I2n−3−¯S1¯S2, (49)
+and in eq. (49),
+¯S1¯S2=¯G10 0 · · ·0
+∗¯G40· · ·0
+∗ ∗ ¯G5· · ·0
+...............
+∗ ∗ ∗ · · · ¯Gn, (50)
+where ¯G1∈R3×3,¯G4,¯G5, ... , ¯Gn∈R2×2, and matrix ¯S1¯S2is
+a block lower triangular matrix. For ¯Gi,i>3
+¯Gi=k2¯Fi=k2a b
+c d, (51)
+where
+a=−k2(
+Nj1i j2+Nj2i j1)(
+zi j1+zi j2)
+,
+b=−k2(
+Nj1i j2+Nj2i j1)(
+zi j2+zi j3)
+,
+c=−k2(
+Nj2i j3+Nj3i j2)(
+zi j1+zi j2)
+,
+d=−k2(
+Nj2i j3+Nj3i j2)(
+zi j2+zi j3)
+.
+Letλ1andλ2be the two eigenvalues of ¯Firespectively.By using
+λ1+λ2=tr(¯Fi)<0,
+λ1λ2=det(¯Fi)>0,(52)
+we have ¯Giis Hurwitz. Then, substituting eq. (50) into
+eq.(49), the characteristic polynomial can be rewritten as
+λI4n−3−¯B
+=(λ+k1)3λ(λ+k1)I3−¯G1n∏
+i=4λ(λ+k1)I2−¯Gi.(53)
+Since ¯Giis Hurwitz, we give the conclusion directly that
+Theorem 2 is proved under Lemma 1.
+Remark 4 It should be pointed out that there is angle
+rigidity under Assumption 5. However, the formation scale
+is not rigid. Below we explain why only the change in dis-
+tance between a pair of agents can determine the scale of the
+entire formation.
+As shown in Figure 2, according to the law of sines
+d23
+sinα∗
+1=d13
+sinα∗
+2=d12
+sinα∗
+3=2R, (54)
+where Rdenotes the radius of the circumcircle of △123, when
+d13shrinks k=d13
+d∗
+13times, the radius of the circumcircle also
+shrinks ktimes.
+Then, since a chord and an angle can uniquely determine
+a circumcircle, when the angle is determined, the radius of
+the circumscribed circle is only related to the length of the
+chord. For example, the chord 12 and α∗
+142is given in Fig-
+ure6(a) and (b). As a result, the scale of a formation of four
+agents can be completely determined by the distance on ei-
+ther side of the ﬁrst triangle △123.
+According to mathematical induction, it can be derived to
+nagents.
+Figure 6 (Color online) The uniqueness of a formation.
+
+=== PAGE 9 ===
+Li
+J Q, et al. Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:9
+3.3 Square formation control
+In this subsection, we discuss the control for square forma-
+tion with four agents on a circle.
+As shown in Figure 6(a), the desired formations of agent
+#4 and the ﬁrst three agents are not on the same circle, which
+satisﬁes Assumption 5. This constitutes a condition for the
+validity of the angle rigidity theory. Therefore, the desired
+position of agent #4 is unique under the constraints of α∗
+142
+andα∗
+243. Here, we relax the condition. When the four agents
+are on a circle, that is, when the red circle and the blue cir-
+cle coincide in Figure 6, the formation conﬁguration satisﬁes
+the expected angle and distance; however, the conﬁguration
+is not unique as shown in Figure 7. Agent #4 measures the
+LOS angle to agent #1, #2 and #3 respectively, forming angle
+constraints, where α∗
+142=/4 andα∗
+243=/4 in Figure 7(a).
+Obviously, the position of agent #4 is not unique, because
+agent #4 can move arbitrarily along the arc⌢
+143 as shown in
+Figure 7(b).
+In the conﬁguration depicted in Figure 8(a), where agent
+#3 measures only d32,d34may be ambiguous. To solve the
+above problems, we can change the constraints as shown in
+Figure 8(b). Agent #1, agent #2, agent #3 and agent #4
+each measure the interior angle α1,α2,α3, andα4with itsneighbors. Then agent #3 measures the distance d32andd34.
+Therefore, the problem can be formulated as follows:
+lim
+t→+∞ei=lim
+t→+∞(αi−/2)=0,
+lim
+t→+∞(
+d32−d∗
+32)
+=0,
+lim
+t→+∞(
+d34−d∗
+34)
+=0.(55)
+The square formation control laws for agent #1 to #4 are
+proposed to be
+ui=˙v∗
+c−k1(vi−v∗
+c)−k2(αi−α∗
+i)(zi(i−1)+zi(i+1)),
+i∈ {1,2,4},
+u3=˙v∗
+c−k1(v3−v∗
+c)−k2(
+α3−α∗
+3)
+(z32+z34)
++k3(
+d32−d∗
+32)
+z32+k3(
+d34−d∗
+34)
+z34.(56)
+Theorem 3 Consider a group of four agents with double-
+integrator dynamics given by eq. (1)under Assumptions 1–
+4. If the initial error di j(0)−d∗
+i j,αi(0)−α∗
+i, andvi(0)−v∗
+c,
+fori=1,2,3,4,j∈ N i, are near the equilibrium point, the
+square formation control law (56) ensures that di j(t)→d∗
+i j,
+αi(t)→α∗
+i, andvi(t)→v∗
+casymptotically as t→+∞.
+¯T1
+¯T2[¯T3¯T4]
+=−k3−k3cosα3 0 k2(1+cosα2) k2(1+cosα3)
+−k3cosα3−k3 −k2(1+cosα4) −k2(1+cosα4) k2(cosα3−cosα4)
+0 0 −k2(sinα1
+d12+sinα1
+d14+sinα4
+d14)
+k2(sinα2
+d12−sinα4
+d14)
+−k2sinα4
+d14
+0 −k3sinα3
+d23k2sinα1
+d12−k2(sinα2
+d23+sinα2
+d12)
+k2sinα3
+d23
+k3sinα3
+d34k3sinα3
+d23−k2sinα4
+d34k2(sinα2
+d23−sinα4
+d34)
+−k2(sinα3
+d34+sinα3
+d23+sinα4
+d34). (57)
+Pr
+oof. With the control law (56), the angle error dynamics
+of each agent can be given by
+˙ei=−Njik(
+vk−vj)
+−Nki j(
+vj−vk)
+. (58)
+The velocity error dynamics are given by
+˙vi−˙v∗
+c=−k1(vi−v∗
+c)−k2(αi−α∗
+i)(zi(i−1)+zi(i+1)),
+i∈ {1,2,4},
+˙v3−˙v∗
+c=−k1(v3−v∗
+c)−k2(
+α3−α∗
+3)
+(z32+z34)
++k3(
+d32−d∗
+32)
+z32+k3(
+d34−d∗
+34)
+z34.(59)The distance error dynamics are given by
+˙d32=z⊤
+32[(v2−v∗
+c)−(v3−v∗
+c)],
+˙d34=z⊤
+34[(v4−v∗
+c)−(v3−v∗
+c)].(60)
+Sinceα1+α2+α3+α4=2, let the system state variables
+be
+X=[d32−d∗
+32,d34−d∗
+34,e1,e2,e3,v⊤
+1−v∗⊤
+c,
+v⊤
+2−v∗⊤
+c,v⊤
+3−v∗⊤
+c,v⊤
+4−v∗⊤
+c]⊤∈R13.(61)
+Then we have the closed-loop system linearized at the
+
+=== PAGE 10 ===
+Li J Q, et al.Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:10
+Figure 7 (Color online) Uncertainty of formation on a circle.
+Figure 8 (Color online) Square formation construction.
+equilibrium point as follows:
+˙X=¯CX=02×202×3¯T1
+03×203×3¯T2
+¯T3¯T4−k1I8X, (62)
+where ¯T1∈R2×8,¯T2∈R3×8,¯T3∈R8×2,¯T4∈R8×3, and
+¯T1=0z⊤
+32−z⊤
+320
+0 0 −z⊤
+34z⊤
+34,
+¯T2=N412+N214 −N412 0 −N214
+−N321 N123+N321 −N123 0
+0 −N432 N234+N432−N234,
+¯T3=0 0
+0 0
+k3z32k3z34
+0 0,
+¯T4=−k2(z12+z14) 0 0
+0 −k2(z21+z23) 0
+0 0 −k2(z32+z34)
+k2(z41+z43)k2(z41+z43)k2(z41+z43).(63)Thus, we can obtain the characteristic equation:
+λI13−¯C
+=λI5 −¯T1
+¯T2
+−[¯T3¯T4]
+(λ+k1)I8
+=(λ+k1)3λ(λ+k1)I5−¯T1
+¯T2[¯T3¯T4], (64)
+where[¯T1¯T2]⊤[¯T3¯T4]
+is given by eq. (57). Let H=
+[¯T1¯T2]⊤[¯T3¯T4]
+. The determinant |λ(λ+k1)I5−H|is
+equivalent to the characteristic equation associated with the
+matrix0I5
+H−k1I5. Thus, from the lemma, if His Hurwitz,
+we have ¯Cis Hurwitz so that the agent square formation sys-
+tem is exponentially stable.
+Remark 5 Note that the movement direction of the con-
+vergence part of the distance error is changed in control law
+(56). Previously, in the control law (6), the movement direc-
+tion of the dynamic error of the distance was the angle bisec-
+torzi j+zik, that is, the weight of the dynamic error of the
+distance in zi jandzikwas equal. Here, the weights on zi jand
+zikbecome the respective distance dynamic errors. Seen in
+Figure 9, the direction of movement becomes edi jzi j+edikzik,
+where edi j=di j−d∗
+i j.
+4 Simulations
+In this section, we use the simpliﬁed model of the quadro-
+tor UA V to verify the validity of the theoretical results in
+Section 3. The low-level control of each quadrotor is de-
+termined by an outer position loop and an inner attitude loop
+[31]. The position model can be decoupled into two linear
+models, namely the horizontal channel model and the alti-
+tude channel model [32, Chapter 11] :
+˙ph=vh,
+˙vh=−gAψΘh,(65)
+Figure 9 (Color online) Direction of motion caused by range dy-
+namic error.
+
+=== PAGE 11 ===
+Li J Q, et al. Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:11
+˙pz=vz,
+˙vz=g−f
+m,(66)
+where
+ph=px
+py,Rψ=cosψ−sinψ
+sinψcosψ,
+Aψ=Rψ0 1
+−1 0,h=ϕ
+θ.(67)
+Here, g∈Ris the gravitational constant, f∈Ris the total
+thrust, m∈Ris the mass of the QUA V, and ϕ∈(−/2,/2),
+θ∈(−/ 2,/2), andψ∈(−,) denote the roll, pitch, and
+yaw angles, respectively.
+Therefore, we present the control structure as shown in
+Figure 10. The position loop in the horizontal channel is con-
+trolled by the formation control law proposed in this paper,
+while the attitude loop is controlled by a PD controller. As-
+sume that all quadrotors move within the X-Yplane, with
+their altitude and yaw angle remaining constant, i.e., the alti-
+tude channel input uzd=0 and the yaw angle ψd=0, where
+(·)drepresents the desired value. The input of the horizontal
+channel uhd∈R2is updated at each time step according to
+eqs. (6),(43), and (56). Then, ϕdandθdcan be obtained by
+inverting eq. (65). Ultimately, the rotational speeds ϖd,kof
+the four rotors are obtained, where k=1,2,3,4.
+Figure 10 The control structure of the QUA Vs.4.1 Triangular formation maneuvering case
+We ﬁrst consider the triangular formation maneuvering case.
+The initial formation of the three quadrotors is an isosce-
+les right triangle, where the initial position coordinates
+and velocity are selected as p1(0)=[0,0]⊤m,p2(0)=
+[4,0]⊤m,p3(0)=[0,4]⊤m,v1(0)=[0,0]⊤m/s,v2(0)=
+[0,0]⊤m/s,v3(0)=[0,0]⊤m/s. Then, let the desired forma-
+tion conﬁguration be the equilateral triangle, i.e., α∗
+1=α∗
+2=
+α∗
+3=/3.
+Applying the control law (6), the simulation results of the
+formation maneuvering are shown in Figure 11. The control
+gains are selected as k1=0.2,k2=0.1,k3=0.02. The de-
+sired translational velocity is selected as v∗
+c=[0.5, 0]⊤m/s.
+And the desired distance d∗
+13is given by
+d∗
+13(t)=10 m,0<t6120 s,
+5 m,120 s<t6240 s,
+10 m,t>240 s.(68)
+In Figure 11, the dotted line depicts the movement trajec-
+tories of the quadrotors. First, it shows the evolution from
+an initial formation to an equilateral triangle formation of the
+desired scale. Then, changing the desired distance d∗
+13when
+the formation ﬂying encounters narrow terrain allows the for-
+mation to maintain an equilateral triangle formation through
+the terrain. Finally, the scale of the formation is restored after
+passing the terrain. Figure 12shows the evolution trajecto-
+ries of angle error, distance error, and actual distances during
+the entire formation ﬂight. The simulation results show the
+stability of the control law (6).
+4.2 Polygonal formation maneuvering case
+In this case, we consider the desired formation conﬁguration
+of six quadrotors. The initial conﬁguration of the formation is
+given arbitrarily. The initial position coordinates and velocity
+are selected as p1(0)=[0,0]⊤m,p2(0)=[2,2]⊤m,p3(0)=
+[−1,4]⊤m,p4(0)=[5,3]⊤m,p5(0)=[4,0]⊤m,p6(0)=
+Figure 11 The triangle formation maneuvering trajectories when encountering narrow terrain.
+
+=== PAGE 12 ===
+Li J Q, et al.Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:12
+Figure 12 Angle and distance error trajectories and actual distance
+evolution trajectories for the triangular formation case.
+[4,5]⊤m,v1(0)=[0,0]⊤m/s,v2(0)=[0,0]⊤m/s,v3(0)=
+[0,0]⊤m/s,v4(0)=[0,0]⊤m/s,v5(0)=[0,0]⊤m/s,v6(0)=
+[0,0]⊤m/s. Then, let the desired formation conﬁguration be
+the square, i.e., α∗
+213=/6,α∗
+123=2/3,α∗
+132=/6,α∗
+142=
+/6,α∗
+243=/6,α∗
+152=/3,α∗
+254=/3,α∗
+263=/3,α∗
+264=
+/3.
+Applying the control law (43), the simulation results of the
+formation maneuvering are shown in Figure 13. The control
+gains are selected as k1=0.3,k2=0.4,k3=0.03. The de-
+sired translational velocity is selected as v∗
+c=[0.5,0]⊤m/s.
+The desired distance d∗
+13is given by eq. (68).
+First, Figure 13shows the evolution from the initial
+formation to a polygonal formation of the desired size. Then,when the formation encounters narrow terrain during ﬂight,
+by changing the desired distance d∗
+13, the formation is able
+to maintain its original geometric topology while passing
+through the terrain. Finally, the formation restores its size
+after passing through the terrain. Figure 14shows the evo-
+lution trajectories of angle error, distance error, and actual
+distances during the entire formation ﬂight. The simulation
+results show the stability of the control law (43).
+4.3 Square formation maneuvering control on a circle
+case
+In this case, we consider the desired formation conﬁguration
+of four quadrotors on a circle. The initial conﬁguration of
+the formation is given arbitrarily. The initial position coordi-
+nates and velocity are selected as p1(0)=[0,0]⊤m,p2(0)=
+[4,0]⊤m,p3(0)=[6,2]⊤m,p4(0)=[0,4]⊤m,v1(0)=
+[0,0]⊤m/s,v2(0)=[0,0]⊤m/s,v3(0)=[0,0]⊤m/s,v4(0)=
+[0,0]⊤m/s. Then, let the desired formation conﬁguration be
+the square, i.e., α∗
+1=α∗
+2=α∗
+3=α∗
+4=/2.
+Applying the control law (56), the simulation results of the
+formation maneuvering are shown in Figure 15. The control
+gains are selected as k1=0.5,k2=0.5,k3=0.1. The desired
+translational velocity is selected as v∗
+c=[0.5,0]⊤m/s. The
+desired distance d∗
+32andd∗
+34are given by
+d∗
+32(t)=d∗
+34(t)=10 m,0<t6120 s,
+5 m,120 s<t6240 s,
+10 m,t>240 s.(69)
+First, Figure 15shows the evolution from the initial forma-
+tion to a square formation of the desired size. Then, when the
+formation encounters narrow terrain during ﬂight, by chang-
+ing the desired distances d∗
+32andd∗
+34, the formation is able to
+maintain its original square shape while passing through the
+terrain. Finally, the formation restores its size after passing
+through the terrain. Figure 16shows the evolution trajecto-
+ries of angle error, distance error, and actual distances during
+the entire formation ﬂight. The simulation results show the
+stability of the control law (56).
+Figure 13 The polygonal formation maneuvering trajectories when encountering narrow terrain.
+
+=== PAGE 13 ===
+Li J Q, et al. Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:13
+Figure 14 Angle and distance error trajectories and actual distance evolution trajectories for the polygonal formation case.
+Figure 15 The square formation maneuvering trajectories when encountering narrow terrain.
+Figure 16 Angle and distance error trajectories and actual distance evolution trajectories for the square formation case.
+
+=== PAGE 14 ===
+Li
+J Q, et al. Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:14
+It can be seen from Figures 11,13, and 15that the di-
+rection of the entire formation relative to the global coor-
+dinate system after deformation and expansion is uncertain,
+precisely because we are using local information. However,
+in all, the purpose of scaling the deformation and formation
+has been achieved. In addition, when the formation encoun-
+ters obstacles that require scaling transformations, we only
+consider maintaining the size of the bounding box to ensure
+safe passage through narrow spaces.
+5 Conclusion and discussion
+This paper investigates formation control problems in multi-
+agent systems and designs control laws that regulate defor-
+mation and formation scaling using angle and distance infor-
+mation. Each agent measures the angle, with only one agent
+measuring the distance. This approach e ﬀectively addresses
+the ambiguity in controlling the scale of the formation when
+relying solely on angle information. The overall scaling of
+the formation is controlled by a single agent’s distance mea-
+surement. When a rigid formation scales to avoid obstacles, it
+does not require extensive adjustments of distance constraints
+between diﬀ erent agents. Multiple experiments have been
+conducted to demonstrate the e ﬀectiveness of the proposed
+control algorithms. The results show that agent formations
+can navigate through narrow terrains with ﬂexible sizes.
+Currently, we can only prove the local convergence of the
+closed-loop nonlinear formation double integrator dynamics;
+global convergence remains unknown. Although the method
+is feasible for nagents, its performance and complexity may
+be aﬀected as the number of agents increases signiﬁcantly.
+Due to the diverse geometric shapes of formations with dif-
+ferent numbers of agents, discussing all possible conﬁgura-
+tions in detail is impractical. For obstacle avoidance tasks,
+the primary goal is to avoid obstacles, and adopting a feasible
+formation scheme is su ﬃcient without considering arbitrary
+formation shapes. Future work will address global conver-
+gence issues.
+Acknowledgements This work was supported by the National Natural
+Science Foundation of China (Grant Nos. 12272116, 62088101), Zhejiang
+Provincial Natural Science Foundation of China (Grant No. LY22A020007),
+and the Fundamental Research Funds for the Provincial Universities of Zhe-
+jiang (Grant No. GK239909299001-014).
+References
+1 Cai H, Su Y, Huang J. Cooperative Control of Multi-Agent Systems.
+Cham: Springer-Verlag, 2022
+2 Liu Y, Liu J, He Z, et al. A survey of multi-agent systems on distributed
+formation control. Un Sys, 2024, 12: 913–926
+3 Alotaibi E T, Alqefari S S, Koubaa A. LSAR: Multi-UA V collaboration
+for search and rescue missions. IEEE Access, 2019, 7: 55817–55832
+4 Yufka A, Parlaktuna O, Ozkan M. Formation-based cooperative trans-
+portation by a group of non-holonomic mobile robots. In: Proceedings
+of the 2010 IEEE International Conference on Systems, Man and Cy-
+bernetics. Istanbul: IEEE, 2010. 3300–33075 Liu H, Tian Y, Lewis F L. Robust trajectory tracking in satellite time-
+varying formation ﬂying. IEEE Trans Cybern, 2021, 51: 5752–5760
+6 Oh K K, Park M C, Ahn H S. A survey of multi-agent formation con-
+trol.Automatica, 2015, 53: 424–440
+7 Li B, Zhang J, Dai L, et al. A hybrid oﬄine optimization method for re-
+conﬁguration of multi-UA V formations. IEEE Trans Aerosp Electron
+Syst, 2021, 57: 506–520
+8 Wang Y, Yue Y, Shan M, et al. Formation reconstruction and trajec-
+tory replanning for multi-UA V patrol. IEEE ASME Trans Mechatron,
+2021, 26: 719–729
+9 Tron R, Thomas J, Loianno G, et al. A distributed optimization frame-
+work for localization and formation control: Applications to vision-
+based measurements. IEEE Control Syst Mag, 2016, 36: 22–44
+10 Liu G, Li B, Ji Y. A modiﬁed HP-adaptive pseudospectral method for
+multi-UA V formation reconﬁguration. ISA Trans, 2022, 129: 217–229
+11 Ze K, Wang W, Liu K, et al. Time-varying formation planning and dis-
+tributed control for multiple UA Vs in clutter environment. IEEE Trans
+Ind Electron , 2024, 71: 11305–11315
+12 Lee B H, Ahn H S. Distributed formation control via global orientation
+estimation. Automatica , 2016, 73: 125–129
+13 Meng Z, Anderson B D O, Hirche S. Formation control with mis-
+matched compasses. Automatica, 2016, 69: 232–241
+14 de Marina H G. Maneuvering and robustness issues in undirected
+displacement-consensus-based formation control. IEEE Trans Au-
+tomat Contr , 2021, 66: 3370–3377
+15 Zhao S, Zelazo D. Bearing rigidity and almost global bearing-only for-
+mation stabilization. IEEE Trans Automat Contr , 2016, 61: 1255–
+1268
+16 Hendrickson B. Conditions for unique graph realizations. SIAM J
+Comput , 1992, 21: 65–84
+17 Asimow L, Roth B. The rigidity of graphs, II. J Math Anal Appl , 1979,
+68: 171–190
+18 Oh K K, Ahn H S. Leader-follower type distance-based formation con-
+trol of a group of autonomous agents. Int J Control Autom Syst , 2017,
+15: 1738–1745
+19 Zhao S, Zelazo D. Bearing-based formation stabilization with directed
+interaction topologies. In: Proceeding of the 2015 54th IEEE Confer-
+ence on Decision and Control (CDC). Osaka: IEEE, 2015. 6115–6120
+20 Zhao S, Li Z, Ding Z. Bearing-only formation tracking control of mul-
+tiagent systems. IEEE Trans Automat Contr, 2019, 64: 4541–4554
+21 Zhao S, Zelazo D. Translational and scaling formation maneuver con-
+trol via a bearing-based approach. IEEE Trans Control Netw Syst,
+2017, 4: 429–438
+22 Hu R, Huang X, Xu C. Integrated visual navigation based on angles-
+only measurements for asteroid ﬁnal landing phase. Astrodynamics,
+2023, 7: 69–82
+23 Gong B, Wang S, Li S, et al. Review of space relative navigation based
+on angles-only measurements. Astrodynamics, 2023, 7: 131–152
+24 Jing G, Zhang G, Lee H W J, et al. Angle-based shape determination
+theory of planar graphs with application to formation stabilization. Au-
+tomatica, 2019, 105: 117–129
+25 Li J, Chen L, Cao M, et al. Satellite formation ﬂying control by using
+only angle measurements. IEEE Trans Aerosp Electron Syst , 2022, :
+1–33
+26 Chen L, Cao M, Li C. Angle rigidity and its usage to stabilize multia-
+gent formations in 2-D. IEEE Trans Automat Contr, 2021, 66: 3667–
+3681
+27 Chen L, Shi M, Marina H G, et al. Stabilizing and maneuvering an-
+gle rigid multiagent formations with double-integrator agent dynamics.
+IEEE Trans Contr Netw Syst , 2022, 9: 1362–1374
+28 Liu T, de Queiroz M. Distance +angle-based control of 2-D rigid for-
+mations. IEEE Trans Cybern, 2021, 51: 5969–5978
+29 Shao Z, Zhou Z, Wang Y, et al. Directed formation control using dis-
+tance and angle in local coordinate frameworks. IEEE Trans Ind Elec-
+tron, 2024, 71: 14722–14729
+30 Zhao S. A ﬃne formation maneuver control of multiagent systems.
+IEEE Trans Automat Contr , 2018, 63: 4140–4155
+
+=== PAGE 15 ===
+Li
+J Q, et al. Sci China Tech Sci July 2025, Vol. 68, Iss. 7, 1720402:15
+31 Dong X, Yu B, Shi Z, et al. Time-varying formation control for un-
+manned aerial vehicles: Theories and applications. IEEE Trans Contr
+Syst Technol, 2015, 23: 340–348
+32 Quan Q. Introduction to Multicopter Design and Control. Singapore:
+Springer, 2017
+Appendix A
+For Section 3, see inequality (41), substituting a3,a2,a1, and
+a0into inequality (41)and organizing, we have
+∆2=a2a3
+a0a1
+=(
+k3
+2f23+k2
+2k3p)
+g2
+1+2k2
+2k3pg1g2
++k2
+2k3g1[f13(p−q)+2f23p+f13p]+k2k2
+3p2g1
++(
+k3
+2f13+k2
+2k3p)
+g2
+2+k2
+2k3f2
+13(p−q)
++k2
+2k3(2f13p+f23p)g2+k2k2
+3p2g2+k2
+2k3f13f21p
++2k3
+2(f13+f23)g1g2+k3
+2g2
+1g2+k3
+2g1g2
+2
++k3
+2g1(
+f13f21−f12f21+f12f23+f13f23+f2
+23)
++k3
+2g2(
+f13f21−f12f21+f12f23+f13f23+f2
+13)
++k3
+2(f13+f23) (f13f21−f12f21+f12f23)
++k2
+2k3f13f23p−k2
+2k3f13f23q+k2k2
+3f13p(p−q)
++k2
+2k3f12f23q, (a1)
+where for each term with a negative sign in eq. (a1), a posi-
+tive term can be found and the result of adding it is positive
+by using p>0,p−q>0, and g1g2−f12f21>0, except for
+the last term whose sign is uncertain.
+Now, let us analyze the positive or negative of the last
+term. Considering k2
+2k3f12f23q, there are the following cases
+that determine the positivity of eq. (a1).
+Case 1 If
+d13<d12<d23, (a2)
+or
+d12<d13<d23, (a3)
+or
+d12<d23<d13, (a4)
+we haveα3<α 1and cosα3>cosα1, as a result, q>0, then∆2>0.
+Case 2 If
+d13<d23<d12, (a5)
+or
+d23<d13<d12, (a6)
+we haveα3> α 1and cosα3<cosα1, then q<0. But by
+using the law of sines (54), one has
+f13−f12=sinα3
+d13−sinα2
+d12=2Rd2
+12−d2
+13
+d12d13>0,
+−f13f23q>−f12f23q,
+−f13f23q+f12f23q>0,
+−k2
+2k3f13f23q+k2
+2k3f12f23q>0, (a7)
+so
+that∆2>0.
+Case 3 If
+d23<d12<d13, (a8)
+we have
+f32−f12=sinα2
+d23−sinα2
+d12>0. (a9)
+There
+are two cases: when α1,α2andα3are all acute an-
+gles, one has
+p+q=1+cosα3+cosα3−cosα1>0. (a10)
+And whenα2is an obtuse angle, α1andα3are acute an-
+gles, there is also
+p+q>0, (a11)
+where we obtained
+f12f23p+f12f23q>0,
+f32f23p+f12f23q>0.(a12)
+By using g2=f32+f12, one has
+k2
+2k3f32f23p+k2
+2k3f12f23q>0, (a13)
+where we have ∆2>0.
+In conclusion, it has been proven that ∆2>0 is valid.
+

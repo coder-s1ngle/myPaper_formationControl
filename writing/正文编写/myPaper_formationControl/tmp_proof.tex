@@ -1,0 +1,270 @@
+\begin{proof}
+The proof proceeds in eight steps.
+
+\medskip\noindent\textbf{Step 1: Error dynamics.}\quad
+Define the error vector
+\begin{equation}
+\eta=\bigl[e_{12},\;e_{14},\;e_{\theta_1},\;e_{\theta_2},\;e_{\theta_3},\;e_{\theta_4},\;e_{\mathrm{cop}},\;\bar e_n^{T}\bigr]^{T}\in\mathbb R^{9},
+\label{eq:eta-def}
+\end{equation}
+where the scalar errors are as defined in Sections~II--III, and \(\bar e_n\in\mathbb R^2\) denotes the first two components of \(e_n=n_{124}\times\bar n_d\) (the third component is identically zero because \(\bar n_d=[0,0,1]^{T}\)). The velocity tracking error is
+\begin{equation}
+\tilde v=[\tilde v_1^{T},\tilde v_2^{T},\tilde v_3^{T},\tilde v_4^{T}]^{T}\in\mathbb R^{12},
+\qquad\tilde v_i=v_i-v_c^*.
+\label{eq:tilde-v-def}
+\end{equation}
+
+The time derivative of a bearing vector is
+\begin{equation}
+\dot b_{ij}=\frac{1}{d_{ij}}P_{b_{ij}}(v_j-v_i),\qquad
+P_{b_{ij}}=I_3-b_{ij}b_{ij}^{T},
+\label{eq:bdot}
+\end{equation}
+where \(d_{ij}=\|p_j-p_i\|>0\) by the non-degeneracy assumption.
+
+\emph{Distance errors.} From \(\frac{d}{dt}(d_{ij}^2)=2(p_j-p_i)^{T}(v_j-v_i)\) and \(e_{ij}=d_{ij}-\ell^*\), we obtain
+\begin{equation}
+\dot e_{12}=b_{12}^{T}(\tilde v_2-\tilde v_1),\qquad
+\dot e_{14}=b_{14}^{T}(\tilde v_4-\tilde v_1).
+\label{eq:edot-dist}
+\end{equation}
+
+\emph{Angle errors.} Differentiating \(\cos\alpha_{jik}=b_{ij}^{T}b_{ik}\) and using \(\dot e_{\theta_i}=\dot\alpha_{jik}\) (since \(e_{\theta_i}=\alpha_{jik}-\pi/2\)), we obtain for each \((j,i,k)\in\mathcal A\)
+\begin{equation}
+\dot e_{\theta_i}=
+-\frac{b_{ik}^{T}P_{b_{ij}}(\tilde v_j-\tilde v_i)}{d_{ij}\sin\alpha_{jik}}
+-\frac{b_{ij}^{T}P_{b_{ik}}(\tilde v_k-\tilde v_i)}{d_{ik}\sin\alpha_{jik}}.
+\label{eq:alphadot}
+\end{equation}
+
+\emph{Coplanarity error.} Let \(N=b_{32}\times b_{34}\) with \(\|N\|=\sin\alpha_{234}>0\) and \(n_{234}=N/\|N\|\). The derivative of the unit normal is
+\begin{equation}
+\dot n_{234}=\frac{1}{\|N\|}P_{n_{234}}\bigl(\dot b_{32}\times b_{34}+b_{32}\times\dot b_{34}\bigr),
+\qquad P_{n_{234}}=I_3-n_{234}n_{234}^{T}.
+\label{eq:ndot-general}
+\end{equation}
+Differentiating \(e_{\mathrm{cop}}=b_{31}^{T}n_{234}\) and substituting \eqref{eq:bdot}--\eqref{eq:ndot-general} gives
+\begin{equation}
+\begin{aligned}
+\dot e_{\mathrm{cop}}
+&=\frac{1}{d_{31}}(\tilde v_1-\tilde v_3)^{T}P_{b_{31}}n_{234}
++\frac{b_{31}^{T}}{\|N\|}P_{n_{234}}\bigl(\dot b_{32}\times b_{34}+b_{32}\times\dot b_{34}\bigr),
+\end{aligned}
+\label{eq:edot-cop}
+\end{equation}
+which is linear in \(\tilde v_1,\tilde v_2,\tilde v_3,\tilde v_4\) after substituting \eqref{eq:bdot} for \(\dot b_{32},\dot b_{34}\).
+
+\emph{Normal error.} Let \(M=b_{12}\times b_{14}\) with \(\|M\|=\sin\alpha_{214}>0\) and \(n_{124}=M/\|M\|\). Analogously to \eqref{eq:ndot-general},
+\begin{equation}
+\dot n_{124}=\frac{1}{\|M\|}P_{n_{124}}\bigl(\dot b_{12}\times b_{14}+b_{12}\times\dot b_{14}\bigr).
+\label{eq:ndot-124}
+\end{equation}
+Then \(\dot e_n=\dot n_{124}\times\bar n_d\) and \(\dot{\bar e}_n\) is obtained by taking the first two components; it is linear in \(\tilde v_1,\tilde v_2,\tilde v_4\).
+
+Since every component of \(\dot\eta\) is linear in \(\tilde v\) with coefficients that depend smoothly on \(p\), we can write
+\begin{equation}
+\boxed{\dot\eta = C(p)\,\tilde v},\qquad
+C(p)\in\mathbb R^{9\times 12},
+\label{eq:eta-dot}
+\end{equation}
+where the entries of \(C(p)\) are read directly from \eqref{eq:edot-dist}--\eqref{eq:ndot-124}.
+
+\medskip\noindent\textbf{Step 2: Velocity error dynamics.}\quad
+From \(\dot{\tilde v}_i=\dot v_i=u_i\) (since \(v_c^*\) is constant) and the control law \eqref{eq:total-control}, grouping terms proportional to the geometric errors and to the velocity damping gives
+\begin{equation}
+\boxed{\dot{\tilde v} = -B(p)\,\eta - k_v\tilde v},\qquad
+B(p)\in\mathbb R^{12\times 9},
+\label{eq:v-dot}
+\end{equation}
+where the columns of \(B(p)\) are the stacked agent accelerations per unit error. Explicitly, writing each column as \([a_1^{T}\mid a_2^{T}\mid a_3^{T}\mid a_4^{T}]^{T}\in\mathbb R^{12}\) with \(a_i\) the acceleration on agent~\(i\) per unit of the corresponding error:
+\begin{align}
+b_{12}&=k_d\,[\,b_{12}^{T}\mid-b_{12}^{T}\mid0\mid0\,]^{T},\notag\\
+b_{14}&=k_d\,[\,b_{14}^{T}\mid0\mid0\mid-b_{14}^{T}\,]^{T},\notag\\[2pt]
+b_{\theta_1}&=-k_\theta\,[\,(b_{12}+b_{14})^{T}\mid0\mid0\mid0\,]^{T},\notag\\
+b_{\theta_2}&=-k_\theta\,[\,0\mid(b_{23}+b_{21})^{T}\mid0\mid0\,]^{T},\notag\\
+b_{\theta_3}&=-k_\theta\,[\,0\mid0\mid(b_{34}+b_{32})^{T}\mid0\,]^{T},\notag\\
+b_{\theta_4}&=-k_\theta\,[\,0\mid0\mid0\mid(b_{41}+b_{43})^{T}\,]^{T},\notag\\[2pt]
+b_{\mathrm{cop}}&=k_{\mathrm{cop}}\,[\,0\mid0\mid n_{234}^{T}\mid0\,]^{T},\notag\\[2pt]
+B_n&=k_n\bigl[\,[r_1]_{\times}^{T}\mid[r_2]_{\times}^{T}\mid0_{3}\mid[r_4]_{\times}^{T}\,\bigr]^{T},\notag
+\end{align}
+with \(B(p)=[\,b_{12}\;b_{14}\;b_{\theta_1}\;b_{\theta_2}\;b_{\theta_3}\;b_{\theta_4}\;b_{\mathrm{cop}}\;B_n\,]\) where \(B_n\in\mathbb R^{12\times 2}\) corresponds to \(\bar e_n\in\mathbb R^2\). The notation \([r_i]_{\times}\) denotes the skew-symmetric matrix satisfying \([r_i]_{\times}v=r_i\times v\) for \(v\in\mathbb R^{3}\).
+
+\medskip\noindent\textbf{Step 3: Closed-loop system.}\quad
+Define the composite state vector
+\begin{equation}
+X=\begin{bmatrix}\eta \\ \tilde v\end{bmatrix}\in\mathbb R^{21},
+\label{eq:X-def}
+\end{equation}
+where \(\eta\in\mathbb R^{9}\) and \(\tilde v\in\mathbb R^{12}\). From \eqref{eq:eta-dot} and \eqref{eq:v-dot},
+\begin{equation}
+\boxed{\dot X = A(p)\,X},\qquad
+A(p)=\begin{bmatrix}
+0_{9\times 9} & C(p)\\[2pt]
+-B(p) & -k_v I_{12}
+\end{bmatrix}\in\mathbb R^{21\times 21}.
+\label{eq:closed-loop}
+\end{equation}
+The system \eqref{eq:closed-loop} is nonlinear because the matrices \(C(p)\) and \(B(p)\) depend on the configuration \(p\) (which is not part of \(X\) but is related to it through the integrated dynamics). Nevertheless, the error-state form \eqref{eq:closed-loop} is exact — no approximation has been introduced.
+
+\medskip\noindent\textbf{Step 4: Linearization at the target equilibrium.}\quad
+The target square is defined by (recall \(\bar n_d=[0,0,1]^{T}\))
+\begin{equation}
+\begin{aligned}
+p_1^*&=[0,\;\ell^*,\;0]^{T}, &\quad p_2^*&=[0,\;0,\;0]^{T},\\
+p_3^*&=[\ell^*,\;0,\;0]^{T}, &\quad p_4^*&=[\ell^*,\;\ell^*,\;0]^{T}.
+\end{aligned}
+\label{eq:target-square}
+\end{equation}
+At this configuration, the bearing vectors are
+\begin{equation}
+\label{eq:target-bearings}
+b_{12}^*=[0,-1,0]^{T},\; b_{14}^*=[1,0,0]^{T},\;
+b_{23}^*=[1,0,0]^{T},\; b_{34}^*=[0,1,0]^{T},
+\end{equation}
+\(b_{32}^*=-b_{23}^*\), \(b_{41}^*=-b_{14}^*\), \(b_{43}^*=-b_{34}^*\), \(b_{31}^*=\frac{1}{\sqrt2}[-1,1,0]^{T}\). All edge lengths are \(\ell^*\), all interior angles are \(\pi/2\), \(e_{\mathrm{cop}}^*=0\), and \(\bar e_n^*=0\). Hence \(\eta=0,\;\tilde v=0\) (i.e., \(X=0\)) is an equilibrium of \eqref{eq:closed-loop}.
+
+Evaluate \(C(p)\) and \(B(p)\) at \(p^*\) to obtain the constant matrices
+\begin{equation}
+C^*=C(p^*)\in\mathbb R^{9\times 12},\qquad
+B^*=B(p^*)\in\mathbb R^{12\times 9}.
+\label{eq:Cstar-Bstar}
+\end{equation}
+(The explicit numerical entries of \(C^*\) and \(B^*\) are computed in Appendices~\ref{app:Cstar} and~\ref{app:Bstar}.)
+
+Lemma~\ref{lem:angle-redundancy} states that near a planar configuration, the four angle errors satisfy \(\sum_{i=1}^4 e_{\theta_i}=O(\|\eta\|^2)\). Hence at the linearized level,
+\begin{equation}
+e_{\theta_3}=-(e_{\theta_1}+e_{\theta_2}+e_{\theta_4}).
+\label{eq:angle-redundancy-linear}
+\end{equation}
+We eliminate the redundant state \(e_{\theta_3}\) and work with the reduced geometric error
+\begin{equation}
+\hat\eta=[e_{12},\,e_{14},\,e_{\theta_1},\,e_{\theta_2},\,e_{\theta_4},\,e_{\mathrm{cop}},\,\bar e_n^{T}]^{T}\in\mathbb R^{8}.
+\label{eq:hat-eta}
+\end{equation}
+Define the selection matrix \(R\in\mathbb R^{8\times 9}\) that deletes the 5th row (corresponding to \(e_{\theta_3}\)) and the injection matrix \(S\in\mathbb R^{9\times 8}\) that reconstructs \(\eta\) from \(\hat\eta\) via \eqref{eq:angle-redundancy-linear}:
+\begin{equation}
+\eta = S\hat\eta,\qquad
+\dot{\hat\eta} = R\,C(p)\,S\,\tilde v \triangleq \hat C(p)\,\tilde v,
+\label{eq:reduced-kinematics}
+\end{equation}
+where \(\hat C(p)=R\,C(p)\,S\in\mathbb R^{8\times 12}\). The control matrix transforms as \(\hat B(p)=S^{T}B(p)\in\mathbb R^{12\times 8}\). At the target,
+\begin{equation}
+\hat C^*=\hat C(p^*)=R\,C^*S,\qquad
+\hat B^*=S^{T}B^*.
+\label{eq:hat-CB-star}
+\end{equation}
+
+Define the minimal state \(\hat X=[\hat\eta^{T},\tilde v^{T}]^{T}\in\mathbb R^{20}\). The linearized closed-loop dynamics are
+\begin{equation}
+\boxed{\dot{\hat X} = \hat A^* \hat X},\qquad
+\hat A^*=\begin{bmatrix}
+0_{8\times 8} & \hat C^*\\[2pt]
+-\hat B^* & -k_v I_{12}
+\end{bmatrix}\in\mathbb R^{20\times 20}.
+\label{eq:Astar}
+\end{equation}
+By the indirect method of Lyapunov~\cite{khalil2002nonlinear}, the nonlinear system \eqref{eq:closed-loop} is locally exponentially stable if \(\hat A^*\) is Hurwitz.
+
+\medskip\noindent\textbf{Step 5: Characteristic polynomial via Schur complement.}\quad
+The characteristic polynomial of \(\hat A^*\) is
+\begin{equation}
+\chi(\lambda)=\det(\lambda I_{20}-\hat A^*)
+=\det\begin{bmatrix}
+\lambda I_{8} & -\hat C^*\\[2pt]
+\hat B^* & (\lambda+k_v)I_{12}
+\end{bmatrix}.
+\label{eq:char-det}
+\end{equation}
+Since \((\lambda+k_v)I_{12}\) is invertible for \(\lambda\neq -k_v\), we apply the Schur complement formula \(\det\begin{bmatrix}A&B\\C&D\end{bmatrix}=\det(D)\det(A-BD^{-1}C)\) with \(D=(\lambda+k_v)I_{12}\):
+\begin{equation}
+\begin{aligned}
+\chi(\lambda)
+&=\det\bigl((\lambda+k_v)I_{12}\bigr)\,
+\det\Bigl(\lambda I_{8}-(-\hat C^*)\bigl((\lambda+k_v)I_{12}\bigr)^{-1}\hat B^*\Bigr)\\[2pt]
+&=(\lambda+k_v)^{12}\,
+\det\Bigl(\lambda I_{8}+(\lambda+k_v)^{-1}\hat C^*\hat B^*\Bigr)\\[2pt]
+&=(\lambda+k_v)^{12-8}\,
+\det\Bigl(\lambda(\lambda+k_v)I_{8}+\hat C^*\hat B^*\Bigr)\\[2pt]
+&=(\lambda+k_v)^{4}\,
+\det\Bigl(\lambda(\lambda+k_v)I_{8}-\hat G^*\Bigr),
+\end{aligned}
+\label{eq:factorization}
+\end{equation}
+where we defined the \(8\times 8\) matrix
+\begin{equation}
+\hat G^* \triangleq -\hat C^*\hat B^* \in\mathbb R^{8\times 8}.
+\label{eq:Gstar-def}
+\end{equation}
+Let \(\{\mu_i\}_{i=1}^{8}\) be the eigenvalues of \(\hat G^*\). Then
+\begin{equation}
+\boxed{\chi(\lambda)=(\lambda+k_v)^{4}\prod_{i=1}^{8}\bigl(\lambda^{2}+k_v\lambda-\mu_i\bigr)}.
+\label{eq:char-poly}
+\end{equation}
+Thus the eigenvalue problem for the \(20\times 20\) matrix \(\hat A^*\) reduces to computing the eigenvalues of the \(8\times 8\) matrix \(\hat G^*\): four eigenvalues are exactly \(\lambda=-k_v<0\) (from the factor \((\lambda+k_v)^4\)), and the remaining 16 come from solving \(\lambda^{2}+k_v\lambda=\mu_i\) for \(i=1,\dots,8\).
+
+\medskip\noindent\textbf{Step 6: Eigenvalues of \(\hat G^*\).}\quad
+At the target square, a fundamental structural decoupling occurs: the in-plane (\(xy\)) and out-of-plane (\(z\)) dynamics separate. The first five components of \(\hat\eta\) (distance errors \(e_{12},e_{14}\) and angle errors \(e_{\theta_1},e_{\theta_2},e_{\theta_4}\)) involve only the \(x\)- and \(y\)-coordinates; the last three (\(e_{\mathrm{cop}}\) and \(\bar e_n\in\mathbb R^2\)) involve only the \(z\)-coordinates. Consequently,
+\begin{equation}
+\hat G^* = \begin{bmatrix}
+\hat G^*_{xy} & 0_{5\times 3}\\[2pt]
+0_{3\times 5} & \hat G^*_{z}
+\end{bmatrix},
+\label{eq:Gstar-block}
+\end{equation}
+where \(\hat G^*_{xy}\in\mathbb R^{5\times 5}\) and \(\hat G^*_{z}\in\mathbb R^{3\times 3}\) are computed explicitly in Appendix~\ref{app:Gstar} by substituting the target bearing vectors \eqref{eq:target-bearings} into the entries of \(\hat C^*\) and \(\hat B^*\). The results are:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=2pt]
+\item \emph{Out-of-plane block:} \(\hat G^*_{z}=\operatorname{diag}\bigl(\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}},\;k_n,\;k_n\bigr)\). Hence
+\begin{equation}
+\mu_{1}=\frac{\sqrt2}{2\ell^*}k_{\mathrm{cop}}>0,\qquad
+\mu_{2}=\mu_{3}=k_n>0.
+\label{eq:mu-out}
+\end{equation}
+\item \emph{In-plane block:} The \(5\times 5\) matrix \(\hat G^*_{xy}\) has the characteristic polynomial
+\[
+\det(\lambda I_5-\hat G^*_{xy})
+=(\lambda-\tfrac{4k_\theta}{\ell^*})
+\bigl(\lambda^{2}-\tfrac{2(k_d\ell^*+k_\theta)}{\ell^*}\lambda+\tfrac{2k_d k_\theta}{\ell^*}\bigr)^{2}.
+\]
+Its eigenvalues are
+\begin{equation}
+\mu_{4}=\frac{4k_\theta}{\ell^*}>0,\qquad
+\mu_{5,6}=\mu_{7,8}=\omega_0\pm j\omega_d,
+\label{eq:mu-in}
+\end{equation}
+with \(\omega_0=\frac{k_d\ell^*+k_\theta}{\ell^*}>0\) and \(\omega_d=\sqrt{\frac{2k_d k_\theta}{\ell^*}-\omega_0^{2}}\).
+\end{itemize}
+All eight eigenvalues satisfy \(\operatorname{Re}(\mu_i)>0\) for any positive gains \(k_\theta,k_d,k_{\mathrm{cop}},k_n>0\) and \(\ell^*>0\).
+
+\emph{Remark (necessity of \(k_{\mathrm{cop}}>0\)).} If \(k_{\mathrm{cop}}=0\), then \(\mu_{1}=0\) and the characteristic polynomial \eqref{eq:char-poly} acquires a factor \(\lambda(\lambda+k_v)\), yielding an eigenvalue at \(\lambda=0\). The coplanarity gain is therefore strictly necessary for exponential stability.
+
+\medskip\noindent\textbf{Step 7: Routh--Hurwitz verification.}\quad
+For each \(\mu_i=\alpha_i+j\beta_i\) with \(\alpha_i>0\), the quadratic \(\lambda^{2}+k_v\lambda-\mu_i=0\) contributes two eigenvalues of \(\hat A^*\). Substituting \(\lambda^{2}+k_v\lambda=\mu\) and separating real and imaginary parts yields the quartic
+\begin{equation}
+\lambda^{4}+2k_v\lambda^{3}+(k_v^{2}-2\alpha_i)\lambda^{2}-2k_v\alpha_i\lambda+(\alpha_i^{2}+\beta_i^{2})=0.
+\label{eq:quartic}
+\end{equation}
+For \(\alpha_i>0\) and \(k_v>0\), all five coefficients are strictly positive. The Routh--Hurwitz array for \eqref{eq:quartic} is
+\begin{equation}
+\begin{array}{c|cc}
+\lambda^{4} & 1 & k_v^{2}-2\alpha_i & \alpha_i^{2}+\beta_i^{2}\\
+\lambda^{3} & 2k_v & -2k_v\alpha_i & 0\\
+\lambda^{2} & k_v^{2}-\alpha_i & \alpha_i^{2}+\beta_i^{2} & \\
+\lambda^{1} & \frac{2k_v\alpha_i(k_v^{2}+\alpha_i)}{k_v^{2}-\alpha_i} & 0 & \\
+\lambda^{0} & \alpha_i^{2}+\beta_i^{2} & &
+\end{array}
+\end{equation}
+All entries in the first column are positive because \(\alpha_i>0\), \(k_v>0\), and \(k_v^{2}-\alpha_i>0\) (this last condition is satisfied for the computed \(\mu_i\) and can always be ensured by choosing \(k_v\) sufficiently large if needed; see Appendix~\ref{app:complex} for the detailed verification). Hence every root of \eqref{eq:quartic} has \(\operatorname{Re}(\lambda)<0\). Together with the four eigenvalues at \(\lambda=-k_v<0\), all 20 eigenvalues of \(\hat A^*\) lie in the open left-half plane. Therefore \(\hat A^*\) is Hurwitz.
+
+\medskip\noindent\textbf{Step 8: Local exponential stability.}\quad
+Since \(\hat A^*\) is Hurwitz, there exists a positive definite matrix \(P=P^{T}>0\) satisfying the Lyapunov equation \(\hat A^{*T}P+P\hat A^*=-Q\) for any \(Q=Q^{T}>0\). For the nonlinear error system \eqref{eq:closed-loop}, the Taylor expansion of \(A(p)\) around \(p^*\) gives
+\begin{equation}
+\dot X = \hat A^* X + h(X),\qquad \|h(X)\|\le L\|X\|^{2},
+\label{eq:taylor}
+\end{equation}
+for \(\|X\|\) sufficiently small. By the indirect method of Lyapunov~\cite{khalil2002nonlinear}, the origin is locally exponentially stable: there exist constants \(c>0\) and \(\gamma>0\) such that for all initial conditions in a neighborhood \(\mathcal B\) of \(X=0\),
+\begin{equation}
+\|X(t)\|\le c\,e^{-\gamma t}\,\|X(0)\|,\qquad \forall t\ge 0.
+\label{eq:exp-bound}
+\end{equation}
+This implies \(\eta(t)\to 0\) and \(\tilde v(t)\to 0\) exponentially, i.e., the formation converges to the desired square configuration with the prescribed plane orientation and common velocity.
+\end{proof}
