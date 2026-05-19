@@ -50,13 +50,12 @@ TOTAL_TIME = 60.0
 SIM_DT = 1.0 / 500.0
 CTRL_DT = 1.0 / 50.0
 
-GAINS = {
-    "bp_angle": 0.5,   "bp_dist": 0.3,   "bp_damp": 1.0,
-    "bp_att": 0.4,     "bp_cop": 0.4,
-}
-# thresholds / mus (unused when saturation off, but kept for completeness)
-GAIN_THRESH = {"angle": 0.35, "dist": 0.2, "damp": 0.15, "att": 0.1, "cop": 0.05}
-GAIN_MU = {"angle": 0.3, "dist": 0.3, "damp": 0.15, "att": 0.3, "cop": 0.5}
+# Fixed formation control gains (paper Sec. V-B)
+K_ANGLE = 1.67
+K_DIST = 3.70
+K_DAMP = 7.0
+K_NOR = 4.01
+K_COP = 6.5
 
 
 class DoubleIntegratorAgent:
@@ -124,7 +123,7 @@ class FormationController:
             theta = _angle_at_i(p[c["i"]], p[c["j"]], p[c["k"]])
             e = theta - c["theta_star"]
             self.angle_err[c["name"]].append(e)
-            u[c["i"]] += -GAINS["bp_angle"] * e * (zij + zik)
+            u[c["i"]] += -K_ANGLE * e * (zij + zik)
 
         # (2) Distance constraints (edges (1,2) and (1,4))
         d12 = np.linalg.norm(p[1] - p[0])
@@ -141,15 +140,15 @@ class FormationController:
         e12 = d12 - DESIRED_DIST
         e14 = d14 - DESIRED_DIST
 
-        u[0] += GAINS["bp_dist"] * e12 * z12
-        u[0] += GAINS["bp_dist"] * e14 * z14
-        u[1] -= GAINS["bp_dist"] * e12 * z12
-        u[3] -= GAINS["bp_dist"] * e14 * z14
+        u[0] += K_DIST * e12 * z12
+        u[0] += K_DIST * e14 * z14
+        u[1] -= K_DIST * e12 * z12
+        u[3] -= K_DIST * e14 * z14
 
         # (3) Velocity damping
         e_v_stack = v - v_star
         for i in range(4):
-            u[i] += -GAINS["bp_damp"] * e_v_stack[i]
+            u[i] += -K_DAMP * e_v_stack[i]
 
         # (4) Coplanarity term (agent 3 only)
         z31 = _unit(p[0] - p[2])
@@ -160,7 +159,7 @@ class FormationController:
         self.coplanar_err.append(e_cop)
 
         if self.use_coplanar:
-            u[2] -= GAINS["bp_cop"] * e_cop * n234
+            u[2] -= K_COP * e_cop * n234
 
         # (5) Undirected normal control
         n142 = _unit(np.cross(z14, z12))
@@ -174,7 +173,7 @@ class FormationController:
         p_center = np.mean(np.vstack([p[0], p[1], p[3]]), axis=0)
         for idx in (0, 1, 3):
             r_i = p[idx] - p_center
-            u[idx] += GAINS["bp_att"] * np.cross(e_n, r_i)
+            u[idx] += K_NOR * np.cross(e_n, r_i)
 
         return u
 
@@ -281,7 +280,7 @@ ax_cop.axhline(0, color="grey", linewidth=0.5, linestyle="--")
 ax_cop.set_xlabel("Time (s)")
 ax_cop.set_ylabel("$e_{\\mathrm{cop}}$")
 ax_cop.set_title("(a) Coplanarity error")
-ax_cop.legend()
+ax_cop.legend(loc="upper right")
 ax_cop.grid(True, alpha=0.3)
 
 # (b) Angle errors
@@ -296,7 +295,7 @@ ax_ang.set_xlabel("Time (s)")
 ax_ang.set_ylabel("$e_{\\theta_i}$ (rad)")
 ax_ang.set_title("(b) Angle errors")
 handles, labels = ax_ang.get_legend_handles_labels()
-ax_ang.legend(handles[:4], labels[:4], ncol=2, fontsize=5.5)
+ax_ang.legend(handles[:4], labels[:4], ncol=2, fontsize=5.5, loc="upper right")
 ax_ang.grid(True, alpha=0.3)
 
 # (c) Distance errors
@@ -313,7 +312,7 @@ ax_dist.axhline(0, color="grey", linewidth=0.5, linestyle="--")
 ax_dist.set_xlabel("Time (s)")
 ax_dist.set_ylabel("$e_d$ (m)")
 ax_dist.set_title("(c) Distance errors")
-ax_dist.legend(fontsize=6.5)
+ax_dist.legend(fontsize=6.5, loc="upper right")
 ax_dist.grid(True, alpha=0.3)
 
 # (d) Normal error
@@ -323,7 +322,7 @@ ax_norm.plot(t_cwo, ct_wo.normal_err, color=COLOURS[1],
 ax_norm.set_xlabel("Time (s)")
 ax_norm.set_ylabel("$\\|e_n\\|$ (rad)")
 ax_norm.set_title("(d) Undirected plane error")
-ax_norm.legend()
+ax_norm.legend(loc="upper right")
 ax_norm.grid(True, alpha=0.3)
 
 plt.tight_layout()
@@ -358,4 +357,13 @@ def _summary(agents, ctrl, tag):
 
 _summary(ag_w, ct_w, "WITH coplanarity")
 _summary(ag_wo, ct_wo, "WITHOUT coplanarity")
+
+# ── Generate individual paper figures via plot_for_paper ────────────────────
+from Exp_1.plot_for_paper import run_sims, fig_angle_error, fig_coplanar_error, fig_height
+
+ctrl_w, ctrl_wo, agents_w, agents_wo = run_sims()
+fig_angle_error(ctrl_w, ctrl_wo, PAPER_FIG_DIR)
+fig_coplanar_error(ctrl_w, ctrl_wo, PAPER_FIG_DIR)
+fig_height(ctrl_w, ctrl_wo, agents_w, agents_wo, PAPER_FIG_DIR)
+
 print("\nDone.")

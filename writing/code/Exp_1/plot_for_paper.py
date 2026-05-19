@@ -90,7 +90,7 @@ def fig_angle_error(ctrl_w, ctrl_wo, out_dir: Path):
         ax.set_xlabel("Time (s)")
         ax.grid(True, linewidth=0.3, alpha=0.6)
         ax.tick_params(direction="in")
-    ax1.legend(frameon=False, ncol=2, fontsize=6)
+    ax1.legend(frameon=False, ncol=2, fontsize=6, loc="upper right")
 
     fig.tight_layout(pad=0.8)
     _save(fig, "fig_exp1_angle", out_dir)
@@ -107,7 +107,7 @@ def fig_coplanar_error(ctrl_w, ctrl_wo, out_dir: Path):
     ax.plot(t_wo, c_wo, color=COLOR_WO, linewidth=LW, label="without $k_{\\mathrm{cop}}$")
     _common_ax(ax)
     ax.set_ylabel("$e_{\\mathrm{cop}}$")
-    ax.legend(frameon=False)
+    ax.legend(frameon=False, loc="upper right")
     _save(fig, "fig_exp1_coplanar", out_dir)
 
 
@@ -126,7 +126,7 @@ def fig_height(ctrl_w, ctrl_wo, agents_w, agents_wo, out_dir: Path):
     ax.plot(t_wo, z3_wo, color=COLOR_WO, linewidth=LW, label="without $k_{\\mathrm{cop}}$")
     _common_ax(ax)
     ax.set_ylabel("Height of agent 3 (m)")
-    ax.legend(frameon=False)
+    ax.legend(frameon=False, loc="upper right")
     _save(fig, "fig_exp1_height", out_dir)
 
 

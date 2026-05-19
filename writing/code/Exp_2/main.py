@@ -16,14 +16,14 @@ def main():
         use_leso=use_leso,
     )
 
-    while runner.total_time < 90.0:
+    while runner.total_time < 85.0:
         runner.step_world()
 
     plot_disturbance(runner.world.agent_list, runner.dt)
     plot_disturbance_by_axis(runner.world.agent_list, runner.dt)
     plot_xy_trajectory(runner.world.agent_list)
     plot_3d_trajectory(runner.world.agent_list,
-                       t_snapshots=[0, 10, 20, 40, 60, 70, 90])
+                       t_snapshots=[0, 7, 20, 40, 50, 65, 80])
     plot_z_over_time(runner.world.agent_list)
     plot_attitude(runner.world.agent_list)
 

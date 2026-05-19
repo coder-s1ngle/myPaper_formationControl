@@ -5,51 +5,16 @@ from utils import utils
 class formation_control_V_constraints:
     def __init__(self, use_leso=True):
         self.use_leso = use_leso
-        self.K_angle = 3.0#3.5#4.2 #7.0
-        self.K_damp = 6.0#5.8#6.2#7.0 #7.4
-        self.K_dist = 4.0  #4.6 #2.1 #1.75
+        # Fixed formation control gains (linear-equivalent of saturation scheme)
+        self.K_angle = 3.0
+        self.K_dist = 5.0
+        self.K_damp = 12.0
+        self.K_cop = 4.5
+        self.K_nor = 3.5#4.0
 
-        self.K_rope = 74#50
-        self.C_rope = 18#18
+        self.K_rope = 74
+        self.C_rope = 18
         self.l0 = 1.0
-
-
-        self.bp_angle = 0.8#1.1#1.35#1.5
-        self.d_p_angle = 0.35
-        self.mu_p_angle = 0.3
-
-        self.bp_dist = 1.2#1.5#1.8
-        self.d_p_dist = 0.2
-        self.mu_p_dist = 0.3#0.25#0.12
-
-        self.bp_damp = 1.5#2.0#2.5
-        self.d_d_damp = 0.15
-        self.mu_d_damp = 0.15
-
-        self.bp_att = 0.8#1.4
-        self.d_p_att = 0.1
-        self.mu_p_att = 0.3
-
-        self.bp_cop = 1.0#1.9
-        self.d_p_cop = 0.05
-        self.mu_p_cop = 0.5
-
-        # #角度项
-        # self.bp_angle = 2.0#2.5#3.8#4.938   # 饱和幅值基准
-        # self.d_p_angle = 0.5#0.5   # 线性区间阈值（rad）
-        # self.mu_p_angle = 0.3  # 可变参数∈[0,1]
-
-        # # 距离控制
-        # self.bp_dist = 1.8#1.8#1.5#1.8  # 饱和幅值基准
-        # self.d_p_dist = 0.3    # 线性区间阈值（m）
-        # self.mu_p_dist = 0.12   # 可变参数∈[0,1]
-
-        # # 阻尼项
-        # self.bp_damp = 2.5#1.3#1.157#7.2    # 饱和幅值基准
-        # self.d_d_damp = 0.15    # 线性区间阈值（m/s）
-        # self.mu_d_damp = 0.15   # 可变参数∈[0,1]
-
-        self.K_att = 2.5#4.5#1.5#0.3 #2.5
         self.undirected_normal_hysteresis = 0.05
         self.normal_branch_sign = 1.0
         
@@ -123,7 +88,7 @@ class formation_control_V_constraints:
         ]
 
         self.leso_dt = 1/50
-        self.leso_omega = 8 #10.0#8.0
+        self.leso_omega = 8
         self.pose_angle_limit = np.array([30*np.pi/180, 30*np.pi/180])
         self.leso_agents = []
         self.last_applied_acc_cmds = []
@@ -237,14 +202,6 @@ class formation_control_V_constraints:
 
     
     
-    def saturation_function_on_K(self,error, error_threshold, bp, mu):
-        '''饱和控制 系数设置'''
-        if abs(error)>error_threshold:
-            return bp * (abs(error) ** (mu - 1))
-        else:
-            return bp * (abs(error_threshold ** (mu - 1)))
-    
-
     # Old unsigned angle definition kept here for quick fallback.
     def angle_at_i(self,pi: np.ndarray, pj: np.ndarray, pk: np.ndarray, eps: float = 1e-12) -> float:
         """计算点i处，由j-i-k构成的夹角（弧度）"""
@@ -313,11 +270,10 @@ class formation_control_V_constraints:
             self.formation_angle_error_history[angle["name"]].append(e_angle)
             angle_err[angle["name"]] = e_angle
 
-            K_angle_saturation = self.saturation_function_on_K(e_angle, self.d_p_angle, self.bp_angle, self.mu_p_angle)
-            angle_gains[i] = K_angle_saturation
+            angle_gains[i] = self.K_angle
 
             # Undirected angle control uses the heuristic restoring action only.
-            u[i] += -K_angle_saturation * e_angle * (zij + zik)
+            u[i] += -self.K_angle * e_angle * (zij + zik)
         
         #distance part
         # distance_13 = np.linalg.norm(P_stack[2] - P_stack[0])
@@ -327,29 +283,21 @@ class formation_control_V_constraints:
         z14 = self.unit(P_stack[3] - P_stack[0])
         e_distance_12 = distance_12 - self.get_desired_distance(t)
         e_distance_14 = distance_14 - self.get_desired_distance(t)
-        K_distance_saturation_12 = self.saturation_function_on_K(e_distance_12,self.d_p_dist,self.bp_dist,self.mu_p_dist)
-        K_distance_saturation_14 = self.saturation_function_on_K(e_distance_14,self.d_p_dist,self.bp_dist,self.mu_p_dist)
-        u[0] += K_distance_saturation_12 * e_distance_12 * z12
-        u[0] += K_distance_saturation_14 * e_distance_14 * z14
-        u[1] -= K_distance_saturation_12 * e_distance_12 * z12
-        u[3] -= K_distance_saturation_14 * e_distance_14 * z14
+        u[0] += self.K_dist * e_distance_12 * z12
+        u[0] += self.K_dist * e_distance_14 * z14
+        u[1] -= self.K_dist * e_distance_12 * z12
+        u[3] -= self.K_dist * e_distance_14 * z14
 
 
 
-        # u[0] += self.K_dist * e_distance_12 * z12
-        # u[0] += self.K_dist * e_distance_14 * z14
-        # u[1] -= self.K_dist * e_distance_12 * z12
-        # u[3] -= self.K_dist * e_distance_14 * z14
         #v_star part
         e_V_stack = V_stack - V_star_stack
         damp_gains = {i: [0.0, 0.0, 0.0] for i in range(4)}
         for i in range(V_stack.shape[0]):
             for j in range(V_stack.shape[1]):
                     e_V = e_V_stack[i][j]
-                    K_v_damp_saturation = self.saturation_function_on_K(e_V,self.d_d_damp,self.bp_damp,self.mu_d_damp)
-                    damp_gains[i][j] = K_v_damp_saturation
-                    u[i][j] += -K_v_damp_saturation * e_V
-                    # u[i][j] += -self.K_damp * e_V
+                    damp_gains[i][j] = self.K_damp
+                    u[i][j] += -self.K_damp * e_V
         #coplanar
         
 
@@ -369,10 +317,7 @@ class formation_control_V_constraints:
         n234_local = self.unit(np.cross(z32, z34))
         coplanar_error = np.dot(z31, n234_local)
         self.Vol_hist.append(coplanar_error)
-        K_cop_sat = self.saturation_function_on_K(coplanar_error, self.d_p_cop, self.bp_cop, self.mu_p_cop)
-        u[2] -= K_cop_sat * coplanar_error * n234_local
-        # # 把共面修正作用在 agent3 上
-        # u[2] -= 8.0 * coplanar_error * n142planar #8.0
+        u[2] -= self.K_cop * coplanar_error * n234_local
 
         #norm vector part
         
@@ -391,29 +336,23 @@ class formation_control_V_constraints:
         p_c_new = np.mean(P_stack_new,axis = 0)
 
 
-        for i in range(4):  
-            if i!=2:      
+        for i in range(4):
+            if i!=2:
                 r_i = P_stack[i] - p_c_new
-                # u_att = self.K_att * np.cross(normal_err, r_i)
-                # u[i] += u_att
-                e_n = np.linalg.norm(normal_err)
-                K_att_sat = self.saturation_function_on_K(
-                    e_n, self.d_p_att, self.bp_att, self.mu_p_att
-                )
-                u_att = K_att_sat * np.cross(normal_err, r_i)
+                u_att = self.K_nor * np.cross(normal_err, r_i)
                 u[i] += u_att
 
         
 
         # 记录增益历史
         for i in range(4):
-            self.gain_history[f"agent_{i}"]["angle_gain"].append(angle_gains.get(i, 0.0))
-            self.gain_history[f"agent_{i}"]["damp_gain_x"].append(damp_gains[i][0])
-            self.gain_history[f"agent_{i}"]["damp_gain_y"].append(damp_gains[i][1])
-            self.gain_history[f"agent_{i}"]["damp_gain_z"].append(damp_gains[i][2])
+            self.gain_history[f"agent_{i}"]["angle_gain"].append(self.K_angle)
+            self.gain_history[f"agent_{i}"]["damp_gain_x"].append(self.K_damp)
+            self.gain_history[f"agent_{i}"]["damp_gain_y"].append(self.K_damp)
+            self.gain_history[f"agent_{i}"]["damp_gain_z"].append(self.K_damp)
             if i == 0:
-                self.gain_history[f"agent_{i}"]["distance_gain_12"].append(K_distance_saturation_12)
-                self.gain_history[f"agent_{i}"]["distance_gain_14"].append(K_distance_saturation_14)
+                self.gain_history[f"agent_{i}"]["distance_gain_12"].append(self.K_dist)
+                self.gain_history[f"agent_{i}"]["distance_gain_14"].append(self.K_dist)
         
         return self._compensate_control_with_leso(agent_list, u)
 

@@ -377,7 +377,7 @@ def plot_3d_trajectory(agent_list, target_history=None, dt_sim=1/500,
     for idx, (p, c) in enumerate(zip(pos_enu, c_uav)):
         ax.plot(p[:, 0], p[:, 1], p[:, 2],
                 color=c, linewidth=0.5, linestyle='--', dashes=(4, 3),
-                label=f'UAV {idx+1}')
+                label=f'QUAV {idx+1}')
 
     # ── default snapshot times ──
     if t_snapshots is None:
@@ -507,7 +507,7 @@ def plot_paper_3d_trajectory(agent_list, target_history, t_sample=(0, 60, 80, 12
     # ── UAV trajectories + ground shadows ──
     for idx, (p, c) in enumerate(zip(pos_enu, c_uav)):
         ax.plot(p[:, 0], p[:, 1], p[:, 2],
-                color=c, linewidth=0.8, label=f'UAV {idx+1}')
+                color=c, linewidth=0.8, label=f'QUAV {idx+1}')
         # ground projection
         ax.plot(p[:, 0], p[:, 1], 0,
                 color=to_rgba(c, 0.15), linewidth=0.4, zorder=0)
@@ -1238,19 +1238,24 @@ def plot_disturbance(agent_list, dt):
         
         fig, axes = plt.subplots(3, 1, figsize=(10, 8))
         axes = axes.flatten()
-        labels = ['X-axis', 'Y-axis', 'Z-axis']
-        
+        # NED → ENU: East=NED_Y[1], North=NED_X[0], Up=-NED_Z[2]
+        axis_labels = ['X', 'Y', 'Z']
+        ned_idx = [1, 0, 2]
+        ned_sign = [1, 1, -1]
+
         for i in range(3):
-            axes[i].plot(time_axis, dist_acc_actual[:, i], label='Actual Disturbance', color='red')
+            val_act = ned_sign[i] * dist_acc_actual[:, ned_idx[i]]
+            val_hat = ned_sign[i] * dist_acc_hat[:, ned_idx[i]]
+            axes[i].plot(time_axis, val_act, label='Actual Disturbance', color='red')
             observer_label = getattr(agent.controller, "observer_mode_label", "Observer")
             axes[i].plot(
                 time_axis,
-                dist_acc_hat[:, i],
+                val_hat,
                 label=f'Estimated Disturbance ({observer_label})',
                 color='blue',
                 linestyle='--',
             )
-            axes[i].set_title(f'Agent {idx+1} - {labels[i]} Disturbance')
+            axes[i].set_title(f'Agent {idx+1} - {axis_labels[i]} Disturbance')
             axes[i].set_xlabel('Time (s)')
             axes[i].set_ylabel('Disturbance (m/s²)')
             axes[i].legend()
@@ -1263,8 +1268,9 @@ def plot_disturbance(agent_list, dt):
 
 def plot_disturbance_by_axis(agent_list, dt):
     """
-    Generate 3 figures (X, Y, Z axes), each showing LESO disturbance estimation
-    for all 4 UAVs in a 2x2 subplot layout.
+    Generate 3 figures (East, North, Up axes in ENU frame), each showing
+    LESO disturbance estimation for all 4 UAVs in a 2x2 subplot layout.
+    Disturbance data is converted from NED to ENU to match trajectory plots.
     """
     control_dt = 1/50
     num_control_steps = len(agent_list[0].controller.history_dist_hat_acc)
@@ -1276,8 +1282,10 @@ def plot_disturbance_by_axis(agent_list, dt):
         control_indices.extend(range(9, 9 + 10 * (num_control_steps - 1), 10))
     time = np.array([dt] + [k * control_dt for k in range(1, num_control_steps)])
 
+    # NED → ENU: East=NED_Y[1], North=NED_X[0], Up=-NED_Z[2]
     axis_labels = ['X', 'Y', 'Z']
-    observer_label = getattr(agent_list[0].controller, "observer_mode_label", "Observer")
+    ned_idx = [1, 0, 2]
+    ned_sign = [1, 1, -1]
 
     for axis in range(3):
         fig, axes = plt.subplots(2, 2, figsize=(7.0, 5.5))
@@ -1293,13 +1301,15 @@ def plot_disturbance_by_axis(agent_list, dt):
             time_axis = time[:len(dist_acc_actual)]
 
             ax = axes[idx]
-            ax.plot(time_axis, dist_acc_actual[:, axis],
+            val_act = ned_sign[axis] * dist_acc_actual[:, ned_idx[axis]]
+            val_hat = ned_sign[axis] * dist_acc_hat[:, ned_idx[axis]]
+            ax.plot(time_axis, val_act,
                     label='Actual', color='red', linewidth=0.8)
-            ax.plot(time_axis, dist_acc_hat[:, axis],
+            ax.plot(time_axis, val_hat,
                     label='Estimated', color='blue', linestyle='--', linewidth=0.8)
-            ax.set_title(f'UAV \\#{idx+1}')
+            ax.set_title(f'QUAV \\#{idx+1}')
             ax.set_xlabel('Time (s)')
-            ax.set_ylabel(f'{axis_labels[axis]}-axis (m/s$^2$)')
+            ax.set_ylabel(f'{axis_labels[axis]} (m/s$^2$)')
             ax.legend(fontsize='small')
             ax.grid(True)
 

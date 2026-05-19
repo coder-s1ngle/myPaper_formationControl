@@ -69,7 +69,7 @@ def _save(fig, name: str):
 
 def run_sim():
     runner = run_module.run(formation_flag_bool=True, use_leso=True)
-    while runner.total_time < 90.0:
+    while runner.total_time < 85.0:
         runner.step_world()
     return runner
 
@@ -93,7 +93,7 @@ def fig_angle_error(runner):
         ax.plot(t, np.array(hist[name]), color=c, linewidth=LW, label=label)
     _common_ax(ax)
     ax.set_ylabel("Angle error (rad)")
-    ax.legend(frameon=False, ncol=2)
+    ax.legend(frameon=False, ncol=2, loc="upper right")
     _save(fig, "fig_exp2_angle")
 
 
@@ -110,7 +110,8 @@ def fig_edge_distance(runner):
         ax.plot(t, np.array(hist[name]), color=c, linewidth=LW, label=label)
     _common_ax(ax)
     ax.set_ylabel("Edge distance (m)")
-    ax.legend(frameon=False, ncol=2)
+    ax.set_ylim(0.2, 1.2)
+    ax.legend(frameon=False, ncol=2, loc="upper right")
     _save(fig, "fig_exp2_edge")
 
 
@@ -150,7 +151,7 @@ def fig_tension(runner):
         ax.plot(t, np.array(hist[name]), color=c, linewidth=LW, label=label)
     _common_ax(ax)
     ax.set_ylabel("Tension (N)")
-    ax.legend(frameon=False, ncol=2)
+    ax.legend(frameon=False, ncol=2, loc="upper right")
     _save(fig, "fig_exp2_tension")
 
 
@@ -173,7 +174,7 @@ if __name__ == "__main__":
     # 3-D trajectory
     plot_3d_trajectory(
         runner.world.agent_list,
-        t_snapshots=[0, 10, 20, 40, 60, 70, 90],
+        t_snapshots=[0, 7, 20, 37, 55, 65, 85],
     )
     # Rename to paper figure name
     src = FIGURES_DIR / "trajectory_3d.pdf"

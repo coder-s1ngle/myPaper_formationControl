@@ -76,10 +76,11 @@ class run:
         self.v_target = np.array([-0.2, 0.0, 0.0])
         self.target_history: list = []
 
-        # Capture disturbance config (t==60s target hits the net)
-        self.capture_start_time = 60.0
-        self.capture_end_time = 65.0
-        self.capture_pull_force = 1.0  # N
+        # Capture disturbance config (t==55s target hits the net)
+        self.capture_start_time = 55.0
+        self.capture_end_time = 60.0
+        self.capture_pull_force = 3.0  # N
+        self.penetration_depth = 0.2   # m, push impact point along impact dir
         self.capture_point_offset = (0.25, -0.15)
         self.mass = 1.5  # kg (must match uav_params.yaml)
         
@@ -133,13 +134,25 @@ class run:
         if not (self.capture_start_time <= t <= self.capture_end_time):
             return np.array([0.0, 0.0, 0.0])
 
-        capture_point = _get_capture_point(
+        # Physical impact profile: fast rise (0.2 s) then exponential decay (τ = 1.5 s)
+        t_elapsed = t - self.capture_start_time
+        rise_time = 0.2         # sharp rise to peak
+        decay_tau = 1.5         # decay time constant
+        if t_elapsed <= rise_time:
+            scale = t_elapsed / rise_time
+        else:
+            scale = np.exp(-(t_elapsed - rise_time) / decay_tau)
+
+        impact_point_2d = _get_capture_point(
             p_stack,
             self.capture_point_offset[0],
             self.capture_point_offset[1],
         )
-        pull_direction = _unit(capture_point - p_stack[agent_index])
-        return (self.capture_pull_force / self.mass) * pull_direction
+        # Push impact point behind the net plane along target approach direction
+        impact_dir = _unit(self.v_target - self.v_star)
+        impact_point_3d = impact_point_2d + self.penetration_depth * impact_dir
+        pull_direction = _unit(impact_point_3d - p_stack[agent_index])
+        return scale * self.capture_pull_force * pull_direction
 
     def _get_control_cmd(self, agent):
         control_cmd = np.zeros(3, dtype=float)

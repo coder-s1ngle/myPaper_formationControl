@@ -21,13 +21,6 @@ def unit(vec: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return vec / norm
 
 
-def saturation_gain(error: float, threshold: float, bp: float, mu: float) -> float:
-    mag = abs(error)
-    if mag > threshold:
-        return bp * (mag ** (mu - 1.0))
-    return bp * (threshold ** (mu - 1.0))
-
-
 def angle_at_i(
     pi: np.ndarray,
     pj: np.ndarray,
@@ -70,13 +63,12 @@ def get_desired_normal(v_star: np.ndarray, t: float) -> np.ndarray:
 class SimulationConfig:
     """Configuration for Experiment 1 — reduced controller (k_cop = 0).
 
-    Effective proportional gains near equilibrium (paper Sec. V-B):
-      k_θ ≈ 1.67,  k_d ≈ 3.70,  k_n ≈ 4.01,  k_v ≈ 5.66
+    Fixed proportional gains (paper Sec. V-B):
+      k_θ = 1.67,  k_d = 3.70,  k_n = 4.01,  k_v = 7.0
     """
     sim_dt: float = 1.0 / 500.0
     control_dt: float = 1.0 / 50.0
     total_time: float = 150.0
-    use_saturation_control: bool = True
     save_animation: bool = True
     gif_frame_stride: int = 120
     gif_fps: int = 40
@@ -126,35 +118,15 @@ class UndirectedFormationController:
 
     def __init__(self, config: SimulationConfig):
         self.config = config
-        self.use_saturation_control = bool(config.use_saturation_control)
         self.undirected_normal_hysteresis = max(0.0, float(config.undirected_normal_hysteresis))
         self.normal_branch_sign = 1.0
 
-        # ── saturation gain parameters ─────────────────────────
-        #  equilibrium effective gains (paper Sec. V-B):
-        #    k_θ ≈ 1.67, k_d ≈ 3.70, k_n ≈ 4.01, k_v ≈ 5.66
-
-        # angle term: k_θ(e) · e · (z_ij + z_ik)
-        self.bp_angle = 0.5
-        self.d_p_angle = 0.35
-        self.mu_p_angle = 0.3
-
-        # distance term: k_d(e) · e · z_ij
-        self.bp_dist = 0.3
-        self.d_p_dist = 0.2
-        self.mu_p_dist = 0.3
-
-        # velocity damping: k_v(e) · e
-        self.bp_damp = 1.0
-        self.d_d_damp = 0.15
-        self.mu_d_damp = 0.15
-
-        # normal (attitude) term: k_n(e) · (e_n × r_i)
-        self.bp_att = 0.4
-        self.d_p_att = 0.1
-        self.mu_p_att = 0.3
-
-        # coplanarity term is INTENTIONALLY DISABLED for ablation
+        # ── Fixed formation control gains (paper Sec. V-B) ─────
+        # coplanarity term is INTENTIONALLY DISABLED (k_cop = 0)
+        self.K_angle = 1.67
+        self.K_dist = 3.70
+        self.K_damp = 7.0
+        self.K_nor = 4.01
 
         self.angle_constraints = [
             {"name": "e_1", "i": 0, "j": 1, "k": 3, "theta_star": math.pi / 2.0},
@@ -189,22 +161,6 @@ class UndirectedFormationController:
             self.normal_branch_sign = -1.0
         return self.normal_branch_sign * desired_normal
 
-    def _gain(
-        self,
-        error: float,
-        threshold: float,
-        bp: float,
-        mu: float,
-    ) -> float:
-        """Compute saturation gain (paper eq. 41).
-
-        When use_saturation_control=False, returns constant bp
-        (constant-gain mode matching Li et al. (2025) style).
-        """
-        if self.use_saturation_control:
-            return saturation_gain(error, threshold, bp, mu)
-        return bp  # constant gain (Li et al. style)
-
     def control_law_output(
         self,
         agents: list[DoubleIntegratorAgent],
@@ -230,8 +186,7 @@ class UndirectedFormationController:
             e_angle = theta - angle["theta_star"]
 
             self.angle_error_history[angle["name"]].append(e_angle)
-            gain = self._gain(e_angle, self.d_p_angle, self.bp_angle, self.mu_p_angle)
-            u[i] += -gain * e_angle * (zij + zik)
+            u[i] += -self.K_angle * e_angle * (zij + zik)
 
         # ── Log all edge distances ──
         for edge in self.edge_constraints:
@@ -247,21 +202,18 @@ class UndirectedFormationController:
 
         e_d12 = d12 - desired_edge
         e_d14 = d14 - desired_edge
-        gain_d12 = self._gain(e_d12, self.d_p_dist, self.bp_dist, self.mu_p_dist)
-        gain_d14 = self._gain(e_d14, self.d_p_dist, self.bp_dist, self.mu_p_dist)
 
-        u[0] += gain_d12 * e_d12 * z12
-        u[0] += gain_d14 * e_d14 * z14
-        u[1] -= gain_d12 * e_d12 * z12
-        u[3] -= gain_d14 * e_d14 * z14
+        u[0] += self.K_dist * e_d12 * z12
+        u[0] += self.K_dist * e_d14 * z14
+        u[1] -= self.K_dist * e_d12 * z12
+        u[3] -= self.K_dist * e_d14 * z14
 
         # ── Term 5: velocity damping (paper eq. 40, k_v term) ──
         e_v_stack = v_stack - v_star_stack
         for i in range(4):
             for axis in range(3):
                 e_v = e_v_stack[i, axis]
-                gain = self._gain(e_v, self.d_d_damp, self.bp_damp, self.mu_d_damp)
-                u[i, axis] += -gain * e_v
+                u[i, axis] += -self.K_damp * e_v
 
         # ── Coplanarity term DISABLED for ablation (k_cop = 0) ──
         z31 = unit(p_stack[0] - p_stack[2])
@@ -282,15 +234,9 @@ class UndirectedFormationController:
         self.normal_selected_alignment_history.append(float(np.dot(n142, selected_normal)))
 
         p_center = np.mean(np.vstack([p_stack[0], p_stack[1], p_stack[3]]), axis=0)
-        normal_gain = self._gain(
-            float(np.linalg.norm(normal_error)),
-            self.d_p_att,
-            self.bp_att,
-            self.mu_p_att,
-        )
         for idx in (0, 1, 3):
             r_i = p_stack[idx] - p_center
-            u[idx] += normal_gain * np.cross(normal_error, r_i)
+            u[idx] += self.K_nor * np.cross(normal_error, r_i)
 
         return u
 
