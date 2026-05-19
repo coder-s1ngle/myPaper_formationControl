@@ -27,6 +27,7 @@ for p in (str(ROOT), str(EXP2_DIR)):
         sys.path.insert(0, p)
 
 from run import run as run_module
+from run.run import _get_capture_point, _unit
 from trajectory_plot.trajectory_plot import (
     plot_disturbance_by_axis,
     plot_3d_trajectory,
@@ -171,9 +172,23 @@ if __name__ == "__main__":
     fig_normal_error(runner)
     fig_tension(runner)
 
-    # 3-D trajectory
+    # 3-D trajectory with target drone
+    idx_55 = int(round(55.0 / runner.dt))
+    p_stack = np.vstack([
+        np.array(a.history_pos[idx_55]) for a in runner.world.agent_list
+    ])
+    impact_point = _get_capture_point(p_stack, 0.25, -0.15)
+    approach_dir = _unit(runner.v_target - runner.v_star)  # [-1, 0, 0] in NED
+    start_point = impact_point - 2.5 * approach_dir + np.array([0.0, 0.0, 0.5])
+    mid_point = impact_point - 1.0 * approach_dir + np.array([0.0, 0.5, 0.25])
+    # smooth 3-point Bezier curve (quadratic)
+    n_pts = 40
+    tt = np.linspace(0, 1, n_pts)[:, None]
+    tgt_traj = (1 - tt)**2 * start_point + 2 * (1 - tt) * tt * mid_point + tt**2 * impact_point
+
     plot_3d_trajectory(
         runner.world.agent_list,
+        target_history=tgt_traj,
         t_snapshots=[0, 7, 20, 37, 55, 65, 85],
     )
     # Rename to paper figure name

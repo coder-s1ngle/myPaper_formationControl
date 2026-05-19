@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import animation
 from matplotlib.ticker import MaxNLocator
+from matplotlib.path import Path
 import matplotlib
 import os
 
@@ -296,6 +297,33 @@ def plot_xy_trajectory(agent_list):
     # === 保存图片 ===
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir,"xy_trajectory.pdf"), dpi=300, bbox_inches="tight")
+def _drone_path():
+    """Return a simple quadcopter-shaped matplotlib Path marker."""
+    r = 1.0       # arm length
+    rb = 0.2      # body radius
+    rr = 0.18     # rotor radius
+    verts = []
+    codes = []
+    # four arms (lines from center to rotor positions) + rotors at corners
+    rotors = [(r, r), (-r, r), (-r, -r), (r, -r)]
+    for rx, ry in rotors:
+        verts.extend([(rx, ry), (0, 0)])
+        codes.extend([Path.MOVETO, Path.LINETO])
+        # small circle for each rotor
+        n = 10
+        for i in range(n + 1):
+            a = 2 * np.pi * i / n
+            verts.append((rx + rr * np.cos(a), ry + rr * np.sin(a)))
+            codes.append(Path.LINETO if i > 0 else Path.MOVETO)
+    # center body
+    n = 12
+    for i in range(n + 1):
+        a = 2 * np.pi * i / n
+        verts.append((rb * np.cos(a), rb * np.sin(a)))
+        codes.append(Path.LINETO if i > 0 else Path.MOVETO)
+    return Path(verts, codes)
+
+
 def plot_3d_trajectory(agent_list, target_history=None, dt_sim=1/500,
                        t_snapshots=None):
     """
@@ -389,12 +417,6 @@ def plot_3d_trajectory(agent_list, target_history=None, dt_sim=1/500,
         idx_t = min(int(round(ts / dt_sim)), len(pos_enu[0]) - 1)
         verts = np.array([p[idx_t] for p in pos_enu])          # (4, 3)
 
-        # filled quad
-        poly = Poly3DCollection([list(verts)],
-                                facecolor=c_face, edgecolor='none',
-                                alpha=0.25, zorder=2)
-        ax.add_collection3d(poly)
-
         # edge wireframe (perimeter)
         for (i, j) in [(0, 1), (1, 2), (2, 3), (3, 0)]:
             ax.plot([verts[i, 0], verts[j, 0]],
@@ -416,6 +438,20 @@ def plot_3d_trajectory(agent_list, target_history=None, dt_sim=1/500,
             ax.plot([p_c[0], p_d[0]], [p_c[1], p_d[1]], [p_c[2], p_d[2]],
                     color='#999999', linewidth=0.4, alpha=0.6, zorder=2)
 
+        # captured target within net (t >= 65 s)
+        if ts >= 65 and target_history is not None:
+            net_ctr = np.mean(verts, axis=0)
+            l_mid = 0.5 * (verts[0] + verts[1])
+            r_mid = 0.5 * (verts[2] + verts[3])
+            lo_mid = 0.5 * (verts[1] + verts[2])
+            u_mid = 0.5 * (verts[0] + verts[3])
+            ax_u = r_mid - l_mid; ax_v = u_mid - lo_mid
+            hu = 0.5 * np.linalg.norm(ax_u); hv = 0.5 * np.linalg.norm(ax_v)
+            eu = ax_u / (2 * hu + 1e-12); ev = ax_v / (2 * hv + 1e-12)
+            cp = net_ctr + 0.25 * hu * eu - 0.15 * hv * ev
+            ax.scatter(*cp, s=4, color='black', marker='.',
+                       zorder=8)
+
         # time label — below formation, staggered left/right
         cx, cy, cz = verts[:, 0].mean(), verts[:, 1].mean(), verts[:, 2].mean()
         sign_x = -1.0 if si % 2 == 0 else +1.0
@@ -430,6 +466,22 @@ def plot_3d_trajectory(agent_list, target_history=None, dt_sim=1/500,
                 rf'$t={ts:.0f}\,\mathrm{{s}}$',
                 fontsize=5.0, color='#333333',
                 ha='center', va='top', zorder=5)
+
+    # ── target trajectory (drawn last to stay on top) ──
+    if target_history is not None and len(target_history) > 0:
+        tgt_enu = ned2enu_pos(np.array(target_history))
+        ax.plot(tgt_enu[:, 0], tgt_enu[:, 1], tgt_enu[:, 2],
+                color='black', linewidth=0.6, linestyle='--', dashes=(3, 2),
+                label='Target', zorder=10)
+        drone_marker = _drone_path()
+        n_tgt = len(tgt_enu)
+        # markers at start, middle, end — size decreasing start → end
+        ax.scatter(*tgt_enu[0], s=18, color='black',
+                   marker=drone_marker, zorder=10, facecolors='none')
+        ax.scatter(*tgt_enu[len(tgt_enu) // 2], s=11, color='black',
+                   marker=drone_marker, zorder=10, facecolors='none')
+        ax.scatter(*tgt_enu[-1], s=7, color='black',
+                   marker=drone_marker, zorder=20, facecolors='none')
 
     # ── limits ──
     ax.set_xlim(xlim_lo - mx, xlim_hi + mx)
