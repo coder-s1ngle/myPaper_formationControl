@@ -449,7 +449,8 @@ def plot_3d_trajectory(agent_list, target_history=None, dt_sim=1/500,
             hu = 0.5 * np.linalg.norm(ax_u); hv = 0.5 * np.linalg.norm(ax_v)
             eu = ax_u / (2 * hu + 1e-12); ev = ax_v / (2 * hv + 1e-12)
             cp = net_ctr + 0.25 * hu * eu - 0.15 * hv * ev
-            ax.scatter(*cp, s=4, color='black', marker='.',
+            sz = 2 if ts >= 85 else 4
+            ax.scatter(*cp, s=sz, color='black', marker='.',
                        zorder=8)
 
         # time label — below formation, staggered left/right

@@ -59,8 +59,6 @@ This paper considers the formation control of four agents forming a planar squar
 % \section{The Design, Intent, and \\ Limitations of the Templates}
 \section{Problem Formulation}
 
-\subsection{Agent Dynamics}
-
 Consider a group of four agents moving in 3-D space, with index set \(\mathcal V=\{1,2,3,4\}\).
 The dynamics of agent \(i\) are described by the double integrator
 \begin{equation}
@@ -69,30 +67,7 @@ The dynamics of agent \(i\) are described by the double integrator
 \dot v_i = u_i,
 \qquad i\in\mathcal V,
 \end{equation}
-where \(p_i\in\mathbb R^3\) and \(v_i\in\mathbb R^3\) denote the position and velocity of agent \(i\) in a fixed inertial frame, and \(u_i\in\mathbb R^3\) is the control input.
-
-For any \(i,j\in\mathcal V\), define the relative position vector, inter-agent distance, and bearing vector as
-\begin{equation}
-\label{eq:bearing-definition}
-q_{ij}=p_j-p_i,\qquad
-d_{ij}=\|q_{ij}\|,\qquad
-b_{ij}=\frac{q_{ij}}{\|q_{ij}\|}.
-\end{equation}
-The unsigned interior angle formed by agents \(j\), \(i\), and \(k\) is
-\begin{equation} 
-\label{eq:angle-definition}
-\alpha_{jik}=\arccos\left(b_{ij}^{T}b_{ik}\right),
-\qquad \alpha_{jik}\in[0,\pi].
-\end{equation}
-Since defining signed angles in 3-D requires additional reference directions or aligned coordinate frames, we adopt unsigned angles throughout \cite{chen2023angleRigidity3D}.
-
-For any ordered triple \((i,j,k)\), the normal vector of the plane spanned by agents \(i\), \(j\), and \(k\) is defined as
-\begin{equation}
-\label{eq:general-normal}
-N_{ijk}=b_{ij}\times b_{ik},\qquad
-n_{ijk}=\frac{N_{ijk}}{\|N_{ijk}\|}.
-\end{equation}
-The normal is well-defined whenever \(b_{ij}\) and \(b_{ik}\) are not collinear.
+where \(p_i\in\mathbb R^3\) and \(v_i\in\mathbb R^3\) denote the position and velocity of agent \(i\) in a fixed global coordinate system, and \(u_i\in\mathbb R^3\) is the control input.
 
 The following assumptions are made.
 
@@ -101,73 +76,104 @@ Each agent is equipped with LOS sensing to acquire the relative direction inform
 \end{assumption}
 
 \begin{assumption}
-Only agent~\#1 measures the distances to its two neighboring agents, namely \(d_{12}\) and \(d_{14}\). The distance \(d_{24}\), can be obtained from geometric relations, and the relevant side-length information can be transmitted to the agents that use it.
-\end{assumption}
-
-\begin{assumption}
 The initial positions of the agents are sufficiently close to a desired square formation, and the positions of the agents are independent.
 \end{assumption}
 
-\begin{remark}
-Assumptions~1--3 specify the onboard sensing, communication, and initialization requirements. Each agent requires only a bearing sensor, except agent~\#1 which additionally carries a distance sensor. The communication burden is limited to scalar side-length information transmitted to the agents that use it. No alignment of local coordinate frames is required, and no global position information is needed.
-\end{remark}
+Assumption~1 enables each agent to measure the relative directions of its neighboring agents in its own local coordinate system without requiring a common reference frame or coordinate alignment among agents. Assumption~2 guarantees that the initial configuration is non-degenerate, ensuring local exponential convergence of the closed-loop system.
 
+Under Assumption~1, each agent \(i\) can measure the bearing vector to its neighboring agent \(j\) in its own local coordinate frame as
+\begin{equation}
+\label{eq:bearing-definition}
+b_{ij}=\frac{q_{ij}}{\|q_{ij}\|},
+\qquad q_{ij}=p_j-p_i,
+\qquad d_{ij}=\|q_{ij}\|,
+\end{equation}
+where \(q_{ij}\) is the relative position vector and \(d_{ij}\) the inter-agent distance.
+Since defining signed angles in 3-D requires additional reference directions or aligned coordinate frames, we adopt unsigned angles throughout \cite{chen2023angleRigidity3D}.
+The interior angle formed by agents \(j\), \(i\), and \(k\) can then be computed from the bearing measurements as
+\begin{equation}
+\label{eq:angle-definition}
+\alpha_{jik}=\arccos\left(b_{ij}^{T}b_{ik}\right),
+\qquad \alpha_{jik}\in[0,\pi].
+\end{equation}
 
-\subsection{Formation Constraints}
-
-The in-plane square shape is encoded by the angle constraint set
+The in-plane square shape and scale are specified by angle and distance constraints as in~\cite{li2025localInfo}. The angle constraint set is
 \begin{equation}
 \label{eq:angle-set}
 \mathcal A=\{(2,1,4),(3,2,1),(4,3,2),(1,4,3)\},
 \end{equation}
-where each tuple \((j,i,k)\in\mathcal A\) denotes the interior angle with agent \(i\) as the vertex. The desired angles are
-\(\alpha_{jik}^*=\pi/2\) for all \((j,i,k)\in\mathcal A\).
+with desired angles \(\alpha_{jik}^*=\pi/2\). The distance-constrained edges are \(\mathcal E_d=\{(1,2),(1,4)\}\) with desired length \(\ell^*>0\). The constraint set is illustrated in Fig.~\ref{fig:square_constraints}.
 
-Angle constraints determine the square shape but leave the formation scale free. To fix the scale, we introduce two distance-constrained edges associated with agent~\#1, denoted by \(\mathcal E_d=\{(1,2),(1,4)\}\) \cite{li2025localInfo}. Their desired distances are \(d_{ij}^*=\ell^*\), \((i,j)\in\mathcal E_d\), where \(\ell^*>0\) is the desired side length of the square formation. The constraint set is illustrated in Fig.~\ref{fig:square_constraints}.
-
-\begin{figure}[!t]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=0.85\columnwidth,trim=6pt 6pt 6pt 6pt,clip]{figures/fig_1}
 \caption{Formation constraints: four angles and two distances determine the target square.}
 \label{fig:square_constraints}
 \end{figure}
 
-Although the angle and distance constraints together specify the in-plane square shape and scale, they are invariant under rigid rotations in 3-D. Specifically, for any \(Q\in SO(3)\) and \(c\in\mathbb R^3\), the transformed positions \(\tilde p_i=Qp_i+c\) preserve all constrained distances and angles, i.e., \(\tilde d_{ij}=d_{ij}\) and \(\tilde\alpha_{jik}=\alpha_{jik}\), while the plane normal changes as \(\tilde n_{124}=Qn_{124}\). Hence the same square shape and scale admit a continuum of spatial orientations, and an additional plane-normal constraint is required to select the desired formation plane.
+\begin{assumption}
+Only agent~\#1 is equipped with a distance sensor and can measure the distances to its neighboring agents; the other agents do not require distance-measuring capability.
+\end{assumption}
 
-In a drone capture scenario, the plane of the net opening must face the incoming target; the plane orientation is therefore a prescribed control objective. To prescribe the orientation in 3-D, we introduce a plane-normal constraint. The reference plane of the formation is defined by the ordered triplet of agents~\#1, \#2, and~\#4, with normal \(n_{124}\) computed from~\eqref{eq:general-normal}.
+Although the angle and distance constraints together specify the in-plane square shape and scale, they are invariant under rigid rotations in 3-D. Specifically, for any \(Q\in SO(3)\) and \(c\in\mathbb R^3\), the transformed positions \(\tilde p_i=Qp_i+c\) preserve all constrained distances and angles, i.e., \(\tilde d_{ij}=d_{ij}\) and \(\tilde\alpha_{jik}=\alpha_{jik}\), while the orientation of the formation plane changes accordingly. Hence the same square shape and scale admit a continuum of spatial orientations, and an additional plane-normal constraint is required to select the desired formation plane.
 
-A natural candidate for the normal-direction error is the cross product
-\(n_{124}\times n_d\),
-where \(n_d\in\mathbb R^3\), \(\|n_d\|=1\), is the prescribed target plane normal.
-This quantity vanishes whenever \(n_{124}\) is parallel to \(n_d\),
-which occurs at both \(n_{124}=n_d\) and \(n_{124}=-n_d\).
-At the latter, the error is zero despite \(n_{124}\neq n_d\);
-the cross product cannot distinguish the two opposite alignment directions.
+To describe the plane orientation, we define the unit normal vector of the plane spanned by agents \(i\), \(j\), and \(k\) as
+\begin{equation}
+\label{eq:general-normal}
+N_{ijk}=b_{ij}\times b_{ik},\qquad
+n_{ijk}=\frac{N_{ijk}}{\|N_{ijk}\|},
+\end{equation}
+which is well-defined whenever \(b_{ij}\) and \(b_{ik}\) are not collinear. The reference plane of the formation is taken as the plane spanned by agents~\#1, \#2, and~\#4, with normal \(n_{124}\) computed from~\eqref{eq:general-normal}.
 
-For the capture net application, \(n_d\) and \(-n_d\) represent the same physical net opening orientation, as shown in Fig.~\ref{fig:orientation_branch}. The sign ambiguity is therefore acceptable at the target. A raw signed error, however, still treats \(+n_d\) as the unique target and makes the branch \(n_{124}=-n_d\) non-attractive. Formations initialized near this branch are driven toward \(+n_d\) instead of settling at the closer equivalent orientation.
+Let \(n_d\in\mathbb R^3\), \(\|n_d\|=1\), be the prescribed target plane normal. For the capture net application, \(n_d\) and \(-n_d\) represent the same physical net opening orientation, as shown in Fig.~\ref{fig:orientation_branch}; the target set is therefore \(\mathcal N_d=\{n_d,-n_d\}\).
 
-\begin{figure}[!t]
+A natural error candidate is the cross product \(n_{124}\times n_d\). This quantity vanishes whenever \(n_{124}\) is parallel to \(n_d\), i.e., at both \(n_{124}=n_d\) and \(n_{124}=-n_d\). However, the raw error is antisymmetric under \(n_{124}\to -n_{124}\): it takes opposite signs at the two equivalent target branches. Since any restoring torque must be aligned with the error direction, the same control law would produce an attractive torque near \(+n_d\) and a repelling torque near \(-n_d\), driving formations from the \(-n_d\) branch toward \(+n_d\).
+
+\begin{figure}[ht]
 \centering
 \includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_2}
 \caption{Two orientation branches: both \(n_{124}=\pm n_d\) satisfy the undirected normal constraint.}
 \label{fig:orientation_branch}
 \end{figure}
 
-To make both branches stable, let \(\mathcal N_d=\{n_d,-n_d\}\), \(\|n_d\|=1\), and select the branch closest to the current normal direction. The selected branch and the corresponding normal-direction error are
+To make both branches attractive while avoiding chattering near perpendicular configurations, a hysteresis-based branch selection is adopted. Define the scalar projection
+\begin{equation}
+c=n_{124}^{T}n_d,
+\label{eq:projection-c}
+\end{equation}
+and let \(s_k\in\{+1,-1\}\) be a discrete switching state with a deadzone threshold \(\delta>0\). The branch selection rule is
+\begin{equation}
+\label{eq:branch-hysteresis}
+s_k=
+\begin{cases}
++1, & c > \delta,\\[2pt]
+-1, & c < -\delta,\\[2pt]
+s_{k-1}, & |c|\le\delta.
+\end{cases}
+\end{equation}
+The selected target normal and the normal-direction error are then
 \begin{equation}
 \label{eq:normal-error}
-\bar n_d=\operatorname*{arg\,max}_{\eta\in\mathcal N_d}
-\left(n_{124}^{T}\eta\right),\qquad
-e_n=n_{124}\times \bar n_d.
+\bar n_d = s_k n_d,\qquad
+e_n = n_{124}\times \bar n_d.
 \end{equation}
-When \(e_n=0\), the formation plane is aligned with the target plane in the undirected sense, i.e., \(n_{124}=\pm n_d\). With this branch selection, both \(n_{124}=n_d\) and \(n_{124}=-n_d\) are stable equilibria of the closed-loop system.
+When \(|c|>\delta\), the branch closer to \(n_{124}\) is selected. When \(|c|\le\delta\), the formation plane is nearly perpendicular to the target plane, and \(s_k\) retains its previous value, preventing controller oscillation from noise-induced sign flips. This deadzone hysteresis renders both \(n_{124}=n_d\) and \(n_{124}=-n_d\) stable equilibria of the closed-loop system.
 
-In 3-D maneuvering, the four agents may drift out of the reference plane. To enforce coplanarity, we require agent~\#3 to lie on the reference plane \(\{1,2,4\}\). From the three local bearings \(b_{31}\), \(b_{32}\), and \(b_{34}\), agent~\#3 evaluates the coplanarity error as
+In 3-D maneuvering, the four agents may drift out of the reference plane. To ensure coplanarity, we require agent~\#3 to lie on the reference plane \(\{1,2,4\}\). The coplanarity error is defined as
 \begin{equation}
 \label{eq:coplanar-error}
 e_{\mathrm{cop}}=b_{31}^{T}n_{234},
 \end{equation}
-where \(n_{234}\) is the unit normal of plane \(\{2,3,4\}\) per the general definition~\eqref{eq:general-normal}. This bearing-based construction is illustrated in Fig.~\ref{fig:coplanar_constraint}. Geometrically, \(|e_{\mathrm{cop}}|\) is proportional to the volume of the tetrahedron formed by the four agents and vanishes if and only if agent~\#3 lies on the reference plane \(\{1,2,4\}\).
+where \(n_{234}\) is the unit normal of plane \(\{2,3,4\}\). Geometrically, \(|e_{\mathrm{cop}}|\) is proportional to the volume of the tetrahedron formed by the four agents and vanishes if and only if agent~\#3 lies on the reference plane. Agent~\#3 evaluates this error from the three local bearings \(b_{31}\), \(b_{32}\), and \(b_{34}\), as illustrated in Fig.~\ref{fig:coplanar_constraint}.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_3}
+\caption{Coplanarity measurement via three local bearings.}
+\label{fig:coplanar_constraint}
+\end{figure}
+
+Although the angle constraints guarantee coplanarity at the target configuration, they are relatively insensitive to out-of-plane perturbations, as the following analysis shows.
 
 \begin{remark}
 \label{rem:coplanarity-sensitivity}
@@ -189,23 +195,15 @@ e_{\mathrm{cop}}=-\frac{1}{\sqrt{2}\,\ell^*}h+O(h^3).
 Thus angle errors are only second-order sensitive to out-of-plane displacements, whereas the coplanarity error provides a first-order response. This structural insensitivity explains why angle-based terms alone cannot effectively restore coplanarity, making the coplanarity constraint necessary.
 \end{remark}
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_3}
-\caption{Coplanarity measurement via three local bearings.}
-\label{fig:coplanar_constraint}
-\end{figure}
-
 Combining the above constraints, let \(\mathcal S(\ell^*,n_d)\) denote the set of all \(p\in\mathbb R^{12}\) satisfying
 \begin{equation}
 \label{eq:desired-formation-set}
 \begin{aligned}
 \alpha_{jik}&=\alpha_{jik}^*, &&(j,i,k)\in\mathcal A,\\
 d_{ij}&=d_{ij}^*, &&(i,j)\in\mathcal E_d,\\
-e_{\mathrm{cop}}&=0, &&|n_{124}^{T}n_d|=1.
+e_{\mathrm{cop}}&=0, && e_n=0.
 \end{aligned}
 \end{equation}
-The condition \(|n_{124}^{T}n_d|=1\) requires the reference-plane normal to be parallel to \(n_d\) in an unoriented sense, i.e., the formation plane must be parallel to the target plane without prescribing a signed normal direction.
 
 With the above setup, the formation control problem is stated as follows.
 
@@ -230,7 +228,7 @@ Equations \eqref{eq:angle-convergence}--\eqref{eq:coplanar-convergence} together
 
 % \section{Where to Get \LaTeX \ Help --- User Groups}
 \section{Main Results}
-In this section, we present the distributed formation control law, establish the necessity of the coplanarity constraint, and provide the stability analysis of the closed-loop system.
+In this section, we present the distributed formation control law, and provide the stability analysis of the closed-loop system.
 
 \subsection{Control Law Design}
 
@@ -256,13 +254,30 @@ where \(v_c^*\) and \(\dot v_c^*\) denote the desired velocity and the desired a
 
 The coplanarity term \(-k_{\mathrm{cop}}e_{\mathrm{cop}}n_{234}\) in \(u_3\) applies a force along the normal of plane \(\{2,3,4\}\) that pushes agent~\#3 back toward the reference plane \(\{1,2,4\}\) to restore coplanarity, as illustrated in Fig.~\ref{fig:coplanar_action}. For the normal control, the error vector \(e_n=n_{124}\times\bar{n}_d\) lies in the formation plane and defines the rotation axis. The forces \(k_n(e_n\times r_i)\) on agents~\#1, \#2, and~\#4 are perpendicular to the plane; their net force on the centroid \(p_{124}\) is zero, producing a pure restoring torque that rotates the plane around \(e_n\) until \(n_{124}\) aligns with \(\bar{n}_d\) (Fig.~\ref{fig:normal_control}).
 
+\begin{remark}
+\label{rem:centroid-computation}
+The normal control term requires agents~\#1, \#2, and~\#4 to know the centroid \(p_{124}\) and the normal \(n_{124}\) in their own local frames. Agent~\#1 measures \(d_{12},d_{14}\) and bearings \(b_{12},b_{14}\), giving \(p_{124}=(d_{12}b_{12}+d_{14}b_{14})/3\) and \(n_{124}=(b_{12}\times b_{14})/\|b_{12}\times b_{14}\|\). Agent~\#1 computes \(d_{24}\) via the law of cosines and broadcasts \(d_{12},d_{14},d_{24}\) to agents~\#2 and~\#4. Agent~\#2 then reconstructs \(p_1=d_{12}b_{21}\), \(p_4=d_{24}b_{24}\) from its local bearings \(b_{21},b_{24}\) and the received distances, yielding \(p_{124}=(d_{12}b_{21}+d_{24}b_{24})/3\) (with \(p_2=0\)), and \(n_{124}\) from \(b_{21}\times b_{24}\). Agent~\#4 proceeds analogously using \(b_{41},b_{42}\) and \(d_{14},d_{24}\).
+\end{remark}
+
+\begin{assumption}
+Agent~\#1 can communicate the measured and derived distance information to the agents that require it.
+\end{assumption}
+
 \begin{theorem}
 \label{thm:local-stability}
 Consider the four-agent double-integrator system \eqref{eq:agent-dynamics} under the controller \eqref{eq:total-control}. If the initial errors \(e_{12}(0)\), \(e_{14}(0)\), \(e_{\theta_i}(0)\), \(e_{\mathrm{cop}}(0)\), \(e_n(0)\), and \(\tilde v_i(0)\), \(i\in\mathcal V\), are sufficiently close to the equilibrium point, then the formation control law \eqref{eq:total-control} ensures that \(e_{12}(t)\to0\), \(e_{14}(t)\to0\), \(e_{\theta_i}(t)\to0\), \(e_{\mathrm{cop}}(t)\to0\), \(e_n(t)\to0\), and \(\tilde v_i(t)\to0\) exponentially as \(t\to+\infty\).
 \end{theorem}
 
 \begin{proof}
-Since the stability statement concerns only internal formation errors, we work in a co-moving frame and use the representative target square
+All internal geometric errors---angles, distances, coplanarity, and the plane normal---depend only on relative positions \(q_{ij}=p_j-p_i\) and are invariant under rigid translation of the entire formation. We may therefore analyze the error dynamics at a static representative target square without loss of generality. Let the desired formation trajectory and the velocity errors be
+\begin{equation}
+\begin{aligned}
+p_i^d(t)&=p_i^*+\int_{0}^{t}v_c^*(s)\,ds,\qquad i\in\mathcal V,\\[4pt]
+\tilde v_i&=v_i-v_c^*,
+\end{aligned}
+\label{eq:desired-trajectory}
+\end{equation}
+where
 \begin{equation}
 \begin{aligned}
 p_1^*&=[0,\;\ell^*,\;0]^{T}, &\quad p_2^*&=[0,\;0,\;0]^{T},\\
@@ -270,7 +285,7 @@ p_3^*&=[\ell^*,\;0,\;0]^{T}, &\quad p_4^*&=[\ell^*,\;\ell^*,\;0]^{T},
 \end{aligned}
 \label{eq:target-square}
 \end{equation}
-with \(\bar n_d=[0,0,1]^T\). At this configuration,
+with \(\bar n_d=[0,0,1]^T\). At this reference configuration,
 \begin{equation}
 \label{eq:target-bearings}
 \begin{aligned}
@@ -585,10 +600,10 @@ Thus \(\hat A^\dagger\) and \(\hat A^*\) have the same spectrum. Since \(\hat A^
 \section{Application}
 \label{sec:quadrotor-application}
 
-This section outlines how the proposed geometric formation controller can be embedded into a quadrotor-based capture-net system. As illustrated in Fig.~\ref{fig:cable_square_measurements}, the four QUAVs carry an elastic net while the formation layer uses local geometric measurements to generate the desired translational accelerations. The simplified QUAV dynamics are first introduced, then the elastic cable force and the resulting lumped disturbances are included, and finally an LESO-based compensation law is used to recover the nominal acceleration command.
+This section outlines how the proposed geometric formation controller can be embedded into a QUAV-based capture-net system. As illustrated in Fig.~\ref{fig:cable_square_measurements}, the four QUAVs carry an elastic net while the formation layer uses local geometric measurements to generate the desired translational accelerations. The simplified QUAV dynamics are first introduced, then the elastic cable force and the resulting lumped disturbances are included, and finally an LESO-based compensation law is used to recover the nominal acceleration command.
 \begin{figure}[!t]
 \centering
-\includegraphics[width=0.85\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_7}
+\includegraphics[width=0.85\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_6}
 \caption{Cable-connected square formation with local measurements. Red: distance measurements (\(d_{12},d_{14}\)); blue: bearing measurements. Solid lines: capture-net cables.}
 \label{fig:cable_square_measurements}
 \end{figure}
@@ -609,7 +624,7 @@ and the nominal altitude channel is
 \end{aligned}
 \label{eq:quadrotor-nominal-altitude}
 \end{equation}
-Here, \(g\in\mathbb R\) is the gravitational constant, \(f_i\in\mathbb R\) is the total thrust, \(m_i\in\mathbb R\) is the quadrotor mass, and \(\phi_i\in(-\pi/2,\pi/2)\), \(\theta_i\in(-\pi/2,\pi/2)\), and \(\psi_i\in(-\pi,\pi)\) denote the roll, pitch, and yaw angles, respectively. The bounds on \(\phi_i\) and \(\theta_i\) ensure the simplified horizontal dynamics~\eqref{eq:quadrotor-nominal-horizontal} remain valid and the quadrotors operate away from inverted attitudes. Moreover,
+Here, \(g\in\mathbb R\) is the gravitational constant, \(f_i\in\mathbb R\) is the total thrust, \(m_i\in\mathbb R\) is the QUAV mass, and \(\phi_i\in(-\pi/2,\pi/2)\), \(\theta_i\in(-\pi/2,\pi/2)\), and \(\psi_i\in(-\pi,\pi)\) denote the roll, pitch, and yaw angles, respectively. Moreover,
 \begin{equation}
 \begin{aligned}
 A_{\psi_i}&=R_{\psi_i}
@@ -630,7 +645,7 @@ R_{\psi_i}&=
 \end{aligned}
 \label{eq:horizontal-attitude-map}
 \end{equation}
-The capture net is modeled as a set of massless elastic cables connecting selected quadrotor pairs. Let \(\mathcal E_s\) denote the cable graph and \(l_{ij}^0\) the rest length of cable \((i,j)\in\mathcal E_s\). A unilateral spring-damper approximation gives the tension magnitude
+The capture net is modeled as a set of massless elastic cables connecting selected QUAV pairs. Let \(\mathcal E_s\) denote the cable graph and \(l_{ij}^0\) the rest length of cable \((i,j)\in\mathcal E_s\). A unilateral spring-damper approximation gives the tension magnitude
 \begin{equation}
 T_{ij}=
 \begin{cases}
@@ -639,7 +654,7 @@ k_s(d_{ij}-l_{ij}^0)+c_s\dot d_{ij}, & d_{ij}>l_{ij}^0,\\
 \end{cases}
 \label{eq:cable-tension}
 \end{equation}
-where \(k_s>0\) and \(c_s>0\) are the cable stiffness and damping coefficients. The resultant cable force on quadrotor \(i\) is
+where \(k_s>0\) and \(c_s>0\) are the cable stiffness and damping coefficients. The resultant cable force on QUAV \(i\) is
 \begin{equation}
 F_i^{s}=\sum_{j\in\mathcal N_i^s}T_{ij}b_{ij},
 \label{eq:cable-force}
@@ -658,7 +673,7 @@ where \(F_i^s\) is the cable force given in~\eqref{eq:cable-force}. Its horizont
 The lumped disturbance \(\Delta_i\) and its derivative \(\dot\Delta_i\) are bounded, i.e., there exist positive constants \(\Delta_{i0}\) and \(\bar\Delta_{i0}\) such that \(\|\Delta_i(t)\|<\Delta_{i0}\) and \(\|\dot\Delta_i(t)\|<\bar\Delta_{i0}\) for all \(t\ge0\).
 \end{assumption}
 
-The actual translational dynamics of quadrotor \(i\) are then
+The actual translational dynamics of QUAV \(i\) are then
 \begin{equation}
 \begin{aligned}
 \dot p_{h,i}&=v_{h,i},\\
@@ -681,7 +696,7 @@ u_i^c=u_i-\hat\Delta_i.
 \label{eq:compensated-outer-command}
 \end{equation}
 
-For each quadrotor \(i\in\mathcal V\) and each coordinate axis \(\sigma\in\{x,y,z\}\), define
+For each QUAV \(i\in\mathcal V\) and each coordinate axis \(\sigma\in\{x,y,z\}\), define
 \begin{equation}
 x_{1,i\sigma}=p_{i\sigma},\qquad
 x_{2,i\sigma}=v_{i\sigma},\qquad
@@ -738,10 +753,10 @@ u_{z,i}^{d}=S_zu_i^c,
 f_i^{d}=m_i(g-u_{z,i}^{d}).
 \label{eq:altitude-thrust-command}
 \end{equation}
-The desired yaw \(\psi_i^d\) is prescribed independently. The attitude PD controller tracks \(\phi_i^d\), \(\theta_i^d\), and \(\psi_i^d\), and generates the rotor speeds \(\omega_{i,k}\) (\(k=1,\ldots,4\)) through the standard quadrotor allocation map.
-\begin{figure}[!t]
+The desired yaw \(\psi_i^d\) is prescribed independently. The attitude PD controller tracks \(\phi_i^d\), \(\theta_i^d\), and \(\psi_i^d\), and generates the rotor speeds \(\omega_{i,k}\) (\(k=1,\ldots,4\)) through the standard QUAV allocation map.
+\begin{figure}[ht]
 \centering
-\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_6}
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_7}
 \caption{Control structure of a single QUAV.}
 \label{fig:quav_control_structure}
 \end{figure}
@@ -755,28 +770,30 @@ In this section, simulation results are presented to verify the effectiveness of
 
 The full controller~\eqref{eq:total-control} is compared with a reduced version where \(k_{\mathrm{cop}}=0\), using the double-integrator model~\eqref{eq:agent-dynamics} with \(n_d=[0,0,-1]^{T}\) fixed. The desired formation is a square with \(\ell^*=1.0\)~m and \(v_c^*=[0.1,0.1,0]^{T}\)~m/s. The control gains are \(k_\theta=1.67\), \(k_d=3.70\), \(k_n=4.01\), \(k_{\mathrm{cop}}=6.5\), and \(k_v=7.0\). The initial positions are chosen close to a square in the \(xy\)-plane with a deliberate out-of-plane perturbation on agent~\#3: \(p_1(0)=[0,0.6,0]^{T}\)~m, \(p_2(0)=[0,0,0]^{T}\)~m, \(p_3(0)=[0.6,0,0.05]^{T}\)~m, \(p_4(0)=[0.6,0.6,0]^{T}\)~m, and \(v_i(0)=[0,0,0]^{T}\)~m/s.
 
-\begin{figure*}[!t]
+The results are shown in Figs.~\ref{fig:exp1_angle}--\ref{fig:exp1_coplanar}. Under the full controller, all angle errors converge to zero, the height of agent~\#3 returns to the reference plane, and the coplanarity error is driven to zero. With \(k_{\mathrm{cop}}=0\), a clear performance degradation is observed: agent~\#3 fails to return to the plane, its height drifting to \(0.22\)~m (Fig.~\ref{fig:exp1_height}); the coplanarity error reaches \(-0.15\) with no sign of convergence (Fig.~\ref{fig:exp1_coplanar}); and the angle errors exhibit steady-state offsets of \(10^{-2}\)~rad (Fig.~\ref{fig:exp1_angle}(b)). From the characteristic polynomial~\eqref{eq:char-poly}, \(k_{\mathrm{cop}}=0\) degenerates the coplanarity eigenvalue to zero, introducing a marginally stable mode that accounts for the observed steady-state errors. The coplanarity term is thus structurally necessary.
+
+\begin{figure}[ht]
 \centering
-\includegraphics[width=\textwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp1_angle}
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp1_angle}
 \caption{Experiment~1: evolution of the four angle errors \(e_{\theta_1},\dots,e_{\theta_4}\). (a) Full controller with coplanarity term. (b) Controller without coplanarity term.}
 \label{fig:exp1_angle}
-\end{figure*}
+\end{figure}
 
-\begin{figure}[!t]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp1_height}
 \caption{Experiment~1: height of agent~\#3 over time under the full and reduced controllers.}
 \label{fig:exp1_height}
 \end{figure}
 
-\begin{figure}[!t]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp1_coplanar}
 \caption{Experiment~1: coplanarity error \(e_{\mathrm{cop}}\) under the full and reduced controllers.}
 \label{fig:exp1_coplanar}
 \end{figure}
 
-The results are shown in Figs.~\ref{fig:exp1_angle}--\ref{fig:exp1_coplanar}. Under the full controller, all angle errors converge to the \(10^{-9}\)~rad range, the height of agent~\#3 returns to the reference plane, and the coplanarity error is driven to zero. With \(k_{\mathrm{cop}}=0\), a clear performance degradation is observed: agent~\#3 fails to return to the plane, its height drifting to \(0.22\)~m (Fig.~\ref{fig:exp1_height}); the coplanarity error reaches \(-0.15\)~rad with no sign of convergence (Fig.~\ref{fig:exp1_coplanar}); and the angle errors exhibit steady-state offsets of \(10^{-2}\)~rad (Fig.~\ref{fig:exp1_angle}(b)). From the characteristic polynomial~\eqref{eq:char-poly}, \(k_{\mathrm{cop}}=0\) degenerates the coplanarity eigenvalue to zero, introducing a marginally stable mode that accounts for the observed steady-state errors. The coplanarity term is thus structurally necessary.
+\FloatBarrier
 
 \subsection{Target Capture Scenario}
 
@@ -809,7 +826,30 @@ To simulate a capture impact, a pulling force is applied to each QUAV during \(t
 
 The initial positions form a compact \(0.4\)~m square: \(p_1(0)=[0,0.4,0]^{T}\)~m, \(p_2(0)=[0,0,0]^{T}\)~m, \(p_3(0)=[0.4,0,0]^{T}\)~m, \(p_4(0)=[0.4,0.4,0]^{T}\)~m, with \(v_i(0)=[0,0,0]^{T}\)~m/s.
 
-\begin{figure*}[!t]
+The results are shown in Figs.~\ref{fig:exp2_leso_x}--\ref{fig:exp2_trajectory}. The formation expands from the initial compact configuration to the \(1.0\)~m square, approaches the incoming target, and closes to \(0.4\)~m after the phase switch (Fig.~\ref{fig:exp2_trajectory}). All formation errors exhibit transients during the capture impact (\(t\in[55,60]\)~s) and the parameter switch at \(t=60\)~s, and then converge. The LESO accurately estimates the lumped disturbance on all three axes for every QUAV during the capture impact at \(t\in[55,60]\)~s, enabling the formation to maintain satisfactory tracking performance throughout the maneuver (Figs.~\ref{fig:exp2_leso_x}--\ref{fig:exp2_leso_z}).
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_leso_x}
+\caption{Experiment~2: LESO disturbance estimation on the \(x\)-axis. Actual (red) and estimated (blue dashed) lumped disturbance accelerations for all four QUAVs.}
+\label{fig:exp2_leso_x}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_leso_y}
+\caption{Experiment~2: LESO disturbance estimation on the \(y\)-axis.}
+\label{fig:exp2_leso_y}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_leso_z}
+\caption{Experiment~2: LESO disturbance estimation on the \(z\)-axis.}
+\label{fig:exp2_leso_z}
+\end{figure}
+
+\begin{figure*}[t]
 \centering
 \subfloat[Angle errors \(e_{\theta_i}\)]{
 \includegraphics[width=0.48\textwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_angle}
@@ -826,44 +866,25 @@ The initial positions form a compact \(0.4\)~m square: \(p_1(0)=[0,0.4,0]^{T}\)~
 \subfloat[Normal-direction error \(\|e_n\|\)]{
 \includegraphics[width=0.48\textwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_norm}
 \label{fig:exp2_norm}}
-\caption{Experiment~2: evolution of formation errors. (a) Four interior angle errors. (b) Edge distances \(d_{12},d_{23},d_{34},d_{41}\). (c) Coplanarity error \(e_{\mathrm{cop}}\). (d) Undirected normal-direction error. The desired side length switches from \(1.0\)~m to \(0.4\)~m at \(t=60\)~s (dashed vertical line).}
+\caption{Experiment~2: evolution of formation errors.}
 \label{fig:exp2_errors}
 \end{figure*}
 
-\begin{figure*}[!t]
+\begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_trajectory}
-\caption{Experiment~2: 3-D trajectories of the four QUAVs and the target. The formation expands from the initial \(0.4\)~m compact square, approaches the target, and closes to \(0.4\)~m after the phase switch at \(t=60\)~s.}
+\caption{Experiment~2: 3-D trajectories of the four QUAVs and the target.}
 \label{fig:exp2_trajectory}
 \end{figure*}
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_leso_x}
-\caption{Experiment~2: LESO disturbance estimation on the \(x\)-axis. Actual (red) and estimated (blue dashed) lumped disturbance accelerations for all four QUAVs.}
-\label{fig:exp2_leso_x}
-\end{figure}
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_leso_y}
-\caption{Experiment~2: LESO disturbance estimation on the \(y\)-axis.}
-\label{fig:exp2_leso_y}
-\end{figure}
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_leso_z}
-\caption{Experiment~2: LESO disturbance estimation on the \(z\)-axis.}
-\label{fig:exp2_leso_z}
-\end{figure}
-
-The results are shown in Figs.~\ref{fig:exp2_errors}--\ref{fig:exp2_leso_z}. The formation expands from the initial compact configuration to the \(1.0\)~m square, approaches the incoming target, and closes to \(0.4\)~m after the phase switch (Fig.~\ref{fig:exp2_trajectory}). All formation errors exhibit a transient at \(t=60\)~s and then converge. The LESO accurately estimates the lumped disturbance on all three axes for every QUAV during the capture impact at \(t\in[55,60]\)~s, enabling the formation to maintain satisfactory tracking performance throughout the maneuver (Figs.~\ref{fig:exp2_leso_x}--\ref{fig:exp2_leso_z}).
-
 \section{Conclusion}
-This paper addressed the distributed formation control problem of four agents forming a planar square in 3-D space. For a concyclic square, unsigned angle and distance constraints specify the in-plane shape and scale but leave the plane orientation as a free degree of freedom in 3-D. To prescribe the orientation, an undirected plane-normal control scheme was introduced. By treating \(\pm n_d\) as equivalent target orientations and selecting the locally closer branch, the controller avoids the singularity inherent in a raw cross product formulation while ensuring the formation plane aligns with the target plane. A coplanarity constraint was further incorporated and shown, via a perturbation analysis, to provide first-order sensitivity to out-of-plane deviations, whereas angle-based terms provide only second-order sensitivity, establishing its necessity for maintaining coplanarity. A five-term distributed controller was proposed, and local exponential stability of the nominal closed-loop system was established by constructing minimal internal error coordinates and proving Hurwitzness of the linearized system.
+This paper addressed the distributed formation control problem of four agents forming a planar square in 3-D space. For a concyclic square, unsigned angle and distance constraints specify the in-plane shape and scale but leave the plane orientation as a free degree of freedom in 3-D. To prescribe the orientation, an undirected plane-normal control scheme was introduced. By treating \(\pm n_d\) as equivalent target orientations and employing a hysteresis-based branch selection with a deadzone, the controller avoids both the singularity of a raw cross product formulation and the chattering problem near perpendicular configurations, while ensuring the formation plane aligns with the target plane. A coplanarity constraint was further incorporated and shown, via a perturbation analysis, to provide first-order sensitivity to out-of-plane deviations, whereas angle-based terms provide only second-order sensitivity, establishing its necessity for maintaining coplanarity. A five-term distributed controller was proposed, and local exponential stability of the nominal closed-loop system was established by constructing minimal internal error coordinates and proving Hurwitzness of the linearized system.
 
 Future work includes experimental validation, extension to formations with more agents, analysis of the hybrid dynamics arising from branch switching, and incorporation of disturbance compensation for operation in realistic environments.
+
+\section*{Acknowledgments}
+
+This work was supported in part by the National Natural Science Foundation of China (Grant No. 12272116 and 12372050).
 
 \appendices
 \section{Explicit Linearized Matrices and Supplementary Calculations}

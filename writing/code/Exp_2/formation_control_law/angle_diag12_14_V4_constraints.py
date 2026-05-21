@@ -1,5 +1,4 @@
 import numpy as np
-from agent.observer import LESO
 from utils import utils
 
 class formation_control_V_constraints:
@@ -87,41 +86,12 @@ class formation_control_V_constraints:
             {"name": "edge41","i":3, "j":0}
         ]
 
-        self.leso_dt = 1/50
-        self.leso_omega = 8
+        self.leso_dt = 1/500
+        self.leso_omega = 8 #8
         self.pose_angle_limit = np.array([30*np.pi/180, 30*np.pi/180])
-        self.leso_agents = []
-        self.last_applied_acc_cmds = []
-        self.filtered_dist_hat = []
 
     def _observer_label(self):
         return "LESO"
-
-    def _build_agent_leso(self, agent):
-        omega_o = self.leso_omega
-        observer_kwargs = {
-            "beta1": 3 * omega_o,
-            "beta2": 3 * omega_o**2,
-            "beta3": omega_o**3,
-            "dt": self.leso_dt,
-        }
-        return {
-            "x": LESO(
-                initial_p=agent.state.pos[0],
-                initial_v=agent.state.vel[0],
-                **observer_kwargs,
-            ),
-            "y": LESO(
-                initial_p=agent.state.pos[1],
-                initial_v=agent.state.vel[1],
-                **observer_kwargs,
-            ),
-            "z": LESO(
-                initial_p=agent.state.pos[2],
-                initial_v=agent.state.vel[2],
-                **observer_kwargs,
-            ),
-        }
 
     def reset_observers_from_agents(self, agent_list):
         if not self.use_leso:
@@ -130,49 +100,25 @@ class formation_control_V_constraints:
                 agent.controller.observer_mode_label = "Observer Off"
             return
 
-        self.leso_agents = []
-        self.last_applied_acc_cmds = []
-        self.filtered_dist_hat = []
         for agent in agent_list:
-            self.leso_agents.append(self._build_agent_leso(agent))
-            self.last_applied_acc_cmds.append(None)
-            self.filtered_dist_hat.append(np.zeros(3, dtype=float))
+            agent.setup_leso(self.leso_omega, self.leso_dt)
             agent.controller.history_dist_hat_acc.clear()
             agent.controller.observer_mode_label = self._observer_label()
 
     def reset_leso_from_agents(self, agent_list):
         self.reset_observers_from_agents(agent_list)
 
-    def _ensure_leso_initialized(self, agent_list):
-        if not self.use_leso:
-            return
-
-        if len(self.leso_agents) != len(agent_list):
-
-            self.reset_observers_from_agents(agent_list)
-
     def _compensate_control_with_leso(self, agent_list, u_raw):
         if not self.use_leso:
             return np.array(u_raw, dtype=float, copy=True)
 
-        self._ensure_leso_initialized(agent_list)
         u_comp = np.array(u_raw, dtype=float, copy=True)
 
         for idx, agent in enumerate(agent_list):
-            leso_axes = self.leso_agents[idx]
-            prev_applied_acc_cmd = self.last_applied_acc_cmds[idx]
-            if prev_applied_acc_cmd is None:
-                # Prime the observer with the first control command instead of assuming zero input.
-                prev_applied_acc_cmd = np.array(u_raw[idx], dtype=float, copy=True)
-
-            px, py, pz = agent.state.pos
-            _, _, a_dist_hat_x = leso_axes["x"].update(px, prev_applied_acc_cmd[0])
-            _, _, a_dist_hat_y = leso_axes["y"].update(py, prev_applied_acc_cmd[1])
-            _, _, a_dist_hat_z = leso_axes["z"].update(pz, prev_applied_acc_cmd[2])
-            dist_hat_raw = np.array([a_dist_hat_x, a_dist_hat_y, a_dist_hat_z], dtype=float)
-
-            self.filtered_dist_hat[idx] = dist_hat_raw
-            agent.controller.history_dist_hat_acc.append(dist_hat_raw.copy())
+            if agent.leso is None:
+                continue
+            dist_hat_raw = agent.dist_hat.copy()
+            agent.controller.history_dist_hat_acc.append(dist_hat_raw)
             u_comp[idx] -= dist_hat_raw
             g = agent.params.g
             psi = utils.quat_to_euler(agent.state.quaternion)[2]
@@ -185,7 +131,7 @@ class formation_control_V_constraints:
             Thetah_d = np.clip(Thetah_d, -self.pose_angle_limit, self.pose_angle_limit)
             applied_acc_xy = -g * A_psi @ Thetah_d
 
-            self.last_applied_acc_cmds[idx] = np.array([
+            agent.applied_acc_cmd = np.array([
                 applied_acc_xy[0],
                 applied_acc_xy[1],
                 u_comp[idx, 2],

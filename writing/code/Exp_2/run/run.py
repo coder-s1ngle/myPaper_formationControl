@@ -214,3 +214,8 @@ class run:
                 self.dt,
                 F_d_list[index] + self.get_disturbance(self.total_time, index, p_stack),
             )
+
+        if self.formation_control_law.use_leso:
+            for agent in self.world.agent_list:
+                if agent.leso is not None:
+                    agent.update_leso()

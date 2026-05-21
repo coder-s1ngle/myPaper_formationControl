@@ -73,7 +73,8 @@ def fig_angle_error(ctrl_w, ctrl_wo, out_dir: Path):
     names = ["e_1", "e_2", "e_3", "e_4"]
     colors4 = ["#2166AC", "#4DAF4A", "#FF7F00", "#94318E"]
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(IEEE_DOUBLE_COL, 2.4))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(IEEE_SINGLE_COL, 3.0),
+                                   constrained_layout=True)
 
     for i, name in enumerate(names):
         ax1.plot(t_w, np.array(ctrl_w.angle_error_history[name]),
@@ -92,7 +93,6 @@ def fig_angle_error(ctrl_w, ctrl_wo, out_dir: Path):
         ax.tick_params(direction="in")
     ax1.legend(frameon=False, ncol=2, fontsize=6, loc="upper right")
 
-    fig.tight_layout(pad=0.8)
     _save(fig, "fig_exp1_angle", out_dir)
 
 

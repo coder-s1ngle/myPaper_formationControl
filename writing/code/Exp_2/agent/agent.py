@@ -5,6 +5,7 @@ import numpy as np
 from numba import njit
 from utils import utils
 from .controller import Controller
+from .observer import LESO
 
 
 # ═══════════════════════════════════════════════
@@ -182,6 +183,32 @@ class Agent:
         self.history_dist_force_actual = []
         self.history_dist_acc_actual = []
         self.history_f_actual = self.history_dist_acc_actual
+
+        self.leso = None
+        self.dist_hat = np.zeros(3)
+        self.applied_acc_cmd = np.zeros(3)
+
+    def setup_leso(self, omega_o, dt):
+        beta1 = 3 * omega_o
+        beta2 = 3 * omega_o ** 2
+        beta3 = omega_o ** 3
+        self.leso = {
+            "x": LESO(beta1, beta2, beta3, dt,
+                      self.state.pos[0], self.state.vel[0]),
+            "y": LESO(beta1, beta2, beta3, dt,
+                      self.state.pos[1], self.state.vel[1]),
+            "z": LESO(beta1, beta2, beta3, dt,
+                      self.state.pos[2], self.state.vel[2]),
+        }
+        self.dist_hat = np.zeros(3)
+
+    def update_leso(self):
+        px, py, pz = self.state.pos
+        ux, uy, uz = self.applied_acc_cmd
+        _, _, dh_x = self.leso["x"].update(px, ux)
+        _, _, dh_y = self.leso["y"].update(py, uy)
+        _, _, dh_z = self.leso["z"].update(pz, uz)
+        self.dist_hat = np.array([dh_x, dh_y, dh_z])
 
     def update_one_sim_step(self, dt, F_d):
         pos = self.state.pos
