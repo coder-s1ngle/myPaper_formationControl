@@ -13,7 +13,7 @@
 \usepackage{algorithmic}
 \usepackage{algorithm}
 \usepackage{array}
-\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+\usepackage[caption=false,font=footnotesize,labelfont=sf,textfont=sf]{subfig}
 \usepackage{textcomp}
 \usepackage{stfloats}
 \usepackage{url}
@@ -25,11 +25,11 @@
 
 \begin{document}
 
-\title{Distributed Formation Control for Four Agents in 3-D With Prescribed Plane Orientation}
+\title{Distributed Orientation Control of Planar Formations in 3-D Space Using Angle and Bearing Constraints}
 
 % IEEE Publication Technology,~\IEEEmembership{Staff,~IEEE,}
 
-\author{...}
+\author{Jianqing Li, Zhengyang Zhu}
 
 % The paper headers
 \markboth{Draft Manuscript}%
@@ -42,24 +42,42 @@
 \maketitle
 
 \begin{abstract}
-This paper studies the distributed formation control problem of four agents forming a planar square in 3-D space. For a square, the concyclic nature of the vertices renders unsigned angle constraints alone insufficient to determine a unique labeled formation---two reflected configurations with opposite cyclic connection orders satisfy the same angle constraints. To address this reflection ambiguity, an undirected plane-normal control scheme is introduced. The desired formation configuration is thus described by local angle constraints, selected distance constraints, an undirected plane-normal constraint, and a coplanarity constraint. A distributed formation controller combining these five terms is formulated to achieve the desired square shape, select the intended reflection branch, maintain coplanarity, and track a desired common velocity. A minimal internal error coordinate is constructed, and local exponential stability of the nominal closed-loop system is proved through linearized Hurwitz verification. The coplanarity term is shown, via a perturbation analysis, to provide first-order sensitivity to out-of-plane deviations where angle-based terms provide only second-order sensitivity, establishing its necessity for 3-D planar formation control.
+This paper addresses net-based aerial interception using four quadrotor unmanned aerial vehicles (QUAVs) to carry a capture net in three-dimensional (3-D) space. The objective is to keep the net spanned and oriented toward the incoming target during 3-D maneuvers. A distributed formation control scheme is proposed based on bearing and distance information. Angle constraints prescribe a four-agent square shape, while a single designated agent measures distances to regulate the formation scale. An explicit plane-normal control law orients the formation plane to face the target. A coplanarity control term using only local bearing measurements ensures that the net remains spanned throughout the interception. Each agent measures only the bearing information required by the control law in its own local coordinate frame. Only the distance-measuring agent communicates with its neighbors, and alignment of the agents' coordinate frames is not required. The necessity of the coplanarity constraint is confirmed by an ablation study, in which removing the term causes agents to drift out of plane. The overall scheme is further validated on a simplified QUAV model in a net-capture scenario with elastic cables, demonstrating its effectiveness.
 \end{abstract}
 
 \begin{IEEEkeywords}
-Formation control, multi-agent systems, undirected normal control, reflection ambiguity, coplanarity control, angle rigidity.
+Formation control, multi-agent systems, angle constraints, plane orientation, coplanarity control, net capture.
 \end{IEEEkeywords}
 
 \section{Introduction}
-\IEEEPARstart{M}{ulti-agent} formation control has been widely studied because a coordinated group can perform tasks that are difficult for a single vehicle, such as cooperative transportation, search and rescue, and environmental monitoring. Compared with position-based and displacement-based methods, local sensing-based formation control reduces the dependence on global positioning and common reference frames. In this direction, bearing- and angle-based methods are especially attractive since relative direction information can be obtained from onboard vision or line-of-sight sensors.
+\IEEEPARstart{T}{he} rapid proliferation of small unmanned aerial vehicles (UAVs) has created an urgent demand for effective counter-UAS measures, as conventional air defense systems are ill-suited to intercept such small, slow, and low-altitude threats. In response, a broad range of counter-UAS measures has been investigated. Electromagnetic jamming and kinetic interception risk uncontrolled descent and collateral damage, while GPS spoofing and protocol attacks are ineffective against autonomous drones that navigate without external signals. Physical capture using a net carried by cooperative UAVs circumvents these limitations~\cite{rothe2019concept}. Among the formation geometries proposed for net-based interception are the four-UAV square configuration~\cite{tolman2017counter} and the three-UAV triangular configuration~\cite{chakravarthy2021interception,wang2022discrete}. Reliable interception requires the carrier UAVs to maintain a precise planar formation that keeps the net open and oriented toward the target, a problem that reduces to formation control in 3-D space.
 
-Angle-rigidity-based formation control has been developed to stabilize formations using local angle measurements \cite{chen2021angleRigidity}. Since angle constraints are invariant under translation, rotation, and scaling, additional information is generally required when the scale or orientation of a formation must be prescribed. Recent studies have therefore introduced distance, orientation, or leader information to resolve the remaining degrees of freedom \cite{chen2022stabilizing,chen2023angleConstrained,li2025localInfo}. Most existing angle-based planar formation results either assume that agents are already coplanar or operate in a 2-D setting. When agents maneuver in 3-D space, maintaining coplanarity of a nominally planar formation becomes a nontrivial control problem.
+Formation control methods can be categorized by the type of sensed and controlled variables they employ~\cite{oh2015survey}. Position-based approaches require each agent to know its absolute position with respect to a global coordinate system, which is often unavailable in GPS-denied environments~\cite{nguyen2020gps}. Displacement-based methods measure the relative positions of neighboring agents but require all agents to share a common sense of direction---that is, their local coordinate frames must be mutually aligned---which is difficult to guarantee under sensor noise and magnetic interference~\cite{demarina2021displacement}. Bearing-based methods rely on bearing rigidity theory to maintain relative directions between agents, but still require agents to know a global reference frame~\cite{trinh2016bearing}. Distance-based methods control inter-agent distances, which are independent of the orientation of each agent's coordinate frame. However, distance sensing requires dedicated ranging hardware that adds weight and power consumption to small aerial platforms. Angle-based methods use only angle measurements, which can be obtained from low-cost monocular cameras or direction-finding arrays without any coordinate frame alignment. Angle sensors are cheaper and more accessible than distance sensors~\cite{hu2023angle,gong2023review}. Owing to these advantages, angle-based formation control has attracted considerable research interest in recent years.
 
-This paper considers the formation control of four agents forming a planar square in 3-D space. The desired configuration is described by a square-shape constraint, a scale constraint, a plane-normal constraint, and a coplanarity constraint. We show that unsigned angle constraints and distance constraints alone admit two reflected solution families with opposite cyclic connection orders, and that angle-based control terms provide only second-order sensitivity to out-of-plane deviations. An undirected plane-normal control scheme is introduced to address the reflection ambiguity, and an explicit coplanarity term is shown to be necessary for maintaining coplanarity. A distributed formation controller combining these terms is proposed, and local exponential stability of the nominal closed-loop system is established by constructing minimal internal error coordinates.
+Angle constraints are invariant under translation, rotation, and scaling. To prescribe formation scale, angle--distance approaches that operate entirely in local coordinate frames without requiring frame alignment have been extensively studied in recent years~\cite{li2025localInfo,shao2024directed}. These works, however, assume that all agents lie in a common plane, an assumption that is difficult to guarantee in practice. Moreover, angle and distance constraints are inherently rotation-invariant and therefore cannot prescribe the orientation of the formation plane in 3-D space. For planar formations embedded in 3-D space, a few results address plane orientation control. Sun et al.~\cite{sun2017distributed} proposed a distance-based method that specifies the directions of two relative position vectors to fix the formation orientation, but it requires distance sensing on all edges and global coordinate frame alignment for the orientation agents. Li et al.~\cite{li2024circle} achieved circle formation on an arbitrary 3-D plane without distance measurements, yet the vertically take-off and land (VTOL) model employed therein restricts the formation plane to non-vertical orientations and the vehicles must encircle a fixed target point. Other 3-D formation orientation results rely on volumetric agent configurations. Chen et al. achieved rotation and scaling maneuvering of tetrahedral angle-rigid formations under a two-leader scheme~\cite{chen2022maneuvering}, and affine formation approaches control rotation as part of a full affine transformation via stress-matrix-based control~\cite{chen2020affine,xu2020affine}. These methods, however, require non-coplanar agent arrangements and degenerate when agents become coplanar, hence inapplicable to planar formation scenarios.
 
-% \section{The Design, Intent, and \\ Limitations of the Templates}
+Motivated by the above considerations, this paper proposes a distributed formation control scheme for four agents forming a square in 3-D space. Each agent measures only the bearing information required by the control law in its own local coordinate frame, with one designated agent additionally measuring the distances to its two adjacent agents and communicating with them. Angle constraints prescribe the square shape and distance measurements regulate the formation scale, while an explicit plane-normal control law and a coplanarity term ensure the correct orientation and flatness of the formation plane during 3-D maneuvers. The main contributions of this paper are summarized as follows.
+\begin{enumerate}[leftmargin=*,nosep]
+\item A distributed plane-normal control scheme is proposed to align the formation plane with a prescribed target orientation. The scheme uses only bearing measurements from the agents involved in plane orientation, with the distance-measuring agent communicating with its neighbors, and drives the formation plane to face the incoming target direction.
+\item A coplanarity control term that relies solely on local bearing measurements is introduced to keep the four agents on a common plane during 3-D maneuvers. Combined with the angle and distance constraints, this term keeps the net spanned throughout the interception process.
+\item The formation control scheme is embedded into a simplified QUAV model with LESO-based disturbance compensation and demonstrated in a target-capture scenario with elastic cables, validating the integrated scheme under time-varying disturbances, parameter switches, and cable tension.
+\end{enumerate}
+
+%Motivated by the above discussion, this paper studies the distributed control problem of planar four-agent formations in 3-D space with prescribed orientation. Unlike volumetric formations, planar formations are intrinsically underconstrained in orientation: angle and distance constraints can determine the in-plane geometry, yet leave the formation-plane orientation unresolved. Moreover, planar formations are vulnerable to out-of-plane drift, since conventional angle constraints provide only weak sensitivity to coplanarity deviations.
+
+%To address these challenges, this paper develops a distributed formation control framework that simultaneously regulates formation shape, scale, coplanarity, and plane orientation using only local bearing measurements and minimal distance sensing, without requiring global coordinate-frame alignment. The main contributions are summarized as follows:
+
+%1.A distributed formation control framework is proposed for planar four-agent formations in 3-D space that simultaneously regulates formation shape, scale, and plane orientation using only local bearing measurements and minimal distance sensing, without requiring global coordinate-frame alignment.
+%2.A coplanarity control mechanism is introduced to address the structural weakness of planar angle constraints under out-of-plane perturbations. It is shown analytically that conventional angle errors provide only second-order sensitivity to out-of-plane deviations, whereas the proposed coplanarity term restores first-order corrective behavior.
+%3.The unique challenges of orientation regulation for planar formations in 3-D space are identified and addressed, including orientation underdetermination, normal-direction ambiguity, and coplanarity fragility. An undirected plane-normal formulation together with a hysteresis-based branch-selection mechanism is developed to ensure robust orientation regulation without singularity or chattering.
+
+The remainder of this paper is organized as follows. Section~II formulates the formation control problem for four agents in 3-D space. Section~III presents the formation control design and its application to the net-capture scenario. Section~IV provides simulation results examining the performance of the proposed scheme.
+
+
+
 \section{Problem Formulation}
 
-Consider a group of four agents moving in 3-D space, with index set \(\mathcal V=\{1,2,3,4\}\).
+Consider a group of four agents in space, with index set \(\mathcal V=\{1,2,3,4\}\).
 The dynamics of agent \(i\) are described by the double integrator
 \begin{equation}
 \label{eq:agent-dynamics}
@@ -68,34 +86,6 @@ The dynamics of agent \(i\) are described by the double integrator
 \qquad i\in\mathcal V,
 \end{equation}
 where \(p_i\in\mathbb R^3\) and \(v_i\in\mathbb R^3\) denote the position and velocity of agent \(i\) in a fixed global coordinate system, and \(u_i\in\mathbb R^3\) is the control input.
-
-The following assumptions are made.
-
-\begin{assumption}
-Each agent is equipped with LOS sensing to acquire the relative direction information required by the formation controller.
-\end{assumption}
-
-\begin{assumption}
-The initial positions of the agents are sufficiently close to a desired square formation, and the positions of the agents are independent.
-\end{assumption}
-
-Assumption~1 enables each agent to measure the relative directions of its neighboring agents in its own local coordinate system without requiring a common reference frame or coordinate alignment among agents. Assumption~2 guarantees that the initial configuration is non-degenerate, ensuring local exponential convergence of the closed-loop system.
-
-Under Assumption~1, each agent \(i\) can measure the bearing vector to its neighboring agent \(j\) in its own local coordinate frame as
-\begin{equation}
-\label{eq:bearing-definition}
-b_{ij}=\frac{q_{ij}}{\|q_{ij}\|},
-\qquad q_{ij}=p_j-p_i,
-\qquad d_{ij}=\|q_{ij}\|,
-\end{equation}
-where \(q_{ij}\) is the relative position vector and \(d_{ij}\) the inter-agent distance.
-Since defining signed angles in 3-D requires additional reference directions or aligned coordinate frames, we adopt unsigned angles throughout \cite{chen2023angleRigidity3D}.
-The interior angle formed by agents \(j\), \(i\), and \(k\) can then be computed from the bearing measurements as
-\begin{equation}
-\label{eq:angle-definition}
-\alpha_{jik}=\arccos\left(b_{ij}^{T}b_{ik}\right),
-\qquad \alpha_{jik}\in[0,\pi].
-\end{equation}
 
 The in-plane square shape and scale are specified by angle and distance constraints as in~\cite{li2025localInfo}. The angle constraint set is
 \begin{equation}
@@ -106,10 +96,38 @@ with desired angles \(\alpha_{jik}^*=\pi/2\). The distance-constrained edges are
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.85\columnwidth,trim=6pt 6pt 6pt 6pt,clip]{figures/fig_1}
-\caption{Formation constraints: four angles and two distances determine the target square.}
+\includegraphics[width=\columnwidth,trim=12pt 12pt 12pt 12pt,clip]{figures/fig_1}
+\caption{Target square with angle and distance constraints.}
 \label{fig:square_constraints}
 \end{figure}
+
+For any two agents \(i\) and \(j\), let
+\begin{equation}
+q_{ij}=p_j-p_i,\qquad
+d_{ij}=\|q_{ij}\|,
+\end{equation}
+denote the relative position vector and the inter-agent distance. The corresponding bearing vector is
+\begin{equation}
+\label{eq:bearing-definition}
+b_{ij}=\frac{q_{ij}}{\|q_{ij}\|}.
+\end{equation}
+Since defining signed angles in 3-D requires additional reference directions or aligned coordinate frames, we adopt unsigned angles throughout \cite{chen2023angleRigidity3D}.
+The interior angle formed by agents \(j\), \(i\), and \(k\) can then be computed from the bearing measurements as
+\begin{equation}
+\label{eq:angle-definition}
+\alpha_{jik}=\arccos\left(b_{ij}^{T}b_{ik}\right),
+\qquad \alpha_{jik}\in[0,\pi].
+\end{equation}
+
+To realize the above constraints, the following assumptions are made.
+
+\begin{assumption}
+Each agent is equipped with LOS sensing to acquire the relative direction information required by the formation controller.
+\end{assumption}
+
+\begin{assumption}
+The initial positions of the agents are sufficiently close to a desired square formation, and are non-collinear.
+\end{assumption}
 
 \begin{assumption}
 Only agent~\#1 is equipped with a distance sensor and can measure the distances to its neighboring agents; the other agents do not require distance-measuring capability.
@@ -132,7 +150,7 @@ A natural error candidate is the cross product \(n_{124}\times n_d\). This quant
 \begin{figure}[ht]
 \centering
 \includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_2}
-\caption{Two orientation branches: both \(n_{124}=\pm n_d\) satisfy the undirected normal constraint.}
+\caption{Both \(\pm n_d\) satisfy the undirected normal constraint, corresponding to two orientation branches.}
 \label{fig:orientation_branch}
 \end{figure}
 
@@ -168,7 +186,7 @@ where \(n_{234}\) is the unit normal of plane \(\{2,3,4\}\). Geometrically, \(|e
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_3}
+\includegraphics[width=\columnwidth,trim=12pt 12pt 12pt 12pt,clip]{figures/fig_3}
 \caption{Coplanarity measurement via three local bearings.}
 \label{fig:coplanar_constraint}
 \end{figure}
@@ -195,14 +213,16 @@ e_{\mathrm{cop}}=-\frac{1}{\sqrt{2}\,\ell^*}h+O(h^3).
 Thus angle errors are only second-order sensitive to out-of-plane displacements, whereas the coplanarity error provides a first-order response. This structural insensitivity explains why angle-based terms alone cannot effectively restore coplanarity, making the coplanarity constraint necessary.
 \end{remark}
 
-Combining the above constraints, let \(\mathcal S(\ell^*,n_d)\) denote the set of all \(p\in\mathbb R^{12}\) satisfying
+Combining the above constraints, the desired formation set is
 \begin{equation}
 \label{eq:desired-formation-set}
+\mathcal S(\ell^*,n_d)=\left\{
+p\in\mathbb R^{12}\;\middle|\;
 \begin{aligned}
-\alpha_{jik}&=\alpha_{jik}^*, &&(j,i,k)\in\mathcal A,\\
-d_{ij}&=d_{ij}^*, &&(i,j)\in\mathcal E_d,\\
-e_{\mathrm{cop}}&=0, && e_n=0.
-\end{aligned}
+&\alpha_{jik}=\alpha_{jik}^*, &&(j,i,k)\in\mathcal A,\\
+&d_{ij}=d_{ij}^*, &&(i,j)\in\mathcal E_d,\\
+&e_{\mathrm{cop}}=0,\; e_n=0
+\end{aligned}\right\}.
 \end{equation}
 
 With the above setup, the formation control problem is stated as follows.
@@ -228,11 +248,11 @@ Equations \eqref{eq:angle-convergence}--\eqref{eq:coplanar-convergence} together
 
 % \section{Where to Get \LaTeX \ Help --- User Groups}
 \section{Main Results}
-In this section, we present the distributed formation control law, and provide the stability analysis of the closed-loop system.
+In this section, the distributed formation control law is first designed and its stability analyzed, and then an LESO-based disturbance compensation scheme is presented for QUAV implementation.
 
-\subsection{Control Law Design}
+\subsection{Formation Control}
 
-The distributed formation control laws are proposed as follows:
+To simultaneously satisfy the constraints in Problem~1, each agent's control law combines an angle term, a distance term, a coplanarity term, a plane-normal term, and a velocity tracking term. The distributed formation control laws are proposed as follows:
 \begin{equation}
 \label{eq:total-control}
 \begin{aligned}
@@ -251,8 +271,6 @@ u_4&=\dot v_c^*-k_\theta e_{\theta_4}(b_{41}+b_{43})-k_d e_{14}b_{14}
 \end{aligned}
 \end{equation}
 where \(v_c^*\) and \(\dot v_c^*\) denote the desired velocity and the desired acceleration of the formation, respectively, \(e_{\theta_i}=\alpha_{jik}-\pi/2\) for \((j,i,k)\in\mathcal A\), \(e_{12}=d_{12}-\ell^*\) and \(e_{14}=d_{14}-\ell^*\) are the edge-length errors, \(\tilde v_i=v_i-v_c^*\) is the velocity tracking error, and \(r_i=p_i-p_{124}\) with \(p_{124}=(p_1+p_2+p_4)/3\). The coplanarity error \(e_{\mathrm{cop}}\), reference-plane normal \(n_{124}\), and normal error \(e_n\) are as defined in Section~II. The gains \(k_\theta,k_d,k_v,k_{\mathrm{cop}},k_n\) are positive scalars.
-
-The coplanarity term \(-k_{\mathrm{cop}}e_{\mathrm{cop}}n_{234}\) in \(u_3\) applies a force along the normal of plane \(\{2,3,4\}\) that pushes agent~\#3 back toward the reference plane \(\{1,2,4\}\) to restore coplanarity, as illustrated in Fig.~\ref{fig:coplanar_action}. For the normal control, the error vector \(e_n=n_{124}\times\bar{n}_d\) lies in the formation plane and defines the rotation axis. The forces \(k_n(e_n\times r_i)\) on agents~\#1, \#2, and~\#4 are perpendicular to the plane; their net force on the centroid \(p_{124}\) is zero, producing a pure restoring torque that rotates the plane around \(e_n\) until \(n_{124}\) aligns with \(\bar{n}_d\) (Fig.~\ref{fig:normal_control}).
 
 \begin{remark}
 \label{rem:centroid-computation}
@@ -300,19 +318,6 @@ Let \(E_i\in\mathbb R^{3\times12}\) be the selection matrix satisfying \(E_i\til
 \dot b_{ij}=\frac{1}{d_{ij}}P_{b_{ij}}(v_j-v_i)=M_{ij}(p)\tilde v,
 \label{eq:bdot}
 \end{equation}
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_4}
-\caption{Coplanarity control action.}
-\label{fig:coplanar_action}
-\end{figure}
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_5}
-\caption{Normal-direction control action.}
-\label{fig:normal_control}
-\end{figure}
 where
 \begin{equation}
 P_{b_{ij}}=I_3-b_{ij}b_{ij}^T,\qquad
@@ -597,10 +602,30 @@ T_Q=\operatorname{diag}(I_8,I_4\otimes Q).
 Thus \(\hat A^\dagger\) and \(\hat A^*\) have the same spectrum. Since \(\hat A^*\) is Hurwitz, \(\hat A^\dagger\) is also Hurwitz, and the same local exponential stability result holds for every representative in \(\mathcal S(\ell^*,n_d)\) within the fixed branch. This completes the proof.
 \end{proof}
 
-\section{Application}
+The geometric interpretation of the coplanarity and normal-direction control terms is briefly summarized as follows.
+
+The coplanarity term \(-k_{\mathrm{cop}}e_{\mathrm{cop}}n_{234}\) is applied exclusively to agent~\#3 because the reference plane \(\{1,2,4\}\) is spanned by the other three agents. Geometrically, \(e_{\mathrm{cop}}=b_{31}^{T}n_{234}\) measures the signed offset of agent~\#3 from the reference plane: when agent~\#3 lies on \(\{1,2,4\}\), the normals of planes \(\{2,3,4\}\) and \(\{1,2,4\}\) are parallel, making \(b_{31}\) orthogonal to \(n_{234}\) and hence \(e_{\mathrm{cop}}=0\). When agent~\#3 deviates out of the plane, \(n_{234}\) tilts relative to \(n_{124}\), producing a non-zero \(e_{\mathrm{cop}}\) whose sign encodes the direction of deviation. The resulting force \(-k_{\mathrm{cop}}e_{\mathrm{cop}}n_{234}\) pushes agent~\#3 along the tilted normal back toward the reference plane, as illustrated in Fig.~\ref{fig:coplanar_action}.
+
+For the normal-direction control, the error vector \(e_n=n_{124}\times\bar{n}_d\) lies in the formation plane and defines the instantaneous rotation axis. The forces \(k_n(e_n\times r_i)\) are applied to agents~\#1, \#2, and~\#4---the three agents that span the reference plane---where \(r_i=p_i-p_{124}\) is the position of agent~\(i\) relative to the centroid of \(\{1,2,4\}\). Each force is perpendicular to both the rotation axis and the radial vector \(r_i\), producing a tangential action that rotates the plane. Because \(r_i\) is measured from the centroid, the net force vanishes (\(\sum_i r_i=0\)), ensuring a pure restoring torque \(\tau=k_n\sum_i r_i\times(e_n\times r_i)\) that drives \(n_{124}\) toward the selected branch \(\bar{n}_d\) without inducing translational drift (Fig.~\ref{fig:normal_control}).
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_4}
+\caption{Coplanarity control action.}
+\label{fig:coplanar_action}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_5}
+\caption{Normal-direction control action.}
+\label{fig:normal_control}
+\end{figure}
+
+\subsection{QUAV Capture-Net Formation}
 \label{sec:quadrotor-application}
 
-This section outlines how the proposed geometric formation controller can be embedded into a QUAV-based capture-net system. As illustrated in Fig.~\ref{fig:cable_square_measurements}, the four QUAVs carry an elastic net while the formation layer uses local geometric measurements to generate the desired translational accelerations. The simplified QUAV dynamics are first introduced, then the elastic cable force and the resulting lumped disturbances are included, and finally an LESO-based compensation law is used to recover the nominal acceleration command.
+This subsection outlines how the proposed geometric formation controller can be embedded into a QUAV-based capture-net system. As illustrated in Fig.~\ref{fig:cable_square_measurements}, the four QUAVs carry an elastic net while the formation layer uses local geometric measurements to generate the desired translational accelerations. The simplified QUAV dynamics are first introduced, then the elastic cable force and the resulting lumped disturbances are included, and finally an LESO-based compensation law is used to recover the nominal acceleration command.
 \begin{figure}[!t]
 \centering
 \includegraphics[width=0.85\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_6}
@@ -793,7 +818,7 @@ The results are shown in Figs.~\ref{fig:exp1_angle}--\ref{fig:exp1_coplanar}. Un
 \label{fig:exp1_coplanar}
 \end{figure}
 
-\FloatBarrier
+% \FloatBarrier
 
 \subsection{Target Capture Scenario}
 
@@ -818,15 +843,20 @@ The scenario proceeds in three phases:
 
 \begin{enumerate}[leftmargin=*,nosep]
 \item \emph{Net deployment} (\(0\le t<40\)~s): the formation expands from the initial compact \(0.4\)~m square toward the target formation defined by~\eqref{eq:ell-star-piecewise}--\eqref{eq:nd-piecewise}, tracking \(v_c^*=[0.1,0,0]^{T}\)~m/s.
-\item \emph{Approach} (\(40\le t<55\)~s): the formation maintains the desired square shape and continues approaching the target while keeping the net plane perpendicular to the ground.
-\item \emph{Target capture} (\(55\le t\le 85\)~s). At \(t=60\)~s, the desired side length and plane normal switch according to~\eqref{eq:ell-star-piecewise}--\eqref{eq:nd-piecewise}, driving the formation to close and orient the net plane upward for the remainder of the simulation.
+\item \emph{Approach} (\(40\le t<50\)~s): the formation maintains the desired square shape and continues approaching the target while keeping the net plane perpendicular to the ground.
+\item \emph{Target capture} (\(50\le t\le 90\)~s). At \(t=50\)~s, a smooth time-varying disturbance~\eqref{eq:pulse-disturbance} is applied. At \(t=60\)~s, the desired side length and plane normal are smoothly transitioned via tracking differentiators (TDs)~\cite{han2009PIDtoADRC} according to~\eqref{eq:ell-star-piecewise}--\eqref{eq:nd-piecewise}, driving the formation to close and orient the net plane upward for the remainder of the simulation.
 \end{enumerate}
 
-To simulate a capture impact, a pulling force is applied to each QUAV during \(t\in[55,60]\)~s. The impact point is placed on the current net surface at an offset of \((0.25,-0.15)\) in the local net-frame coordinates from the formation centroid, and is displaced \(0.2\)~m along the target approach direction to account for net surface penetration. The force magnitude rises linearly over \(0.2\)~s to a peak of \(3.0\)~N, then decays exponentially with time constant \(1.5\)~s, reflecting a sharp impulse at impact followed by energy dissipation through the net cables.
+To validate the LESO-based disturbance compensation, a smooth time-varying disturbance is applied to each QUAV during \(t\in[50,60]\)~s:
+\begin{equation}
+\Delta_i(t)=A\sin^{2}\!\left(\pi\frac{t-50}{10}\right)\mathbf{d},\qquad t\in[50,60]~\mathrm{s},
+\label{eq:pulse-disturbance}
+\end{equation}
+with \(A=1.0\)~N and direction \(\mathbf{d}=[-0.8,0.4,0.45]^{T}/\|\cdot\|\).
 
 The initial positions form a compact \(0.4\)~m square: \(p_1(0)=[0,0.4,0]^{T}\)~m, \(p_2(0)=[0,0,0]^{T}\)~m, \(p_3(0)=[0.4,0,0]^{T}\)~m, \(p_4(0)=[0.4,0.4,0]^{T}\)~m, with \(v_i(0)=[0,0,0]^{T}\)~m/s.
 
-The results are shown in Figs.~\ref{fig:exp2_leso_x}--\ref{fig:exp2_trajectory}. The formation expands from the initial compact configuration to the \(1.0\)~m square, approaches the incoming target, and closes to \(0.4\)~m after the phase switch (Fig.~\ref{fig:exp2_trajectory}). All formation errors exhibit transients during the capture impact (\(t\in[55,60]\)~s) and the parameter switch at \(t=60\)~s, and then converge. The LESO accurately estimates the lumped disturbance on all three axes for every QUAV during the capture impact at \(t\in[55,60]\)~s, enabling the formation to maintain satisfactory tracking performance throughout the maneuver (Figs.~\ref{fig:exp2_leso_x}--\ref{fig:exp2_leso_z}).
+The results are shown in Figs.~\ref{fig:exp2_leso_x}--\ref{fig:exp2_trajectory}. The formation expands from the initial compact configuration to the \(1.0\)~m square, approaches the incoming target, and closes to \(0.4\)~m after the TD-smoothed transition at \(t=60\)~s (Fig.~\ref{fig:exp2_trajectory}). All formation errors exhibit transients during the disturbance interval (\(t\in[50,60]\)~s) and the parameter switch, and then converge. The LESO accurately estimates the lumped disturbance on all three axes for every QUAV, enabling the formation to maintain satisfactory tracking performance throughout the maneuver (Figs.~\ref{fig:exp2_leso_x}--\ref{fig:exp2_leso_z}).
 
 \begin{figure}[ht]
 \centering
@@ -849,26 +879,26 @@ The results are shown in Figs.~\ref{fig:exp2_leso_x}--\ref{fig:exp2_trajectory}.
 \label{fig:exp2_leso_z}
 \end{figure}
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
 \subfloat[Angle errors \(e_{\theta_i}\)]{
-\includegraphics[width=0.48\textwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_angle}
+\includegraphics[width=0.44\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_angle}
 \label{fig:exp2_angle}}
-\hfill
+\hspace{4pt}
 \subfloat[Edge distances \(d_{ij}\)]{
-\includegraphics[width=0.48\textwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_edge}
+\includegraphics[width=0.44\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_edge}
 \label{fig:exp2_edge}}
-\\
-\subfloat[Coplanarity error \(e_{\mathrm{cop}}\)]{
-\includegraphics[width=0.48\textwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_coplanar}
+\\[0pt]
+\subfloat[Coplanarixty error \(e_{\mathrm{cop}}\)]{
+\includegraphics[width=0.44\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_coplanar}
 \label{fig:exp2_coplanar}}
-\hfill
+\hspace{4pt}
 \subfloat[Normal-direction error \(\|e_n\|\)]{
-\includegraphics[width=0.48\textwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_norm}
+\includegraphics[width=0.44\columnwidth,trim=2pt 2pt 2pt 2pt,clip]{figures/fig_exp2_norm}
 \label{fig:exp2_norm}}
 \caption{Experiment~2: evolution of formation errors.}
 \label{fig:exp2_errors}
-\end{figure*}
+\end{figure}
 
 \begin{figure*}[t]
 \centering
@@ -1033,22 +1063,71 @@ For the in-plane block, direct computation gives
 Multiplying these factors yields \eqref{eq:char-poly}.
 
 \begin{thebibliography}{1}
-\bibliographystyle{IEEEtran}
+\bibitem{rothe2019concept}
+J.~Rothe, M.~Strohmeier, and S.~Montenegro, ``A concept for catching drones with a net carried by cooperative UAVs,'' in \textit{Proc. IEEE Int. Symp. Safety, Security, Rescue Robot. (SSRR)}, W\"{u}rzburg, Germany, Sep. 2019, pp. 126--132, doi: 10.1109/SSRR.2019.8848971.
+
+\bibitem{tolman2017counter}
+S.~Tolman and R.~W.~Beard, ``Counter UAS using a formation controlled dragnet,'' in \textit{Proc. Int. Conf. Unmanned Aircr. Syst. (ICUAS)}, Miami, FL, USA, Jun. 2017, pp. 1665--1672, doi: 10.1109/ICUAS.2017.7991391.
+
+\bibitem{chakravarthy2021interception}
+A.~Chakravarthy and D.~Ghose, ``Interception of intruder UAV swarms with a net manipulated by a team of UAVs,'' in \textit{Proc. AIAA Scitech Forum}, Virtual Event, Jan. 2021, Art. no. 2021-1767, doi: 10.2514/6.2021-1767.
+
+\bibitem{wang2022discrete}
+J.~Wang, L.~Zhao, and K.~Xia, ``A discrete-time intercepting strategy for net capture using multiple unmanned aerial vehicles,'' in \textit{Proc. IEEE Int. Conf. Unmanned Syst. (ICUS)}, Guangzhou, China, Oct. 2022, pp. 134--139, doi: 10.1109/ICUS55513.2022.9986777.
+
+\bibitem{oh2015survey}
+K.-K.~Oh, M.-C.~Park, and H.-S.~Ahn, ``A survey of multi-agent formation control,'' \textit{Automatica}, vol.~53, pp.~424--440, Mar. 2015, doi: 10.1016/j.automatica.2014.10.022.
+
+\bibitem{nguyen2020gps}
+T.~D.~Nguyen, ``Evaluation of the accuracy of the ship location determined by GPS global positioning system on a given sea area,'' \textit{J. Phys. Conf. Ser.}, vol.~1515, no.~4, 2020, Art. no.~042010.
+
+\bibitem{demarina2021displacement}
+H.~G.~de~Marina, ``Maneuvering and robustness issues in undirected displacement-consensus-based formation control,'' \textit{IEEE Trans. Autom. Control}, vol.~66, no.~7, pp.~3370--3377, Jul. 2021.
+
+\bibitem{trinh2016bearing}
+M.~H.~Trinh, G.-H.~Ko, V.~H.~Pham, K.-K.~Oh, and H.-S.~Ahn, ``Guidance using bearing-only measurements with three beacons in the plane,'' \textit{Control Eng. Pract.}, vol.~51, pp.~81--91, 2016.
+
+\bibitem{li2025localInfo}
+J.~Li, L.~Chen, and C.~Li, ``Multi-agent distributed formation control using local information measurements,'' \textit{Sci. China Technol. Sci.}, vol.~68, no.~7, Art. no.~1720402, 2025, doi: 10.1007/s11431-024-2896-5.
+
+\bibitem{hu2023angle}
+R.~Hu, X.~Huang, and C.~Xu, ``Integrated visual navigation based on angles-only measurements for asteroid final landing phase,'' \textit{Astrodynamics}, vol.~7, pp.~69--82, 2023.
+
+\bibitem{gong2023review}
+B.~Gong, S.~Wang, S.~Li, et al., ``Review of space relative navigation based on angles-only measurements,'' \textit{Astrodynamics}, vol.~7, pp.~131--152, 2023.
+
+\bibitem{shao2024directed}
+Z.~Shao, Z.~Zhou, Y.~Wang, and Y.~Song, ``Directed formation control using distance and angle in local coordinate frameworks,'' \textit{IEEE Trans. Ind. Electron.}, vol.~71, no.~11, pp.~14722--14729, Nov. 2024, doi: 10.1109/TIE.2024.3363778.
+
+\bibitem{sun2017distributed}
+Z.~Sun, M.-C.~Park, B.~D.~O.~Anderson, and H.-S.~Ahn, ``Distributed stabilization control of rigid formations with prescribed orientation,'' \textit{Automatica}, vol.~78, pp.~250--257, Apr. 2017, doi: 10.1016/j.automatica.2016.12.031.
+
+\bibitem{li2024circle}
+S.~Li, C.~Wang, and G.~Xie, ``3D circle formation control of VTOL vehicles without distance measurement,'' \textit{IEEE Trans. Intell. Veh.}, vol.~9, no.~2, pp.~3305--3315, Feb. 2024, doi: 10.1109/TIV.2023.3340875.
+
+\bibitem{chen2022maneuvering}
+L.~Chen, Z.~Lin, H.~Garcia~de~Marina, Z.~Sun, and M.~Feroskhan, ``Maneuvering angle rigid formations with global convergence guarantees,'' \textit{IEEE/CAA J. Autom. Sinica}, vol.~9, no.~8, pp.~1464--1475, Aug. 2022, doi: 10.1109/JAS.2022.105749.
+
+\bibitem{chen2020affine}
+L.~Chen, J.~Mei, C.~Li, and G.~Ma, ``Distributed leader--follower affine formation maneuver control for high-order multiagent systems,'' \textit{IEEE Trans. Autom. Control}, vol.~65, no.~11, pp.~4941--4948, Nov. 2020, doi: 10.1109/TAC.2020.2986684.
+
+\bibitem{xu2020affine}
+Y.~Xu, S.~Zhao, D.~Luo, and Y.~You, ``Affine formation maneuver control of high-order multi-agent systems over directed networks,'' \textit{Automatica}, vol.~118, Art. no.~109004, Aug. 2020, doi: 10.1016/j.automatica.2020.109004.
+
+\bibitem{chen2023angleRigidity3D}
+L.~Chen and M.~Cao, ``Angle rigidity for multiagent formations in 3-D,'' \textit{IEEE Trans. Autom. Control}, vol.~68, no.~10, pp.~6130--6145, Oct. 2023, doi: 10.1109/TAC.2023.3237799.
+
+\bibitem{han2009PIDtoADRC}
+J.~Han, ``From PID to active disturbance rejection control,'' \textit{IEEE Trans. Ind. Electron.}, vol.~56, no.~3, pp.~900--906, Mar. 2009, doi: 10.1109/TIE.2008.2011621.
 
 \bibitem{chen2021angleRigidity}
-L. Chen, M. Cao, and C. Li, ``Angle rigidity and its usage to stabilize multiagent formations in 2-D,'' \textit{IEEE Trans. Autom. Control}, vol. 66, no. 8, pp. 3667--3681, Aug. 2021, doi: 10.1109/TAC.2020.3025539.
+L.~Chen, M.~Cao, and C.~Li, ``Angle rigidity and its usage to stabilize multiagent formations in 2-D,'' \textit{IEEE Trans. Autom. Control}, vol.~66, no.~8, pp.~3667--3681, Aug. 2021, doi: 10.1109/TAC.2020.3025539.
 
 \bibitem{chen2022stabilizing}
 L. Chen, Q. Yang, M. Shi, Y. Li, and M. Feroskhan, ``Stabilizing angle rigid formations with prescribed orientation and scale,'' \textit{IEEE Trans. Ind. Electron.}, vol. 69, no. 11, pp. 11654--11665, Nov. 2022, doi: 10.1109/TIE.2021.3120476.
 
 \bibitem{chen2023angleConstrained}
 L. Chen, J. Xiao, R. C. H. Lin, and M. Feroskhan, ``Angle-constrained formation maneuvering of unmanned aerial vehicles,'' \textit{IEEE Trans. Control Syst. Technol.}, vol. 31, no. 4, pp. 1733--1746, Jul. 2023, doi: 10.1109/TCST.2023.3240286.
-
-\bibitem{chen2023angleRigidity3D}
-L. Chen and M. Cao, ``Angle rigidity for multiagent formations in 3-D,'' \textit{IEEE Trans. Autom. Control}, vol. 68, no. 10, pp. 6130--6145, Oct. 2023, doi: 10.1109/TAC.2023.3237799.
-
-\bibitem{li2025localInfo}
-J. Li, L. Chen, and C. Li, ``Multi-agent distributed formation control using local information measurements,'' \textit{Sci. China Technol. Sci.}, vol. 68, no. 7, Art. no. 1720402, 2025, doi: 10.1007/s11431-024-2896-5.
 
 \bibitem{wang2025esoMultiUAV}
 R. Wang, T. Mei, W. Ma, and W. Hao, ``Disturbance rejection control for multi-UAV formations based extended state observer,'' in \textit{Proc. 40th Youth Acad. Annu. Conf. Chin. Assoc. Autom.}, 2025, pp. 2144--2149, doi: 10.1109/YAC66630.2025.11150314.
@@ -1062,3 +1141,4 @@ H.~K.~Khalil, \textit{Nonlinear Systems}, 3rd~ed.\hfill Upper Saddle River, NJ, 
 \end{thebibliography}
 
 \end{document}
+

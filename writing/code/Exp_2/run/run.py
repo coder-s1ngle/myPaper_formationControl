@@ -77,9 +77,9 @@ class run:
         self.target_history: list = []
 
         # Capture disturbance config (t==55s target hits the net)
-        self.capture_start_time = 55.0
-        self.capture_end_time = 60.0
-        self.capture_pull_force = 3.0  # N
+        self.capture_start_time = 52.0
+        self.capture_end_time = 57.0
+        self.capture_pull_force = 1.0  # N
         self.penetration_depth = 0.2   # m, push impact point along impact dir
         self.capture_point_offset = (0.25, -0.15)
         self.mass = 1.5  # kg (must match uav_params.yaml)
@@ -134,14 +134,10 @@ class run:
         if not (self.capture_start_time <= t <= self.capture_end_time):
             return np.array([0.0, 0.0, 0.0])
 
-        # Physical impact profile: fast rise (0.2 s) then exponential decay (τ = 1.5 s)
+        # Smooth slowly-varying profile: sin² pulse
         t_elapsed = t - self.capture_start_time
-        rise_time = 0.2         # sharp rise to peak
-        decay_tau = 1.5         # decay time constant
-        if t_elapsed <= rise_time:
-            scale = t_elapsed / rise_time
-        else:
-            scale = np.exp(-(t_elapsed - rise_time) / decay_tau)
+        duration = self.capture_end_time - self.capture_start_time
+        scale = np.sin(np.pi * t_elapsed / duration) ** 2
 
         impact_point_2d = _get_capture_point(
             p_stack,

@@ -43,6 +43,7 @@ plt.rc("legend", fontsize=6)
 plt.rc("lines", linewidth=0.9, markersize=2.5)
 
 COLORS = ["#2166AC", "#D6604D", "#4DAF4A", "#9467BD"]
+LINESTYLES = ["-", "--", "-.", ":"]
 LW = 0.8
 
 FIGURES_DIR = (
@@ -90,8 +91,8 @@ def fig_angle_error(runner):
     ]
 
     fig, ax = plt.subplots(figsize=(3.5, 2.2))
-    for name, label, c in zip(names, labels, COLORS):
-        ax.plot(t, np.array(hist[name]), color=c, linewidth=LW, label=label)
+    for name, label, c, ls in zip(names, labels, COLORS, LINESTYLES):
+        ax.plot(t, np.array(hist[name]), color=c, linestyle=ls, linewidth=LW, label=label)
     _common_ax(ax)
     ax.set_ylabel("Angle error (rad)")
     ax.legend(frameon=False, ncol=2, loc="upper right")
@@ -107,8 +108,8 @@ def fig_edge_distance(runner):
     t = np.arange(len(hist["edge12"])) * dt
 
     fig, ax = plt.subplots(figsize=(3.5, 2.2))
-    for name, label, c in zip(edge_names, labels, COLORS):
-        ax.plot(t, np.array(hist[name]), color=c, linewidth=LW, label=label)
+    for name, label, c, ls in zip(edge_names, labels, COLORS, LINESTYLES):
+        ax.plot(t, np.array(hist[name]), color=c, linestyle=ls, linewidth=LW, label=label)
     _common_ax(ax)
     ax.set_ylabel("Edge distance (m)")
     ax.set_ylim(0.2, 1.2)
@@ -148,8 +149,8 @@ def fig_tension(runner):
     t = np.arange(len(hist["edge12"])) * dt
 
     fig, ax = plt.subplots(figsize=(3.5, 2.2))
-    for name, label, c in zip(edge_names, labels, COLORS):
-        ax.plot(t, np.array(hist[name]), color=c, linewidth=LW, label=label)
+    for name, label, c, ls in zip(edge_names, labels, COLORS, LINESTYLES):
+        ax.plot(t, np.array(hist[name]), color=c, linestyle=ls, linewidth=LW, label=label)
     _common_ax(ax)
     ax.set_ylabel("Tension (N)")
     ax.legend(frameon=False, ncol=2, loc="upper right")
